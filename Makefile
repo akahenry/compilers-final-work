@@ -34,4 +34,4 @@ compress:
 	cp -a $(SRC)/. $(TEMP)/
 	sed 's/{STEP_NUMBER}/'"$(STEP_NUMBER)/g" $(UTILS)/$(UTILS_MAKEFILE) > $(TEMP)/$(UTILS_MAKEFILE)
 	tar cvzf etapa$(STEP_NUMBER).tgz $(TEMP)/
-	# rm -r $(TEMP)
+	rm -r $(TEMP)
