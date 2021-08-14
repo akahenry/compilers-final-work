@@ -3,8 +3,8 @@ Função principal para impressão de tokens.
 
 Este arquivo será posterioremente substituído, não acrescente nada.
 */
-#include <cstdio>
-#include "tokens.hpp"
+#include <stdio.h>
+#include "tokens.h"
 
 extern int yylex(void);
 extern int yylex_destroy(void);
