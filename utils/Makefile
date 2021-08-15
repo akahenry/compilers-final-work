@@ -1,10 +1,11 @@
 CXX       := gcc
+CXX_FLAGS := -xc++
 
 BIN     := .
 SRC     := .
 INCLUDE := .
 
-LIBRARIES   :=
+LIBRARIES   := -lstdc++ -shared-libgcc -lfl
 EXECUTABLE  := etapa{STEP_NUMBER}
 
 
@@ -14,7 +15,7 @@ run: clean all
 	clear
 	./$(BIN)/$(EXECUTABLE)
 
-$(BIN)/$(EXECUTABLE): $(SRC)/*.c
+$(BIN)/$(EXECUTABLE): $(SRC)/*.c $(SRC)/*.cpp
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -o $@ $(LIBRARIES)
 
 clean:

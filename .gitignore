@@ -40,3 +40,10 @@ main
 # Compressed code
 etapa*.tgz
 temp/
+
+# Flex
+*.yy.c
+*.yy.cc
+
+# Binaries
+bin/
