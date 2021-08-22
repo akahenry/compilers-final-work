@@ -9,13 +9,13 @@ TEMP := temp
 UTILS := utils
 UTILS_MAKEFILE := Makefile
 
-LIBRARIES   := -lstdc++ -shared-libgcc -lfl
+LIBRARIES   := 
 EXECUTABLE  := main
 
 STEP_NUMBER := 1
 
 SCANNER := scanner.l
-LEX_FILE := lex.yy.cc
+LEX_FILE := lex.yy.c
 ANALYZER := analyzer
 
 
@@ -25,7 +25,7 @@ run: clean all
 	clear
 	./$(BIN)/$(EXECUTABLE)
 
-$(BIN)/$(EXECUTABLE): $(SRC)/*.c $(SRC)/*.cpp
+$(BIN)/$(EXECUTABLE): $(SRC)/*.c
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -o $@ $(LIBRARIES)
 
 clean:

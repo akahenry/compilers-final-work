@@ -1,4 +1,4 @@
-%option C++ noyywrap
+%option noyywrap
 
 %{
 #include "tokens.h"
@@ -11,9 +11,19 @@ white [ \t]+
 digit [0-9]
 integer {digit}+
 exponent [eE][+-]?{integer}
-real {integer}("."{integer})?{exponent}?
+real {integer}"."{integer}?{exponent}?
 single_comment "//".*
 comment {single_comment}
+letter [a-zA-Z]
+alphabetical "_"|{letter}
+identifier {alphabetical}+({digit}|{alphabetical})*
+
+int [+-]?{integer}
+float [+-]?{real}
+false "false"
+true "true"
+char '.'
+string \".*\"
 %%
 
 {white} { ; }
@@ -49,7 +59,6 @@ comment {single_comment}
 "end" { return TK_PR_END; } 
 "default" { return TK_PR_DEFAULT; } 
 
-
 "," { return (int)','; }
 ";" { return (int)';'; } 
 ":" { return (int)':'; } 
@@ -75,15 +84,26 @@ comment {single_comment}
 "." { return (int)'.'; } 
 "$" { return (int)'$'; }
 
+"<=" { return TK_OC_LE; }
+">=" { return TK_OC_GE; }
+"==" { return TK_OC_EQ; }
+"!=" { return TK_OC_NE; }
+"&&" { return TK_OC_AND; }
+"||" { return TK_OC_OR; }
+">>" { return TK_OC_SL; }
+"<<" { return TK_OC_SR; }
+
+{int} { return TK_LIT_INT; }
+{float} { return TK_LIT_FLOAT; }
+{false} { return TK_LIT_FALSE; }
+{true} { return TK_LIT_TRUE; }
+{char} { return TK_LIT_CHAR; }
+{string} { return TK_LIT_STRING; }
+
+{identifier} { return TK_IDENTIFICADOR; }
+
 . { return TOKEN_ERRO; }
 %%
-
-int main( int /* argc */, char** /* argv */ )
-{
-    FlexLexer* lexer = new yyFlexLexer;
-    while(lexer->yylex() != 0);
-    return 0;
-}
 
 int get_line_number(void) 
 {
