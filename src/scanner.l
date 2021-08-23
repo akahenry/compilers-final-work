@@ -1,5 +1,3 @@
-%option noyywrap
-
 %{
 #include "tokens.h"
 

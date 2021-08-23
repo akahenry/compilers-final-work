@@ -1,11 +1,11 @@
 CXX       := gcc
-CXX_FLAGS := -xc++
+CXX_FLAGS := 
 
 BIN     := .
 SRC     := .
 INCLUDE := .
 
-LIBRARIES   := 
+LIBRARIES   := -lfl
 EXECUTABLE  := etapa{STEP_NUMBER}
 
 

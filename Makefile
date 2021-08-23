@@ -1,5 +1,5 @@
 CXX       := gcc
-CXX_FLAGS := -xc++
+CXX_FLAGS := 
 
 BIN     := bin
 SRC     := src
@@ -9,7 +9,7 @@ TEMP := temp
 UTILS := utils
 UTILS_MAKEFILE := Makefile
 
-LIBRARIES   := 
+LIBRARIES   := -lfl
 EXECUTABLE  := main
 
 STEP_NUMBER := 1
