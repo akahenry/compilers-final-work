@@ -7,13 +7,15 @@ int num_lines = 1;
 int get_line_number(void);
 %}
 
+%x COMMENT
+
 white [ \t]+
 digit [0-9]
 integer {digit}+
 exponent [eE][+-]?{integer}
 real {integer}"."{integer}?{exponent}?
 single_comment "//".*
-comment {single_comment}
+multi_comment "/"\*
 letter [a-zA-Z]
 alphabetical "_"|{letter}
 identifier {alphabetical}+({digit}|{alphabetical})*
@@ -24,12 +26,12 @@ false "false"
 true "true"
 char '.'
 string \".*\"
+
 %%
 
-{white} { ; }
-{comment} { ; }
+"\n" { ++num_lines; }
 
-"\n" { num_lines++; }
+{white} { ; }
 
 "int" { return TK_PR_INT; }
 "float" {return TK_PR_FLOAT; }
@@ -102,7 +104,14 @@ string \".*\"
 
 {identifier} { return TK_IDENTIFICADOR; }
 
+{single_comment} { ; }
+{multi_comment} BEGIN(COMMENT);
+
 . { return TOKEN_ERRO; }
+
+<COMMENT>.
+<COMMENT>"\n" ++num_lines;
+<COMMENT>"*/" BEGIN(INITIAL);
 %%
 
 int get_line_number(void) 
