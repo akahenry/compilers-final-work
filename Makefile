@@ -44,5 +44,5 @@ compress:
 	cp -a $(INCLUDE)/. $(TEMP)/
 	cp -a $(SRC)/. $(TEMP)/
 	sed 's/{STEP_NUMBER}/'"$(STEP_NUMBER)/g" $(UTILS)/$(UTILS_MAKEFILE) > $(TEMP)/$(UTILS_MAKEFILE)
-	tar cvzf etapa$(STEP_NUMBER).tgz $(TEMP)/
+	cd $(TEMP) && tar cvzf $(PWD)/etapa$(STEP_NUMBER).tgz * && cd -
 	rm -r $(TEMP)
