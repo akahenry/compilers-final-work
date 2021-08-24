@@ -80,7 +80,7 @@ string \".*\"
 "&" { return (int)'&'; } 
 "%" { return (int)'%'; } 
 "#" { return (int)'#'; } 
-"ˆ" { return (int)'^'; }
+"^" { return (int)'^'; }
 "." { return (int)'.'; } 
 "$" { return (int)'$'; }
 

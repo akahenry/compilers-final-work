@@ -46,4 +46,4 @@ temp/
 *.yy.cc
 
 # Binaries
-bin/
+!bin/.gitkeep

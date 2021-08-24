@@ -25,18 +25,17 @@ run: clean all
 	clear
 	./$(BIN)/$(EXECUTABLE)
 
-$(BIN)/$(EXECUTABLE): $(SRC)/*.c
+$(BIN)/$(EXECUTABLE): $(SRC)/*.c $(SRC)/$(LEX_FILE)
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -o $@ $(LIBRARIES)
 
 clean:
 	-rm $(BIN)/*
 	-rm -r $(TEMP)
 
-flex:
+$(SRC)/$(LEX_FILE): $(SRC)/$(SCANNER)
 	flex -o $(SRC)/$(LEX_FILE) $(SRC)/$(SCANNER)
 
 $(BIN)/$(ANALYZER): $(SRC)/$(LEX_FILE) $(SRC)/*.l
-	make flex
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $< -o $@ $(LIBRARIES)
 
 compress:
