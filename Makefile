@@ -42,6 +42,7 @@ compress:
 	mkdir $(TEMP)
 	cp -a $(INCLUDE)/. $(TEMP)/
 	cp -a $(SRC)/. $(TEMP)/
+	rm $(TEMP)/$(LEX_FILE)
 	sed 's/{STEP_NUMBER}/'"$(STEP_NUMBER)/g" $(UTILS)/$(UTILS_MAKEFILE) > $(TEMP)/$(UTILS_MAKEFILE)
 	cd $(TEMP) && tar cvzf $(PWD)/etapa$(STEP_NUMBER).tgz * && cd -
 	rm -r $(TEMP)
