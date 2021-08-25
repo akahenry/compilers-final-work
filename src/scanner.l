@@ -11,7 +11,7 @@ white [ \t]+
 digit [0-9]
 integer {digit}+
 exponent [eE][+-]?{integer}
-real {integer}"."{integer}?{exponent}?
+real {integer}"."{integer}{exponent}?
 single_comment "//".*
 multi_comment "/"\*
 letter [a-zA-Z]
