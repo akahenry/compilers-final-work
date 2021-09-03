@@ -45,5 +45,9 @@ temp/
 *.yy.c
 *.yy.cc
 
+# Bison
+*.tab.c
+*.tab.h
+
 # Binaries
 !bin/.gitkeep
