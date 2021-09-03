@@ -22,8 +22,5 @@ extern int get_line_number (void);
 
 int main(int argc, char **argv) {
   int ret = yyparse();
-  if (ret != 0) {
-    printf("%d Errors!", ret);
-  }
-  return 0;
+  return ret;
 }

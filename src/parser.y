@@ -52,11 +52,14 @@ int yyerror (char const *s);
 
 %%
 
-programa : TK_PR_INT { printf("Sucesso!\n"); };
+programa:	TK_LIT_INT { printf("Entrada válida!\n"); } ;
 
 %%
 
 int yyerror(char const *s) {
-    printf("%s\n", s);
+    extern char *yytext;
+    extern int num_lines;
+
+    printf("Error %s: at symbol %s, in line %d.\n", s, yytext, num_lines);
     return 1;
 }
