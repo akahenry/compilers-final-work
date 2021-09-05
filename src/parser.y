@@ -4,7 +4,6 @@
 int yylex(void);
 int yyerror (char const *s);
 %}
-%start tempcheck // For testing purpose. TO DO: change to program
 
 %token TK_PR_INT        // int
 %token TK_PR_FLOAT      // float
@@ -52,55 +51,140 @@ int yyerror (char const *s);
 
 %%
 
-// for checking if the input is valid. TO DO: delete
-tempcheck:  program { printf("Valid input!\n"); } ;
+program: %empty
+    | globalvardec program
+    | funcdec program
+    ;
 
-program:	/* empty? */
+globalvardec: type globalidentifierslist ';'
+    | TK_PR_STATIC type globalidentifierslist ';'
+    ;
 
-            // Assignment
-            atrib
+type: TK_PR_INT
+    | TK_PR_FLOAT
+    | TK_PR_BOOL
+    | TK_PR_CHAR
+    | TK_PR_STRING
+    ;
 
-            // Input & Output
-            | TK_PR_INPUT TK_IDENTIFICADOR
-            | TK_PR_OUTPUT TK_IDENTIFICADOR
-            | TK_PR_OUTPUT literal
+globalidentifierslist: glboalidentifier
+    | glboalidentifier ',' globalidentifierslist
+    ;
 
-            // TODO: Functions
+glboalidentifier: TK_IDENTIFICADOR
+    | TK_IDENTIFICADOR '[' TK_LIT_INT ']'
+    ;
 
-            // Shift operations
-            | TK_IDENTIFICADOR shiftOp TK_LIT_INT
-            | TK_IDENTIFICADOR '[' expression ']' shiftOp TK_LIT_INT
+funcdec: funcheader commandblock
+    ;
 
-            // Simple statements
-            | TK_PR_RETURN
-            | TK_PR_BREAK
-            | TK_PR_CONTINUE
+funcheader: type TK_IDENTIFICADOR '(' ')'
+    | TK_PR_STATIC type TK_IDENTIFICADOR '(' ')'
+    | type TK_IDENTIFICADOR '(' parameterslist ')'
+    | TK_PR_STATIC type TK_IDENTIFICADOR '(' parameterslist ')'
+    ;
 
-            TK_PR_IF '(' expression ')' block
-            TK_PR_IF '(' expression ')' block TK_PR_ELSE block
-            TK_PR_FOR '(' atrib ':' expression ':' atrib ')' block // TODO: tá certo isso?
-            TK_PR_WHILE '(' expression ')' TK_PR_DO block
-            ;
+parameterslist: parameter
+    | parameter ',' parameterslist
+    ;
 
-atrib:      | TK_IDENTIFICADOR '=' expression
-            | TK_IDENTIFICADOR '[' expression ']' '=' expression
-            ;
+parameter: type TK_IDENTIFICADOR
+    ;
 
-literal:    TK_LIT_CHAR
-            | TK_LIT_FALSE
-            | TK_LIT_TRUE
-            | TK_LIT_FLOAT
-            | TK_LIT_INT
-            | TK_LIT_STRING
-            ;
+commandblock: '{' '}'
+    | '{' commandssequence '}'
+    ;
 
-shiftOp:    TK_OC_SL
-            | TK_OC_SR
-            ;
+commandssequence: command ';'
+    | command ';' commandssequence
+    | controlflowcommand
+    | controlflowcommand commandssequence
+    ;
 
-expression: TK_PR_INT; // TO DO
+command: localvardec
+    | varassignment
+    | input
+    | output
+    | shiftcommand
+    | return
+    | TK_PR_BREAK
+    | TK_PR_CONTINUE
+    | commandblock
+    | funccall
+    ;
 
-block:      TK_PR_INT; // TO DO
+localvardec: type localidentifierslist
+    | TK_PR_STATIC type localidentifierslist
+    | TK_PR_STATIC TK_PR_CONST localidentifierslist
+    ;
+
+localidentifierslist: localidentifier
+    | localidentifier ',' localidentifierslist
+    ;
+
+localidentifier: TK_IDENTIFICADOR
+    | TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR
+    | TK_IDENTIFICADOR TK_OC_LE literal
+    ;
+
+literal: TK_LIT_CHAR
+    | TK_LIT_FALSE
+    | TK_LIT_TRUE
+    | TK_LIT_FLOAT
+    | TK_LIT_INT
+    | TK_LIT_STRING
+    ;
+
+varassignment: TK_IDENTIFICADOR '=' expression
+    | TK_IDENTIFICADOR '[' expression ']' '=' expression
+    ;
+
+input: TK_PR_INPUT TK_IDENTIFICADOR
+    ;
+
+output: TK_PR_OUTPUT TK_IDENTIFICADOR
+    | TK_PR_OUTPUT literal
+    ;
+
+funccall: TK_IDENTIFICADOR '(' ')'
+    | TK_IDENTIFICADOR '(' argslist ')'
+    ;
+
+argslist: arg
+    | arg ',' argslist
+    ;
+
+arg: expression
+    ;
+
+shiftcommand: TK_IDENTIFICADOR shift TK_LIT_INT
+    | TK_IDENTIFICADOR '[' expression ']' shift TK_LIT_INT
+    ;
+
+shift: TK_OC_SL
+    | TK_OC_SR
+    ;
+
+return: TK_PR_RETURN expression
+    ;
+
+controlflowcommand: if
+    | TK_PR_FOR '(' varassignment ':' expression ':' varassignment ')' commandblock
+    | TK_PR_WHILE '(' expression ')' TK_PR_DO commandblock
+    ;
+
+if: TK_PR_IF '(' expression ')' commandblock
+    | TK_PR_IF '(' expression ')' commandblock TK_PR_ELSE commandblock
+    ;
+
+expression: arithmeticexpression
+    | logicexpression
+    | literal
+    ;
+
+arithmeticexpression: TK_PR_CHAR;
+
+logicexpression: TK_PR_INT;
 
 %%
 
@@ -108,6 +192,6 @@ int yyerror(char const *s) {
     extern char *yytext;
     extern int num_lines;
 
-    printf("Error %s: at symbol %s, in line %d.\n", s, yytext, num_lines);
+    fprintf(stderr, "Syntax error [line:%d]\n", num_lines);
     return 1;
 }
