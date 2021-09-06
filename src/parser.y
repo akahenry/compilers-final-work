@@ -49,6 +49,13 @@ int yyerror (char const *s);
 %token TK_IDENTIFICADOR // x0
 %token TOKEN_ERRO
 
+%left '|' '^'
+%left '<' '>' TK_OC_EQ TK_OC_NE TK_OC_GE TK_OC_LE
+%left '+' '-'
+%left '*' '/'
+%right '&' '#'
+
+
 %%
 
 program: %empty
@@ -67,11 +74,11 @@ type: TK_PR_INT
     | TK_PR_STRING
     ;
 
-globalidentifierslist: glboalidentifier
-    | glboalidentifier ',' globalidentifierslist
+globalidentifierslist: globalidentifier
+    | globalidentifier ',' globalidentifierslist
     ;
 
-glboalidentifier: TK_IDENTIFICADOR
+globalidentifier: TK_IDENTIFICADOR
     | TK_IDENTIFICADOR '[' TK_LIT_INT ']'
     ;
 
@@ -130,9 +137,12 @@ localidentifier: TK_IDENTIFICADOR
 literal: TK_LIT_CHAR
     | TK_LIT_FALSE
     | TK_LIT_TRUE
-    | TK_LIT_FLOAT
-    | TK_LIT_INT
     | TK_LIT_STRING
+    | literalnumber
+    ;
+
+literalnumber: TK_LIT_FLOAT
+    | TK_LIT_INT
     ;
 
 varassignment: TK_IDENTIFICADOR '=' expression
@@ -182,9 +192,61 @@ expression: arithmeticexpression
     | literal
     ;
 
-arithmeticexpression: TK_PR_CHAR;
+arithmeticexpression: arithmeticunaryoperator arithmeticoperand
+    | arithmeticoperand arithmeticbinaryoperator arithmeticoperand
+    /* | expression '?' expression ':' expression */ // TODO: ternary operator without conflicts 
+    ;
 
-logicexpression: TK_PR_INT;
+arithmeticunaryoperator: '+'
+    | '-'
+    | '&'
+    | '*'
+    | '#'
+    ;
+
+arithmeticbinaryoperator: '+'
+    | '-'
+    | '*'
+    | '/'
+    | '%'
+    | '|'
+    | '&'
+    | '^'
+    ;
+
+operand: TK_IDENTIFICADOR
+    | TK_IDENTIFICADOR '[' expression ']'
+    | literalnumber
+    | funccall
+    ;
+
+arithmeticoperand: operand
+    | '(' arithmeticexpression ')'
+    ;
+
+
+logicexpression: logicunaryoperator logicoperand
+    | logicoperand logicbinaryoperator logicoperand
+    ;
+
+logicoperand: operand
+    | arithmeticexpression
+    /* | logicexpression  */ // TODO: logic expression recursion without conflict
+    ;
+
+logicunaryoperator: '!'
+    | '?'
+    ;
+
+logicbinaryoperator: TK_OC_AND
+    | TK_OC_OR
+    | TK_OC_EQ
+    | TK_OC_NE
+    | TK_OC_GE
+    | TK_OC_LE
+    | '>'
+    | '<'
+    ;
 
 %%
 
