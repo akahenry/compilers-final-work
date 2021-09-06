@@ -12,11 +12,12 @@ UTILS_MAKEFILE := Makefile
 LIBRARIES   := -lfl
 EXECUTABLE  := main
 
-STEP_NUMBER := 1
+STEP_NUMBER := 2
 
 SCANNER := scanner.l
 PARSER := parser.y
 BISON_FILE := parser.tab.c
+BISON_HEADER:= parser.tab.h
 LEX_FILE := lex.yy.c
 ANALYZER := analyzer
 
@@ -47,7 +48,7 @@ compress:
 	mkdir $(TEMP)
 	cp -a $(INCLUDE)/. $(TEMP)/
 	cp -a $(SRC)/. $(TEMP)/
-	rm $(TEMP)/$(LEX_FILE)
+	rm $(TEMP)/$(LEX_FILE) $(TEMP)/$(BISON_FILE) $(TEMP)/$(BISON_HEADER)
 	sed 's/{STEP_NUMBER}/'"$(STEP_NUMBER)/g" $(UTILS)/$(UTILS_MAKEFILE) > $(TEMP)/$(UTILS_MAKEFILE)
 	cd $(TEMP) && tar cvzf $(PWD)/etapa$(STEP_NUMBER).tgz * && cd -
 	rm -r $(TEMP)
