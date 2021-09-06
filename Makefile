@@ -51,3 +51,9 @@ compress:
 	sed 's/{STEP_NUMBER}/'"$(STEP_NUMBER)/g" $(UTILS)/$(UTILS_MAKEFILE) > $(TEMP)/$(UTILS_MAKEFILE)
 	cd $(TEMP) && tar cvzf $(PWD)/etapa$(STEP_NUMBER).tgz * && cd -
 	rm -r $(TEMP)
+
+exec: all
+	$(BIN)/$(EXECUTABLE)
+
+test: 
+	./test.sh
