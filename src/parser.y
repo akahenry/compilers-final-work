@@ -54,6 +54,7 @@ int yyerror (char const *s);
 %left '+' '-'
 %left '*' '/'
 %right '&' '#'
+%right '?'
 
 
 %%
@@ -135,14 +136,16 @@ localidentifier: TK_IDENTIFICADOR
     ;
 
 literal: TK_LIT_CHAR
-    | TK_LIT_FALSE
-    | TK_LIT_TRUE
     | TK_LIT_STRING
     | literalnumber
     ;
 
 literalnumber: TK_LIT_FLOAT
     | TK_LIT_INT
+    ;
+
+literalbool: TK_LIT_FALSE
+    | TK_LIT_TRUE
     ;
 
 varassignment: TK_IDENTIFICADOR '=' expression
@@ -189,12 +192,12 @@ if: TK_PR_IF '(' expression ')' commandblock
 
 expression: arithmeticexpression
     | logicexpression
-    | literal
     ;
 
-arithmeticexpression: arithmeticunaryoperator arithmeticoperand
+arithmeticexpression: arithmeticoperand
+    | arithmeticunaryoperator arithmeticoperand
     | arithmeticoperand arithmeticbinaryoperator arithmeticoperand
-    /* | expression '?' expression ':' expression */ // TODO: ternary operator without conflicts 
+    | expression '?' expression ':' expression %prec '?'
     ;
 
 arithmeticunaryoperator: '+'
@@ -214,13 +217,10 @@ arithmeticbinaryoperator: '+'
     | '^'
     ;
 
-operand: TK_IDENTIFICADOR
+arithmeticoperand: TK_IDENTIFICADOR
     | TK_IDENTIFICADOR '[' expression ']'
     | literalnumber
     | funccall
-    ;
-
-arithmeticoperand: operand
     | '(' arithmeticexpression ')'
     ;
 
@@ -229,8 +229,10 @@ logicexpression: logicunaryoperator logicoperand
     | logicoperand logicbinaryoperator logicoperand
     ;
 
-logicoperand: operand
-    | arithmeticexpression
+logicoperand: TK_IDENTIFICADOR
+    | TK_IDENTIFICADOR '[' expression ']'
+    | literalbool
+    | funccall
     /* | logicexpression  */ // TODO: logic expression recursion without conflict
     ;
 
