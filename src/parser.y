@@ -1,6 +1,9 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+
+#define YYERROR_VERBOSE 1
+
 int yylex(void);
 int yyerror (char const *s);
 %}
@@ -53,7 +56,6 @@ int yyerror (char const *s);
 %left '<' '>' TK_OC_EQ TK_OC_NE TK_OC_GE TK_OC_LE
 %left '+' '-'
 %left '*' '/'
-%right '&' '#'
 
 
 %%
@@ -96,6 +98,7 @@ parameterslist: parameter
     ;
 
 parameter: type TK_IDENTIFICADOR
+    | TK_PR_CONST type TK_IDENTIFICADOR
     ;
 
 commandblock: '{' '}'
@@ -104,8 +107,6 @@ commandblock: '{' '}'
 
 commandssequence: command ';'
     | command ';' commandssequence
-    | controlflowcommand
-    | controlflowcommand commandssequence
     ;
 
 command: localvardec
@@ -113,6 +114,7 @@ command: localvardec
     | input
     | output
     | shiftcommand
+    | controlflowcommand
     | return
     | TK_PR_BREAK
     | TK_PR_CONTINUE
@@ -122,7 +124,8 @@ command: localvardec
 
 localvardec: type localidentifierslist
     | TK_PR_STATIC type localidentifierslist
-    | TK_PR_STATIC TK_PR_CONST localidentifierslist
+    | TK_PR_STATIC TK_PR_CONST type localidentifierslist
+    | TK_PR_CONST type localidentifierslist
     ;
 
 localidentifierslist: localidentifier
@@ -190,6 +193,7 @@ if: TK_PR_IF '(' expression ')' commandblock
 expression: arithmeticexpression
     | logicexpression
     | literal
+    | TK_IDENTIFICADOR
     ;
 
 arithmeticexpression: arithmeticunaryoperator arithmeticoperand
@@ -231,6 +235,8 @@ logicexpression: logicunaryoperator logicoperand
 
 logicoperand: operand
     | arithmeticexpression
+    | '(' arithmeticexpression ')'
+    | '(' logicexpression ')'
     /* | logicexpression  */ // TODO: logic expression recursion without conflict
     ;
 
@@ -254,6 +260,7 @@ int yyerror(char const *s) {
     extern char *yytext;
     extern int num_lines;
 
-    fprintf(stderr, "Syntax error [line:%d]\n", num_lines);
+    fprintf(stderr,"Error: %s in line %d\n", s, num_lines);
+
     return 1;
 }
