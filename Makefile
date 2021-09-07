@@ -36,7 +36,7 @@ clean:
 	-rm -r $(TEMP)
 
 $(SRC)/$(BISON_FILE): $(SRC)/$(PARSER)
-	bison -d $(SRC)/$(PARSER) -o $(SRC)/$(BISON_FILE)
+	bison -d $(SRC)/$(PARSER) -o $(SRC)/$(BISON_FILE) --verbose
 
 $(SRC)/$(LEX_FILE): $(SRC)/$(SCANNER)
 	flex -o $(SRC)/$(LEX_FILE) $(SRC)/$(SCANNER)
@@ -54,7 +54,7 @@ compress:
 	rm -r $(TEMP)
 
 exec: all
-	$(BIN)/$(EXECUTABLE)
+	@$(BIN)/$(EXECUTABLE) 2>/dev/null || true
 
 test: 
 	./test.sh
