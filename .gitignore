@@ -50,4 +50,4 @@ temp/
 *.tab.h
 
 # Binaries
-!bin/.gitkeep
+bin/
