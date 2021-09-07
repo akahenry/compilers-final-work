@@ -23,7 +23,7 @@ do
     echo "TEST FILE $file"
     cat "$file" | make exec --silent
     result=$?
-    if [ $result -eq $SUCCESS ]
+    if [ $result -ne $SUCCESS ]
     then
         echo "SUCCESS!"
     else
