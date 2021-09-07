@@ -83,6 +83,7 @@ string \".*\"
 "^" { return (int)'^'; }
 "." { return (int)'.'; } 
 "$" { return (int)'$'; }
+"?" { return (int)'?'; }
 
 "<=" { return TK_OC_LE; }
 ">=" { return TK_OC_GE; }
