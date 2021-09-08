@@ -52,10 +52,12 @@ int yyerror (char const *s);
 %token TK_IDENTIFICADOR // x0
 %token TOKEN_ERRO
 
+%left '?' ':'
 %left '|' '^'
 %left '<' '>' TK_OC_EQ TK_OC_NE TK_OC_GE TK_OC_LE
 %left '+' '-'
 %left '*' '/'
+%right '&' '#'
 
 
 %%
@@ -138,14 +140,17 @@ localidentifier: TK_IDENTIFICADOR
     ;
 
 literal: TK_LIT_CHAR
-    | TK_LIT_FALSE
-    | TK_LIT_TRUE
     | TK_LIT_STRING
+    | literalboolean
     | literalnumber
     ;
 
 literalnumber: TK_LIT_FLOAT
     | TK_LIT_INT
+    ;
+
+literalboolean: TK_LIT_FALSE
+    | TK_LIT_TRUE
     ;
 
 varassignment: TK_IDENTIFICADOR '=' expression
@@ -163,11 +168,8 @@ funccall: TK_IDENTIFICADOR '(' ')'
     | TK_IDENTIFICADOR '(' argslist ')'
     ;
 
-argslist: arg
-    | arg ',' argslist
-    ;
-
-arg: expression
+argslist: expression
+    | expression ',' argslist
     ;
 
 shiftcommand: TK_IDENTIFICADOR shift TK_LIT_INT
@@ -194,11 +196,13 @@ expression: arithmeticexpression
     | logicexpression
     | literal
     | TK_IDENTIFICADOR
+    | TK_IDENTIFICADOR '[' expression ']'
+    | expression '?' expression ':' expression
     ;
 
 arithmeticexpression: arithmeticunaryoperator arithmeticoperand
     | arithmeticoperand arithmeticbinaryoperator arithmeticoperand
-    /* | expression '?' expression ':' expression */ // TODO: ternary operator without conflicts 
+    | literalnumber
     ;
 
 arithmeticunaryoperator: '+'
@@ -218,13 +222,10 @@ arithmeticbinaryoperator: '+'
     | '^'
     ;
 
-operand: TK_IDENTIFICADOR
+arithmeticoperand: TK_IDENTIFICADOR
     | TK_IDENTIFICADOR '[' expression ']'
-    | literalnumber
     | funccall
-    ;
-
-arithmeticoperand: operand
+    | arithmeticexpression
     | '(' arithmeticexpression ')'
     ;
 
@@ -233,11 +234,13 @@ logicexpression: logicunaryoperator logicoperand
     | logicoperand logicbinaryoperator logicoperand
     ;
 
-logicoperand: operand
+logicoperand: TK_IDENTIFICADOR
+    | TK_IDENTIFICADOR '[' expression ']'
     | arithmeticexpression
     | '(' arithmeticexpression ')'
+    | logicexpression
     | '(' logicexpression ')'
-    /* | logicexpression  */ // TODO: logic expression recursion without conflict
+    | literalboolean
     ;
 
 logicunaryoperator: '!'
