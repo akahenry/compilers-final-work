@@ -1,4 +1,9 @@
 /*
+Grupo D
+  Henry Bernardo Kochenborger de Avila
+  Marcos Samuel Winkel Landi
+*/
+/*
 Função principal para realização da análise sintática.
 
 Este arquivo será posterioremente substituído, não acrescente nada.

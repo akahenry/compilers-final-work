@@ -1,3 +1,9 @@
+/*
+Grupo D
+  Henry Bernardo Kochenborger de Avila
+  Marcos Samuel Winkel Landi
+*/
+
 %{
 #include <stdio.h>
 #include <stdlib.h>

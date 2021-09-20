@@ -1,3 +1,7 @@
+# Grupo D
+#   Henry Bernardo Kochenborger de Avila
+#   Marcos Samuel Winkel Landi
+
 CXX       := gcc
 CXX_FLAGS := 
 

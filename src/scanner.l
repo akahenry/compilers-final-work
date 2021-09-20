@@ -1,3 +1,9 @@
+/*
+Grupo D
+  Henry Bernardo Kochenborger de Avila
+  Marcos Samuel Winkel Landi
+*/
+
 %{
 #include "parser.tab.h"
 
@@ -32,7 +38,7 @@ string \".*\"
 {white} { ; }
 
 "int" { return TK_PR_INT; }
-"float" {return TK_PR_FLOAT; }
+"float" { return TK_PR_FLOAT; }
 "bool" { return TK_PR_BOOL; } 
 "char" { return TK_PR_CHAR; } 
 "string" { return TK_PR_STRING; } 

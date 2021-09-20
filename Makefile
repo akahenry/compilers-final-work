@@ -34,6 +34,7 @@ $(BIN)/$(EXECUTABLE): $(SRC)/*.c $(SRC)/$(LEX_FILE) $(SRC)/$(BISON_FILE)
 clean:
 	-rm $(BIN)/*
 	-rm -r $(TEMP)
+	-rm $(SRC)/$(BISON_FILE) $(SRC)/$(BISON_HEADER) $(SRC)/$(LEX_FILE)
 
 $(SRC)/$(BISON_FILE): $(SRC)/$(PARSER)
 	bison -d $(SRC)/$(PARSER) -o $(SRC)/$(BISON_FILE)
@@ -48,10 +49,10 @@ compress:
 	mkdir $(TEMP)
 	cp -a $(INCLUDE)/. $(TEMP)/
 	cp -a $(SRC)/. $(TEMP)/
-	rm $(TEMP)/$(LEX_FILE) $(TEMP)/$(BISON_FILE) $(TEMP)/$(BISON_HEADER) $(TEMP)/.gitkeep
+	-rm $(TEMP)/$(LEX_FILE) $(TEMP)/$(BISON_FILE) $(TEMP)/$(BISON_HEADER) $(TEMP)/.gitkeep
 	sed 's/{STEP_NUMBER}/'"$(STEP_NUMBER)/g" $(UTILS)/$(UTILS_MAKEFILE) > $(TEMP)/$(UTILS_MAKEFILE)
 	cd $(TEMP) && tar cvzf $(PWD)/etapa$(STEP_NUMBER).tgz * && cd -
-	rm -r $(TEMP)
+	-rm -r $(TEMP)
 
 exec: all
 	$(BIN)/$(EXECUTABLE)
