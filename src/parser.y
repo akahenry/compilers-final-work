@@ -9,10 +9,13 @@ Grupo D
 #include <stdlib.h>
 
 #define YYERROR_VERBOSE 1
+extern int num_lines;
 
 int yylex(void);
 int yyerror (char const *s);
 %}
+
+%define parse.error verbose
 
 %token TK_PR_INT        // int
 %token TK_PR_FLOAT      // float
@@ -59,12 +62,16 @@ int yyerror (char const *s);
 %token TOKEN_ERRO
 
 %left '?' ':'
-%left '|' '^'
-%left '<' '>' TK_OC_EQ TK_OC_NE TK_OC_GE TK_OC_LE
-%left '+' '-'
-%left '*' '/'
-%right '&' '#'
-
+%left TK_OC_OR
+%left TK_OC_AND
+%left '|'
+%left '^'
+%left '&'
+%left TK_OC_EQ TK_OC_NE
+%left '<' '>' TK_OC_GE TK_OC_LE
+%left '-' '+'
+%left '*' '/' '%'
+%right '#' '!'
 
 %%
 
@@ -84,8 +91,8 @@ type: TK_PR_INT
     | TK_PR_STRING
     ;
 
-globalidentifierslist: globalidentifier
-    | globalidentifier ',' globalidentifierslist
+globalidentifierslist: globalidentifierslist ',' globalidentifier
+    | globalidentifier
     ;
 
 globalidentifier: TK_IDENTIFICADOR
@@ -101,8 +108,8 @@ funcheader: type TK_IDENTIFICADOR '(' ')'
     | TK_PR_STATIC type TK_IDENTIFICADOR '(' parameterslist ')'
     ;
 
-parameterslist: parameter
-    | parameter ',' parameterslist
+parameterslist: parameterslist ',' parameter
+    | parameter
     ;
 
 parameter: type TK_IDENTIFICADOR
@@ -113,8 +120,8 @@ commandblock: '{' '}'
     | '{' commandssequence '}'
     ;
 
-commandssequence: command ';'
-    | command ';' commandssequence
+commandssequence: commandssequence command ';'
+    | command ';'
     ;
 
 command: localvardec
@@ -136,8 +143,8 @@ localvardec: type localidentifierslist
     | TK_PR_CONST type localidentifierslist
     ;
 
-localidentifierslist: localidentifier
-    | localidentifier ',' localidentifierslist
+localidentifierslist: localidentifierslist ',' localidentifier
+    | localidentifier
     ;
 
 localidentifier: TK_IDENTIFICADOR
@@ -159,8 +166,7 @@ literalboolean: TK_LIT_FALSE
     | TK_LIT_TRUE
     ;
 
-varassignment: TK_IDENTIFICADOR '=' expression
-    | TK_IDENTIFICADOR '[' expression ']' '=' expression
+varassignment: varname '=' expression
     ;
 
 input: TK_PR_INPUT TK_IDENTIFICADOR
@@ -174,12 +180,11 @@ funccall: TK_IDENTIFICADOR '(' ')'
     | TK_IDENTIFICADOR '(' argslist ')'
     ;
 
-argslist: expression
-    | expression ',' argslist
+argslist: argslist ',' expression
+    | expression 
     ;
 
-shiftcommand: TK_IDENTIFICADOR shift TK_LIT_INT
-    | TK_IDENTIFICADOR '[' expression ']' shift TK_LIT_INT
+shiftcommand: varname shift TK_LIT_INT
     ;
 
 shift: TK_OC_SL
@@ -200,75 +205,62 @@ if: TK_PR_IF '(' expression ')' commandblock
 
 expression: arithmeticexpression
     | logicexpression
-    | literal
-    | TK_IDENTIFICADOR
-    | TK_IDENTIFICADOR '[' expression ']'
-    | expression '?' expression ':' expression
+    | thernaryoperator
     ;
 
-arithmeticexpression: arithmeticunaryoperator arithmeticoperand
-    | arithmeticoperand arithmeticbinaryoperator arithmeticoperand
-    | literalnumber
-    ;
-
-arithmeticunaryoperator: '+'
-    | '-'
-    | '&'
-    | '*'
-    | '#'
-    ;
-
-arithmeticbinaryoperator: '+'
-    | '-'
-    | '*'
-    | '/'
-    | '%'
-    | '|'
-    | '&'
-    | '^'
-    ;
-
-arithmeticoperand: TK_IDENTIFICADOR
-    | TK_IDENTIFICADOR '[' expression ']'
+arithmeticexpression: '+' arithmeticexpression
+    | '-' arithmeticexpression
+    | '*' arithmeticexpression
+    | '&' arithmeticexpression
+    | '#' arithmeticexpression
+    | arithmeticexpression '+' arithmeticexpression
+    | arithmeticexpression '-' arithmeticexpression
+    | arithmeticexpression '*' arithmeticexpression
+    | arithmeticexpression '/' arithmeticexpression
+    | arithmeticexpression '%' arithmeticexpression
+    | arithmeticexpression '|' arithmeticexpression
+    | arithmeticexpression '&' arithmeticexpression
+    | arithmeticexpression '^' arithmeticexpression
+    | TK_LIT_INT
+    | TK_LIT_FLOAT
+    | varname
     | funccall
-    | arithmeticexpression
     | '(' arithmeticexpression ')'
     ;
 
-
-logicexpression: logicunaryoperator logicoperand
-    | logicoperand logicbinaryoperator logicoperand
+logicexpression: '!' logicexpression
+    | '!' varname
+    | '?' logicexpression
+    | '?' varname
+    | arithmeticexpression TK_OC_EQ arithmeticexpression
+    | arithmeticexpression TK_OC_NE arithmeticexpression
+    | arithmeticexpression TK_OC_GE arithmeticexpression
+    | arithmeticexpression TK_OC_LE arithmeticexpression
+    | arithmeticexpression '>' arithmeticexpression
+    | arithmeticexpression '<' arithmeticexpression
+    | logicexpression TK_OC_AND logicexpression
+    | varname TK_OC_AND logicexpression
+    | logicexpression TK_OC_AND varname
+    | varname TK_OC_AND varname
+    | logicexpression TK_OC_OR logicexpression
+    | varname TK_OC_OR logicexpression
+    | logicexpression TK_OC_OR varname
+    | varname TK_OC_OR varname
+    | TK_LIT_TRUE
+    | TK_LIT_FALSE
     ;
 
-logicoperand: TK_IDENTIFICADOR
+thernaryoperator: expression '?' expression ':' expression
+    ;
+
+varname: TK_IDENTIFICADOR
     | TK_IDENTIFICADOR '[' expression ']'
-    | arithmeticexpression
-    | '(' arithmeticexpression ')'
-    | logicexpression
-    | '(' logicexpression ')'
-    | literalboolean
-    ;
-
-logicunaryoperator: '!'
-    | '?'
-    ;
-
-logicbinaryoperator: TK_OC_AND
-    | TK_OC_OR
-    | TK_OC_EQ
-    | TK_OC_NE
-    | TK_OC_GE
-    | TK_OC_LE
-    | '>'
-    | '<'
     ;
 
 %%
 
-int yyerror(char const *s) {
-    extern char *yytext;
-    extern int num_lines;
-
+int yyerror(const char *s)
+{
     fprintf(stderr,"Error: %s in line %d\n", s, num_lines);
 
     return 1;
