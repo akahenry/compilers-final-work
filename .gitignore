@@ -48,6 +48,7 @@ temp/
 # Bison
 *.tab.c
 *.tab.h
+*.output
 
 # Binaries
 bin/

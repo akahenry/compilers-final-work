@@ -17,8 +17,5 @@ int main (int argc, char **argv)
   int ret = yyparse();
   yylex_destroy();
 
-  if(!ret) {
-    printf("Success!");
-  }
   return ret;
 }
