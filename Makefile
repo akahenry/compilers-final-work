@@ -12,7 +12,7 @@ UTILS_MAKEFILE := Makefile
 LIBRARIES   := -lfl
 EXECUTABLE  := main
 
-STEP_NUMBER := 2
+STEP_NUMBER := 3
 
 SCANNER := scanner.l
 PARSER := parser.y
