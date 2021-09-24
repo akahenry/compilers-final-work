@@ -8,12 +8,20 @@ Grupo D
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "node.h"
+
 #define YYERROR_VERBOSE 1
+
 extern int num_lines;
+extern void* arvore;
 
 int yylex(void);
 int yyerror (char const *s);
+
+void exporta (void *arvore);
+void libera (void *arvore);
 %}
+
 
 %define parse.error verbose
 
@@ -264,4 +272,27 @@ int yyerror(const char *s)
     fprintf(stderr,"Error: %s in line %d\n", s, num_lines);
 
     return 1;
+}
+
+void exporta(void *tree)
+{
+    if (tree == NULL)
+    {
+        return;
+    }
+    
+    node* nodePtr = (node*) tree;
+    printf("%p [label=\"%s\"];\n", nodePtr, nodePtr->label); // #TODO: add label
+
+    for (int i = 0; i < nodePtr->numChildren; i++)
+    {
+        printf("%p, %p\n", nodePtr, nodePtr->children[i]);
+        exporta(nodePtr->children[i]);
+    }
+}
+
+void libera (void *tree)
+{
+    node* nodePtr = (node*) tree;
+    deleteNode(nodePtr);
 }

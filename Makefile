@@ -35,10 +35,12 @@ $(BIN)/$(EXECUTABLE): $(SRC)/*.c $(SRC)/$(LEX_FILE) $(SRC)/$(BISON_FILE)
 clean:
 	-rm $(BIN)/*
 	-rm -r $(TEMP)
-	-rm $(SRC)/$(BISON_FILE) $(SRC)/$(BISON_HEADER) $(SRC)/$(BISON_OUTPUT) $(SRC)/$(LEX_FILE) 
+	-rm $(SRC)/$(BISON_FILE) $(SRC)/$(BISON_OUTPUT) $(SRC)/$(LEX_FILE)
+	-rm $(INCLUDE)/$(BISON_HEADER)
 
 $(SRC)/$(BISON_FILE): $(SRC)/$(PARSER)
 	bison -d $(SRC)/$(PARSER) -o $(SRC)/$(BISON_FILE)
+	mv $(SRC)/$(BISON_HEADER) $(INCLUDE)/$(BISON_HEADER)
 
 $(SRC)/$(LEX_FILE): $(SRC)/$(SCANNER)
 	flex -o $(SRC)/$(LEX_FILE) $(SRC)/$(SCANNER)
