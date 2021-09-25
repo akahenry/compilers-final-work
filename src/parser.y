@@ -25,8 +25,8 @@ void libera (void *arvore);
 %define parse.error verbose
 
 %union {
-    struct token_t* valor_lexico;
-    struct node_t* node;
+    struct _token_t* valor_lexico;
+    struct _node_t* node;
 }
 
 %token TK_PR_INT        // int
