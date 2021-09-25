@@ -12,7 +12,7 @@ typedef struct _node_t{
 } node_t;
 
 node_t* create_leaf(char* _label);
-node_t* create_node(char* _label, node_t* child, ...);
+node_t* create_node(char* _label, int _num_children, node_t* child, ...);
 node_t* create_node_with_list(char* _label, int _num_children, node_t** _children);\
 void delete_node(node_t* _node);
 

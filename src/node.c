@@ -15,30 +15,23 @@ node_t* create_node_with_list(char* _label, int _numChildren, node_t** _children
     return result;
 }
 
-node_t* create_node(char* _label, node_t* child, ...)
+node_t* create_node(char* _label, int _num_children, node_t* child, ...)
 {
     va_list ap;
     node_t* i;
     node_t** children = NULL;
-    int count = 0, length = 0;
+    int count = 0;
+
+    children = calloc(_num_children, sizeof(node_t*));
 
     va_start(ap, child); 
-    for (i = child; i != NULL; i = va_arg(ap, node_t*))
-    {
-        length++;
-    }
-    va_end(ap);
-
-    children = calloc(length, sizeof(node_t*));
-
-    va_start(ap, child); 
-    for (i = child, count = 0; i != NULL; i = va_arg(ap, node_t*), count++)
+    for (i = child, count = 0; i != NULL, count < _num_children; i = va_arg(ap, node_t*), count++)
     {
         children[count] = i;
     }
     va_end(ap);
 
-    return create_node_with_list(_label, count, children);
+    return create_node_with_list(_label, _num_children, children);
 }
 
 void delete_node(node_t* _node)

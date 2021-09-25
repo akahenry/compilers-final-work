@@ -36,7 +36,7 @@ void exporta(void* tree)
     }
     
     node_t* node_ptr = (node_t*) tree;
-    printf("%p [label=\"%s\"];\n", node_ptr, node_ptr->label); // #TODO: add label
+    printf("%p [label=\"%s\"];\n", node_ptr, node_ptr->label);
 
     for (int i = 0; i < node_ptr->num_children; i++)
     {
