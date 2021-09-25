@@ -15,4 +15,6 @@ typedef struct _token_t
     char* value;
 } token_t;
 
+token_t* createToken(int _line, token_type_t _type, char* _value);
+
 #endif
