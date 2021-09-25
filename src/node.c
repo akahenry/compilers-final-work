@@ -1,11 +1,11 @@
 #include "node.h"
 
-node_t* create_leaf(token_t* _token, token_type_t _token_type)
+node_t* create_leaf(token_t* _token)
 {
-    return create_node_with_list(_token, _token_type, 0, NULL);
+    return create_node_with_list(_token, 0, NULL);
 }
 
-node_t* create_node_with_list(token_t* _token, token_type_t _token_type, int _num_children, node_t** _children)
+node_t* create_node_with_list(token_t* _token, int _num_children, node_t** _children)
 {
     node_t* result = calloc(1, sizeof(node_t));
 
@@ -13,6 +13,7 @@ node_t* create_node_with_list(token_t* _token, token_type_t _token_type, int _nu
         result->label = _token->text;
     else
         result->label = NULL;
+        
     result->children = _children;
     result->num_children = _num_children;
     result->token = _token;
@@ -20,7 +21,7 @@ node_t* create_node_with_list(token_t* _token, token_type_t _token_type, int _nu
     return result;
 }
 
-node_t* create_node(token_t* _token, token_type_t _token_type, int _num_children, node_t* child, ...)
+node_t* create_node(token_t* _token, int _num_children, node_t* child, ...)
 {
     va_list ap;
     node_t* i;
@@ -36,7 +37,7 @@ node_t* create_node(token_t* _token, token_type_t _token_type, int _num_children
     }
     va_end(ap);
 
-    return create_node_with_list(_token, _token_type, _num_children, children);
+    return create_node_with_list(_token, _num_children, children);
 }
 
 void delete_node(node_t* _node)

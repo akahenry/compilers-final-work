@@ -83,7 +83,7 @@ int yyerror (char const *s);
 %right '#' '!'
 
 %type <node> initial
-/* %type <node> program
+/*%type <node> program
 %type <node> globalvardec
 %type <node> type
 %type <node> globalidentifierslist
@@ -121,13 +121,11 @@ int yyerror (char const *s);
 
 %%
 
-initial: program {
-    arvore = (void*)$$;
-}
+initial: program { arvore = (void*)$$; }
     ;
 
 program: %empty 
-    | globalvardec program 
+    | globalvardec program
     | funcdec program
     ;
 
@@ -203,18 +201,18 @@ localidentifier: TK_IDENTIFICADOR
     | TK_IDENTIFICADOR TK_OC_LE literal
     ;
 
-literal: TK_LIT_CHAR { $$ = create_leaf($1, TOKEN_TYPE_LITERAL_CHAR); }
-    | TK_LIT_STRING { $$ = create_leaf($1, TOKEN_TYPE_LITERAL_STRING); }
+literal: TK_LIT_CHAR { $$ = create_leaf($1); }
+    | TK_LIT_STRING { $$ = create_leaf($1); }
     | literalboolean { $$ = $1; }
     | literalnumber { $$ = $1; }
     ;
 
-literalnumber: TK_LIT_FLOAT { $$ = create_leaf($1, TOKEN_TYPE_LITERAL_INT); }
-    | TK_LIT_INT { $$ = create_leaf($1, TOKEN_TYPE_LITERAL_FLOAT); }
+literalnumber: TK_LIT_FLOAT { $$ = create_leaf($1); }
+    | TK_LIT_INT { $$ = create_leaf($1); }
     ;
 
-literalboolean: TK_LIT_FALSE { $$ = create_leaf($1, TOKEN_TYPE_LITERAL_BOOL); }
-    | TK_LIT_TRUE { $$ = create_leaf($1, TOKEN_TYPE_LITERAL_BOOL); }
+literalboolean: TK_LIT_FALSE { $$ = create_leaf($1); }
+    | TK_LIT_TRUE { $$ = create_leaf($1); }
     ;
 
 varassignment: varname '=' expression
