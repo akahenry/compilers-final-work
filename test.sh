@@ -2,7 +2,7 @@
 
 SUCCESS=0
 
-for file in tests/test_right/*
+for file in tests/step-2/test_right/*
 do
     echo "TEST FILE $file"
     cat "$file" | make exec --silent
@@ -18,7 +18,7 @@ done
 
 echo "STARTING WRONG TESTS"
 
-for file in tests/test_wrong/*
+for file in tests/step-2/test_wrong/*
 do
     echo "TEST FILE $file"
     cat "$file" | make exec --silent
