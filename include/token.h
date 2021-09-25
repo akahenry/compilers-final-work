@@ -1,6 +1,9 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include <stdlib.h>
+#include <string.h>
+
 typedef enum {
 	TOKEN_TYPE_SPECIAL_CHARACTER,
     TOKEN_TYPE_COMPOSITE_OPERATOR,
