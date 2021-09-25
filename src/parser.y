@@ -61,13 +61,13 @@ int yyerror (char const *s);
 %token TK_OC_OR         // ||
 %token TK_OC_SL         // >>
 %token TK_OC_SR         // <<
-%token TK_LIT_INT       // 3
-%token TK_LIT_FLOAT     // 3.7
-%token TK_LIT_FALSE     // false
-%token TK_LIT_TRUE      // true
-%token TK_LIT_CHAR      // 'a'
-%token TK_LIT_STRING    // "str"
-%token TK_IDENTIFICADOR // x0
+%token <valor_lexico> TK_LIT_INT       // 3
+%token <valor_lexico> TK_LIT_FLOAT     // 3.7
+%token <valor_lexico> TK_LIT_FALSE     // false
+%token <valor_lexico> TK_LIT_TRUE      // true
+%token <valor_lexico> TK_LIT_CHAR      // 'a'
+%token <valor_lexico> TK_LIT_STRING    // "str"
+%token <valor_lexico> TK_IDENTIFICADOR // x0
 %token TOKEN_ERRO
 
 %left '?' ':'
@@ -82,10 +82,52 @@ int yyerror (char const *s);
 %left '*' '/' '%'
 %right '#' '!'
 
+%type <node> initial
+/* %type <node> program
+%type <node> globalvardec
+%type <node> type
+%type <node> globalidentifierslist
+%type <node> globalidentifier
+%type <node> funcdec
+%type <node> funcheader
+%type <node> parameterslist
+%type <node> parameter
+%type <node> commandblock
+%type <node> commandssequence
+%type <node> command
+%type <node> localvardec
+%type <node> localidentifierslist
+%type <node> localidentifier
+*/
+%type <node> literal
+%type <node> literalnumber
+%type <node> literalboolean
+/*
+%type <node> varassignment
+%type <node> input
+%type <node> output
+%type <node> funccall
+%type <node> argslist
+%type <node> shiftcommand
+%type <node> shift
+%type <node> return
+%type <node> controlflowcommand
+%type <node> if
+%type <node> expression
+%type <node> arithmeticexpression
+%type <node> logicexpression
+%type <node> thernaryoperator
+%type <node> varname */
+
 %%
 
-program: %empty
-    | globalvardec program
+initial: program {
+    arvore = (void*)$$;
+}
+    ;
+
+program: %empty 
+    | globalvardec program 
     | funcdec program
     ;
 
@@ -161,18 +203,18 @@ localidentifier: TK_IDENTIFICADOR
     | TK_IDENTIFICADOR TK_OC_LE literal
     ;
 
-literal: TK_LIT_CHAR
-    | TK_LIT_STRING
-    | literalboolean
-    | literalnumber
+literal: TK_LIT_CHAR { $$ = create_leaf($1, TOKEN_TYPE_LITERAL_CHAR); }
+    | TK_LIT_STRING { $$ = create_leaf($1, TOKEN_TYPE_LITERAL_STRING); }
+    | literalboolean { $$ = $1; }
+    | literalnumber { $$ = $1; }
     ;
 
-literalnumber: TK_LIT_FLOAT
-    | TK_LIT_INT
+literalnumber: TK_LIT_FLOAT { $$ = create_leaf($1, TOKEN_TYPE_LITERAL_INT); }
+    | TK_LIT_INT { $$ = create_leaf($1, TOKEN_TYPE_LITERAL_FLOAT); }
     ;
 
-literalboolean: TK_LIT_FALSE
-    | TK_LIT_TRUE
+literalboolean: TK_LIT_FALSE { $$ = create_leaf($1, TOKEN_TYPE_LITERAL_BOOL); }
+    | TK_LIT_TRUE { $$ = create_leaf($1, TOKEN_TYPE_LITERAL_BOOL); }
     ;
 
 varassignment: varname '=' expression

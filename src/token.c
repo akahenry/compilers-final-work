@@ -8,6 +8,7 @@ token_t* create_token(int _line, token_type_t _type, char* _value)
 
     token->line = _line;
     token->type = _type;
+	token->text = strdup(_value);
 
 	switch(_type) {
 		case TOKEN_TYPE_LITERAL_INT:

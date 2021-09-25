@@ -14,7 +14,7 @@ typedef union _token_value_t {
     char *v_string;
 } token_value_t;  
 
-typedef enum {
+typedef enum _token_type_t {
 	TOKEN_TYPE_SPECIAL_CHARACTER,
     TOKEN_TYPE_COMPOSITE_OPERATOR,
     TOKEN_TYPE_IDENTIFIER,
@@ -30,6 +30,7 @@ typedef struct _token_t
     int line;   // Line number of occurrence;
     token_type_t type;
     token_value_t value;
+    char* text;
 } token_t;
 
 token_t* create_token(int _line, token_type_t _type, char* _value);

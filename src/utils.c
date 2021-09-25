@@ -54,6 +54,7 @@ void libera(void *tree)
         queue_item_t* item = (queue_item_t*)queue_pop(q_alloc_token);
 
         free(((token_t*)item->value)->value.v_string);
+        free(((token_t*)item->value)->text);
         free(item->value);
         free(item);
     }
