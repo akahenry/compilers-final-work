@@ -7,8 +7,8 @@ Grupo D
 %{
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "node.h"
+#include "token.h"
 
 #define YYERROR_VERBOSE 1
 
@@ -22,8 +22,12 @@ void exporta (void *arvore);
 void libera (void *arvore);
 %}
 
-
 %define parse.error verbose
+
+%union {
+    struct token_t* valor_lexico;
+    struct node_t* node;
+}
 
 %token TK_PR_INT        // int
 %token TK_PR_FLOAT      // float
@@ -281,7 +285,7 @@ void exporta(void *tree)
         return;
     }
     
-    node* nodePtr = (node*) tree;
+    node_t* nodePtr = (node_t*) tree;
     printf("%p [label=\"%s\"];\n", nodePtr, nodePtr->label); // #TODO: add label
 
     for (int i = 0; i < nodePtr->numChildren; i++)
@@ -293,6 +297,6 @@ void exporta(void *tree)
 
 void libera (void *tree)
 {
-    node* nodePtr = (node*) tree;
+    node_t* nodePtr = (node_t*) tree;
     deleteNode(nodePtr);
 }

@@ -6,6 +6,7 @@ Grupo D
 
 %{
 #include "parser.tab.h"
+#include "token.h"
 
 int num_lines = 1;
 int get_line_number(void);
