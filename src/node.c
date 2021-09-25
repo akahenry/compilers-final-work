@@ -1,21 +1,21 @@
 #include "node.h"
 
-node_t* createLeaf(int _id)
+node_t* createLeaf(char* _label)
 {
-    return createNodeWithList(_id, 0, NULL);
+    return createNodeWithList(_label, 0, NULL);
 }
 
-node_t* createNodeWithList(int _id, int _numChildren, node_t** _children)
+node_t* createNodeWithList(char* _label, int _numChildren, node_t** _children)
 {
     node_t* result = calloc(1, sizeof(node_t));
-    result->id = _id;
+    result->label = _label;
     result->children = _children;
     result->numChildren = _numChildren;
 
     return result;
 }
 
-node_t* createNode(int _id, node_t* child, ...)
+node_t* createNode(char* _label, node_t* child, ...)
 {
     va_list ap;
     node_t* i;
@@ -38,7 +38,7 @@ node_t* createNode(int _id, node_t* child, ...)
     }
     va_end(ap);
 
-    return createNodeWithList(_id, count, children);
+    return createNodeWithList(_label, count, children);
 }
 
 void deleteNode(node_t* _node)
@@ -51,6 +51,7 @@ void deleteNode(node_t* _node)
             {
                 deleteNode(_node->children[i]);
             }
+            free(_node->children);
         }
         free(_node);
     }
