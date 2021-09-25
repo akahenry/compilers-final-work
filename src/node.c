@@ -1,21 +1,21 @@
 #include "node.h"
 
-node_t* createLeaf(char* _label)
+node_t* create_leaf(char* _label)
 {
-    return createNodeWithList(_label, 0, NULL);
+    return create_node_with_list(_label, 0, NULL);
 }
 
-node_t* createNodeWithList(char* _label, int _numChildren, node_t** _children)
+node_t* create_node_with_list(char* _label, int _numChildren, node_t** _children)
 {
     node_t* result = calloc(1, sizeof(node_t));
     result->label = _label;
     result->children = _children;
-    result->numChildren = _numChildren;
+    result->num_children = _numChildren;
 
     return result;
 }
 
-node_t* createNode(char* _label, node_t* child, ...)
+node_t* create_node(char* _label, node_t* child, ...)
 {
     va_list ap;
     node_t* i;
@@ -38,18 +38,18 @@ node_t* createNode(char* _label, node_t* child, ...)
     }
     va_end(ap);
 
-    return createNodeWithList(_label, count, children);
+    return create_node_with_list(_label, count, children);
 }
 
-void deleteNode(node_t* _node)
+void delete_node(node_t* _node)
 {
     if (_node != NULL)
     {
-        if (_node->numChildren > 0)
+        if (_node->num_children > 0)
         {
-            for (size_t i = 0; i < _node->numChildren; i++)
+            for (size_t i = 0; i < _node->num_children; i++)
             {
-                deleteNode(_node->children[i]);
+                delete_node(_node->children[i]);
             }
             free(_node->children);
         }

@@ -17,9 +17,6 @@ extern void* arvore;
 
 int yylex(void);
 int yyerror (char const *s);
-
-void exporta (void *arvore);
-void libera (void *arvore);
 %}
 
 %define parse.error verbose
@@ -276,27 +273,4 @@ int yyerror(const char *s)
     fprintf(stderr,"Error: %s in line %d\n", s, num_lines);
 
     return 1;
-}
-
-void exporta(void *tree)
-{
-    if (tree == NULL)
-    {
-        return;
-    }
-    
-    node_t* nodePtr = (node_t*) tree;
-    printf("%p [label=\"%s\"];\n", nodePtr, nodePtr->label); // #TODO: add label
-
-    for (int i = 0; i < nodePtr->numChildren; i++)
-    {
-        printf("%p, %p\n", nodePtr, nodePtr->children[i]);
-        exporta(nodePtr->children[i]);
-    }
-}
-
-void libera (void *tree)
-{
-    node_t* nodePtr = (node_t*) tree;
-    deleteNode(nodePtr);
 }

@@ -7,13 +7,13 @@
 
 typedef struct _node_t{
     char* label;
-    size_t numChildren;
+    size_t num_children;
     struct _node_t** children;
 } node_t;
 
-node_t* createLeaf(char* _label);
-node_t* createNode(char* _label, node_t* child, ...);
-node_t* createNodeWithList(char* _label, int _numChildren, node_t** _children);\
-void deleteNode(node_t* _node);
+node_t* create_leaf(char* _label);
+node_t* create_node(char* _label, node_t* child, ...);
+node_t* create_node_with_list(char* _label, int _num_children, node_t** _children);\
+void delete_node(node_t* _node);
 
 #endif

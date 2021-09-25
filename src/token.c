@@ -1,8 +1,10 @@
 #include "token.h"
 
-token_t* createToken(int _line, token_type_t _type, char* _value)
+token_t* create_token(int _line, token_type_t _type, char* _value)
 {
+	create_token_queue();
     token_t* token = calloc(1, sizeof(token_t));
+	push_token_queue((void*)token);
 
     token->line = _line;
     token->type = _type;
@@ -17,7 +19,7 @@ token_t* createToken(int _line, token_type_t _type, char* _value)
 			break;
 
 		case TOKEN_TYPE_LITERAL_BOOL:
-            token->value.v_bool = charToBool(_value);		
+            token->value.v_bool = char_to_bool(_value);		
 			break;
 
 		case TOKEN_TYPE_LITERAL_CHAR:

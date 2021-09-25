@@ -11,6 +11,7 @@ UTILS_MAKEFILE := Makefile
 
 LIBRARIES   := -lfl
 EXECUTABLE  := main
+EXECUTABLE_DEBUG  := debug
 
 STEP_NUMBER := 3
 
@@ -62,3 +63,6 @@ exec: all
 
 test: 
 	./test.sh
+
+debug: $(SRC)/*.c $(SRC)/$(LEX_FILE) $(SRC)/$(BISON_FILE)
+	$(CXX) $(CXX_FLAGS) -g -I$(INCLUDE) $^ -o $(BIN)/$(EXECUTABLE_DEBUG) $(LIBRARIES)
