@@ -17,6 +17,7 @@ for file in os.listdir(refs_dir):
         os.system(f"cat {refs_dir}/{file} | python3 dot_converter.py")
         os.rename('AST.dot', f'{refs_dir}/converted/{file}')
 
+print("comparing asts")
 for file in os.listdir(input_dir):
     with open(f'tests/step-3/outputs/converted{file}.dot', 'r') as f1:
         with open(f"{refs_dir}/converted/{file}.ref.dot", 'r') as f2:
@@ -28,3 +29,17 @@ for file in os.listdir(input_dir):
                 print(f'{file}: SUCCESS')
             else:
                 print(f'{file}: FAIL')
+
+print("checking memory leaks")
+failed_files = ""
+failed = False
+for file in os.listdir(input_dir):
+    if ((os.system(f"cat {input_dir}/{file} | valgrind ./bin/main") >> 8) != 0):
+        failed = True
+        failed_files += file + "\n"
+
+if not failed:
+    print("SUCCESS")
+else:
+    print("FAILED")
+    print(failed_files)

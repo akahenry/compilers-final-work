@@ -55,3 +55,7 @@ bin/
 
 # AST svg
 AST.svg
+
+# step-3 tests
+tests/step-3/outputs/*.dot
+tests/step-3/reference-dots/converted/*.dot
