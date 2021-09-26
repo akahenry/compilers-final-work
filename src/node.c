@@ -2,17 +2,21 @@
 
 node_t* create_leaf(token_t* _token)
 {
-    return create_node(_token, _token->text, NULL, NULL, NULL, NULL);
+    node_t* node = create_node(_token->text, NULL, NULL, NULL, NULL);
+    node->token = _token;
+
+    if (_token != NULL)
+        node->label = _token->text;
+
+    return node;
 }
 
-node_t *create_node(token_t* _token, char *_label, node_t *_child1, node_t *_child2, node_t *_child3, node_t *_child4)
+node_t *create_node(char *_label, node_t *_child1, node_t *_child2, node_t *_child3, node_t *_child4)
 {
     node_t* result = calloc(1, sizeof(node_t));
 
     if (_label != NULL)
         result->label = _label;
-    else if (_token != NULL)
-        result->label = _token->text;
     else
         result->label = NULL;
 
@@ -20,8 +24,6 @@ node_t *create_node(token_t* _token, char *_label, node_t *_child1, node_t *_chi
     result->child2 = _child2;
     result->child3 = _child3;
     result->child4 = _child4;
-
-    result->token = _token;
 
     return result;
 }

@@ -19,7 +19,7 @@ typedef struct _node_t{
 } node_t;
 
 node_t* create_leaf(token_t* _token);
-node_t *create_node(token_t *_token, char *_label, node_t *_child1, node_t *_child2, node_t *_child3, node_t *_child4);
+node_t *create_node(char *_label, node_t *_child1, node_t *_child2, node_t *_child3, node_t *_child4);
 void delete_node(node_t* _node);
 node_t* link_nodes(node_t *_node_parent, node_t *_node_child);
 
