@@ -25,8 +25,8 @@ letter [a-zA-Z]
 alphabetical "_"|{letter}
 identifier {alphabetical}+({digit}|{alphabetical})*
 
-int [+-]?{integer}
-float [+-]?{real}
+int {integer}
+float {real}
 false "false"
 true "true"
 char '.'
