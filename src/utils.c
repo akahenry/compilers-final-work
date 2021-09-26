@@ -38,13 +38,26 @@ void exporta(void* tree)
     node_t* node_ptr = (node_t*) tree;
     printf("%p [label=\"%s\"];\n", node_ptr, node_ptr->label);
 
-    for (int i = 0; i < node_ptr->num_children; i++)
+
+    if (node_ptr->child1 != NULL)
     {
-        if (node_ptr->children[i] != NULL)
-        {
-            printf("%p, %p\n", node_ptr, node_ptr->children[i]);
-            exporta(node_ptr->children[i]);
-        }
+        printf("%p, %p\n", node_ptr, node_ptr->child1);
+        exporta(node_ptr->child1);
+    }
+    if (node_ptr->child2 != NULL)
+    {
+        printf("%p, %p\n", node_ptr, node_ptr->child2);
+        exporta(node_ptr->child2);
+    }
+    if (node_ptr->child3 != NULL)
+    {
+        printf("%p, %p\n", node_ptr, node_ptr->child3);
+        exporta(node_ptr->child3);
+    }
+    if (node_ptr->child4 != NULL)
+    {
+        printf("%p, %p\n", node_ptr, node_ptr->child4);
+        exporta(node_ptr->child4);
     }
 }
 
@@ -56,7 +69,8 @@ void libera(void *tree)
     while(!is_empty_queue(q_alloc_token)) {
         queue_item_t* item = (queue_item_t*)queue_pop(q_alloc_token);
 
-        free(((token_t*)item->value)->value.v_string);
+        if (((token_t*)item->value)->type == TOKEN_TYPE_LITERAL_STRING || ((token_t*)item->value)->type == TOKEN_TYPE_IDENTIFIER)
+            free(((token_t*)item->value)->value.v_string);
         free(((token_t*)item->value)->text);
         free(item->value);
         free(item);
