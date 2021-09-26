@@ -7,6 +7,15 @@ Grupo D
 
 node_t* create_leaf(token_t* _token)
 {
+    if (_token != NULL && _token->type == TOKEN_TYPE_LITERAL_STRING)
+    {
+        size_t len = strlen(_token->text);
+        if (_token->text[0] == '"' && _token->text[len - 1] == '"') 
+        {
+            _token->text[len - 1] = '\0';
+            memmove(_token->text, _token->text + 1, len - 1);
+        }
+    }
     node_t* node = create_node(_token->text, NULL, NULL, NULL, NULL, NULL);
     node->token = _token;
 
