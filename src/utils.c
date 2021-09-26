@@ -76,14 +76,18 @@ void libera(void *tree)
     node_t* node_ptr = (node_t*) tree;
     delete_node(node_ptr);
 
-    while(!is_empty_queue(q_alloc_token)) {
-        queue_item_t* item = (queue_item_t*)queue_pop(q_alloc_token);
+    if (q_alloc_token != NULL)
+    {
+        while(!is_empty_queue(q_alloc_token)) {
+            queue_item_t* item = (queue_item_t*)queue_pop(q_alloc_token);
 
-        if (((token_t*)item->value)->type == TOKEN_TYPE_LITERAL_STRING || ((token_t*)item->value)->type == TOKEN_TYPE_IDENTIFIER)
-            free(((token_t*)item->value)->value.v_string);
-        free(((token_t*)item->value)->text);
-        free(item->value);
-        free(item);
+            if (((token_t*)item->value)->type == TOKEN_TYPE_LITERAL_STRING || ((token_t*)item->value)->type == TOKEN_TYPE_IDENTIFIER)
+                free(((token_t*)item->value)->value.v_string);
+            free(((token_t*)item->value)->text);
+            free(item->value);
+            free(item);
+        }
+        clear_queue(q_alloc_token);
     }
-    clear_queue(q_alloc_token);
+
 }
