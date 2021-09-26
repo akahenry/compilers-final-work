@@ -1,3 +1,8 @@
+/*
+Grupo D
+  Henry Bernardo Kochenborger de Avila
+  Marcos Samuel Winkel Landi
+*/
 #include "utils.h"
 
 queue_t* q_alloc_token = NULL;
@@ -58,6 +63,11 @@ void exporta(void* tree)
     {
         printf("%p, %p\n", node_ptr, node_ptr->child4);
         exporta(node_ptr->child4);
+    }
+    if (node_ptr->child5 != NULL)
+    {
+        printf("%p, %p\n", node_ptr, node_ptr->child5);
+        exporta(node_ptr->child5);
     }
 }
 

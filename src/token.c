@@ -1,3 +1,8 @@
+/*
+Grupo D
+  Henry Bernardo Kochenborger de Avila
+  Marcos Samuel Winkel Landi
+*/
 #include "token.h"
 
 token_t* create_token(int _line, token_type_t _type, char* _value)

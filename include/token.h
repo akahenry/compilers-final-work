@@ -1,3 +1,8 @@
+/*
+Grupo D
+  Henry Bernardo Kochenborger de Avila
+  Marcos Samuel Winkel Landi
+*/
 #ifndef TOKEN_H
 #define TOKEN_H
 

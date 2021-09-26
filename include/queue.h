@@ -1,3 +1,8 @@
+/*
+Grupo D
+  Henry Bernardo Kochenborger de Avila
+  Marcos Samuel Winkel Landi
+*/
 #ifndef QUEUE_H
 #define QUEUE_H
 

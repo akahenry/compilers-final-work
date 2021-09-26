@@ -15,7 +15,7 @@ connections = ""
 labels = ""
 for line in sys.stdin:
     if(line.strip()[-1] == ';'):
-        labels += str(int(line.strip().split(' ')[0],0)) + ' ' + line.strip().split(' ')[1] + "\n    "
+        labels += str(int(line.strip().split(' ')[0],0)) + ' ' + " ".join(line.strip().split(' ')[1:]) + "\n    "
     else:
         connections += ' -> '.join([str(int(x,0)) for x in line.strip().split(', ')]) + ';\n    '
 
