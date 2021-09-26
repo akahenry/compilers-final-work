@@ -122,7 +122,7 @@ initial: program
 
 program: %empty             { $$ = NULL; }
     | globalvardec program  { $$ = $2; }
-    | funcdec program       { $$ = link_nodes($1, $2); }
+    | funcdec program       { if ($1 != NULL) { $$ = link_nodes($1, $2); } else { $$ = $2; }; }
     ;
 
 // *
@@ -171,7 +171,7 @@ commandblock: '{' '}'           { $$ = NULL; }
     | '{' commandssequence '}'  { $$ = $2; }
     ;
 
-commandssequence: command ';' commandssequence { $$ = link_nodes($1, $3); }
+commandssequence: command ';' commandssequence { if ($1 != NULL) { $$ = link_nodes($1, $3); } else { $$ = $3; }; }
     | command ';'                               { $$ = $1; }
     ;
 
@@ -194,7 +194,7 @@ localvardec: type localidentifierslist { $$ = $2; }
     | TK_PR_CONST type localidentifierslist { $$ = $3; }
     ;
 
-localidentifierslist: localidentifier ',' localidentifierslist { $$ = link_nodes($1, $3); }
+localidentifierslist: localidentifier ',' localidentifierslist { if ($1 != NULL) { $$ = link_nodes($1, $3); } else { $$ = $3; }; }
     | localidentifier { $$ = $1; }
     | localidentifierdeclaration { $$ = $1; }
     | localidentifierdeclaration ',' localidentifierslist { $$ = $3; }
@@ -247,7 +247,7 @@ funccall: TK_IDENTIFICADOR '(' ')'
 }
     ;
 
-argslist: expression ',' argslist { $$ = link_nodes($1, $3); }
+argslist: expression ',' argslist {  if ($1 != NULL) { $$ = link_nodes($1, $3); } else { $$ = $3; };  }
     | expression { $$ = $1; }
     ;
 
