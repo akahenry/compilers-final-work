@@ -12,13 +12,14 @@ typedef struct _token_t token_t;
 typedef struct _node_t{
     char* label;
     token_t* token;
-    size_t num_children;
-    struct _node_t** children;
+    struct _node_t* child1;
+    struct _node_t* child2;
+    struct _node_t* child3;
+    struct _node_t* child4;
 } node_t;
 
 node_t* create_leaf(token_t* _token);
-node_t* create_node(char* _label, int _num_children, node_t* child, ...);
-node_t* create_node_with_list(token_t* _token, char* _label, int _num_children, node_t** _children);
+node_t *create_node(char *_label, node_t *_child1, node_t *_child2, node_t *_child3, node_t *_child4);
 void delete_node(node_t* _node);
 node_t* link_nodes(node_t *_node_parent, node_t *_node_child);
 

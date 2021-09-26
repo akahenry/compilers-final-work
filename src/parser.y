@@ -158,7 +158,7 @@ globalidentifier: TK_IDENTIFICADOR
     ;
 
 // REVISAR - declara com dois filhos, um no começo é nulo pra ser preenchido depois (função seguinte na lista de funções)
-funcdec: funcheader commandblock { $$ = create_node($1->text, 2, $2); }
+funcdec: funcheader commandblock { $$ = create_node($1->text, $2, NULL, NULL, NULL); }
     ;
 
 funcheader: type TK_IDENTIFICADOR '(' ')'                       { $$ = $2; }
@@ -245,8 +245,8 @@ argslist: argslist ',' expression
     | expression 
     ;
 
-shiftcommand: varname TK_OC_SL TK_LIT_INT { $$ = create_node($2->text, 3, $1, create_leaf($3)); }
-    | varname TK_OC_SR TK_LIT_INT { $$ = create_node($2->text, 3, $1, create_leaf($3)); }
+shiftcommand: varname TK_OC_SL TK_LIT_INT { $$ = create_node($2->text, $1, create_leaf($3), NULL, NULL); }
+    | varname TK_OC_SR TK_LIT_INT { $$ = create_node($2->text, $1, create_leaf($3), NULL, NULL); }
     ;
 
 return: TK_PR_RETURN expression
@@ -266,19 +266,19 @@ expression: arithmeticexpression    { $$ = $1; } // TODO
     | thernaryoperator              { $$ = NULL; } // TODO
     ;
 
-arithmeticexpression: '+' arithmeticexpression      { $$ = create_node("+", 1, $2); }
-    | '-' arithmeticexpression                      { $$ = create_node("-", 1, $2); }
-    | '*' arithmeticexpression                      { $$ = create_node("*", 1, $2); }
-    | '&' arithmeticexpression                      { $$ = create_node("&", 1, $2); }
-    | '#' arithmeticexpression                      { $$ = create_node("#", 1, $2); }
-    | arithmeticexpression '+' arithmeticexpression { $$ = create_node("+", 2, $1, $3); }
-    | arithmeticexpression '-' arithmeticexpression { $$ = create_node("-", 2, $1, $3); }
-    | arithmeticexpression '*' arithmeticexpression { $$ = create_node("*", 2, $1, $3); }
-    | arithmeticexpression '/' arithmeticexpression { $$ = create_node("/", 2, $1, $3); }
-    | arithmeticexpression '%' arithmeticexpression { $$ = create_node("%", 2, $1, $3); }
-    | arithmeticexpression '|' arithmeticexpression { $$ = create_node("|", 2, $1, $3); }
-    | arithmeticexpression '&' arithmeticexpression { $$ = create_node("&", 2, $1, $3); }
-    | arithmeticexpression '^' arithmeticexpression { $$ = create_node("^", 2, $1, $3); }
+arithmeticexpression: '+' arithmeticexpression      { $$ = create_node("+", $2, NULL, NULL, NULL); }
+    | '-' arithmeticexpression                      { $$ = create_node("-", $2, NULL, NULL, NULL); }
+    | '*' arithmeticexpression                      { $$ = create_node("*", $2, NULL, NULL, NULL); }
+    | '&' arithmeticexpression                      { $$ = create_node("&", $2, NULL, NULL, NULL); }
+    | '#' arithmeticexpression                      { $$ = create_node("#", $2, NULL, NULL, NULL); }
+    | arithmeticexpression '+' arithmeticexpression { $$ = create_node("+", $1, $3, NULL, NULL); }
+    | arithmeticexpression '-' arithmeticexpression { $$ = create_node("-", $1, $3, NULL, NULL); }
+    | arithmeticexpression '*' arithmeticexpression { $$ = create_node("*", $1, $3, NULL, NULL); }
+    | arithmeticexpression '/' arithmeticexpression { $$ = create_node("/", $1, $3, NULL, NULL); }
+    | arithmeticexpression '%' arithmeticexpression { $$ = create_node("%", $1, $3, NULL, NULL); }
+    | arithmeticexpression '|' arithmeticexpression { $$ = create_node("|", $1, $3, NULL, NULL); }
+    | arithmeticexpression '&' arithmeticexpression { $$ = create_node("&", $1, $3, NULL, NULL); }
+    | arithmeticexpression '^' arithmeticexpression { $$ = create_node("^", $1, $3, NULL, NULL); }
     | TK_LIT_INT                                    { $$ = create_leaf($1); }
     | TK_LIT_FLOAT                                  { $$ = create_leaf($1); }
     | varname                                       { $$ = $1; }
@@ -312,7 +312,7 @@ thernaryoperator: expression '?' expression ':' expression
     ;
 
 varname: TK_IDENTIFICADOR                   { $$ = create_leaf($1); }
-    | TK_IDENTIFICADOR '[' expression ']'   { $$ = create_node("[]", 2, create_leaf($1), $3); }
+    | TK_IDENTIFICADOR '[' expression ']'   { $$ = create_node("[]", create_leaf($1), $3, NULL, NULL); }
     ;
 
 %%
