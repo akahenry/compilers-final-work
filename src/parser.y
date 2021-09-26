@@ -75,11 +75,11 @@ int yyerror (char const *s);
 %left TK_OC_AND
 %left '|'
 %left '^'
-%left '&'
 %left TK_OC_EQ TK_OC_NE
 %left '<' '>' TK_OC_GE TK_OC_LE
 %left '-' '+'
 %left '*' '/' '%'
+%left '&'
 %right '#' '!'
 
 %type <valor_lexico> funcheader 
