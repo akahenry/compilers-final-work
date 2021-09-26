@@ -59,8 +59,8 @@ int yyerror (char const *s);
 %token TK_OC_NE         // !=
 %token TK_OC_AND        // &&
 %token TK_OC_OR         // ||
-%token TK_OC_SL         // >>
-%token TK_OC_SR         // <<
+%token <valor_lexico> TK_OC_SL         // >>
+%token <valor_lexico> TK_OC_SR         // <<
 %token <valor_lexico> TK_LIT_INT       // 3
 %token <valor_lexico> TK_LIT_FLOAT     // 3.7
 %token <valor_lexico> TK_LIT_FALSE     // false
@@ -89,12 +89,12 @@ int yyerror (char const *s);
 // %type <node> globalidentifierslist
 // %type <node> globalidentifier
 %type <node> funcdec
-%type <valor_lexico> funcheader
+%type <valor_lexico> funcheader // REVISAR essa definição de tipo
 // %type <node> parameterslist
 // %type <node> parameter
 %type <node> commandblock
-// %type <node> commandssequence
-// %type <node> command
+%type <node> commandssequence
+%type <node> command
 // %type <node> localvardec
 // %type <node> localidentifierslist
 // %type <node> localidentifier
@@ -106,16 +106,15 @@ int yyerror (char const *s);
 // %type <node> output
 // %type <node> funccall
 // %type <node> argslist
-// %type <node> shiftcommand
-// %type <node> shift
+%type <node> shiftcommand
 // %type <node> return
 // %type <node> controlflowcommand
 // %type <node> if
-// %type <node> expression
-// %type <node> arithmeticexpression
+%type <node> expression
+%type <node> arithmeticexpression
 // %type <node> logicexpression
 // %type <node> thernaryoperator
-// %type <node> varname
+%type <node> varname
 
 %%
 
@@ -158,8 +157,8 @@ globalidentifier: TK_IDENTIFICADOR
     | TK_IDENTIFICADOR '[' TK_LIT_INT ']'
     ;
 
-// REVISAR: declara com dois filhos, um no começo é nulo pra ser preenchido depois (função seguinte na lista de funções)
-funcdec: funcheader commandblock { $$ = create_node($1, 2, $2); }
+// REVISAR - declara com dois filhos, um no começo é nulo pra ser preenchido depois (função seguinte na lista de funções)
+funcdec: funcheader commandblock { $$ = create_node($1->text, 2, $2); }
     ;
 
 funcheader: type TK_IDENTIFICADOR '(' ')'                       { $$ = $2; }
@@ -179,24 +178,24 @@ parameter: type TK_IDENTIFICADOR
     ;
 
 commandblock: '{' '}'           { $$ = NULL; }
-    | '{' commandssequence '}'  { $$ = NULL; } // TODO
+    | '{' commandssequence '}'  { $$ = $2; }
     ;
 
-commandssequence: commandssequence command ';'
-    | command ';'
+commandssequence: command ';' commandssequence  { $$ = link_nodes($1, $3); }
+    | command ';'                               { $$ = $1; }
     ;
 
-command: localvardec
-    | varassignment
-    | input
-    | output
-    | shiftcommand
-    | controlflowcommand
-    | return
-    | TK_PR_BREAK
-    | TK_PR_CONTINUE
-    | commandblock
-    | funccall
+command: localvardec        { $$ = NULL; } // TODO
+    | varassignment         { $$ = NULL; } // TODO
+    | input                 { $$ = NULL; } // TODO
+    | output                { $$ = NULL; } // TODO
+    | shiftcommand          { $$ = $1; }
+    | controlflowcommand    { $$ = NULL; } // TODO
+    | return                { $$ = NULL; } // TODO
+    | TK_PR_BREAK           { $$ = NULL; } // TODO
+    | TK_PR_CONTINUE        { $$ = NULL; } // TODO
+    | commandblock          { $$ = NULL; } // TODO
+    | funccall              { $$ = NULL; } // TODO
     ;
 
 localvardec: type localidentifierslist
@@ -246,11 +245,8 @@ argslist: argslist ',' expression
     | expression 
     ;
 
-shiftcommand: varname shift TK_LIT_INT
-    ;
-
-shift: TK_OC_SL
-    | TK_OC_SR
+shiftcommand: varname TK_OC_SL TK_LIT_INT { $$ = create_node($2->text, 3, $1, create_leaf($3)); }
+    | varname TK_OC_SR TK_LIT_INT { $$ = create_node($2->text, 3, $1, create_leaf($3)); }
     ;
 
 return: TK_PR_RETURN expression
@@ -265,29 +261,29 @@ if: TK_PR_IF '(' expression ')' commandblock
     | TK_PR_IF '(' expression ')' commandblock TK_PR_ELSE commandblock
     ;
 
-expression: arithmeticexpression
-    | logicexpression
-    | thernaryoperator
+expression: arithmeticexpression    { $$ = $1; } // TODO
+    | logicexpression               { $$ = NULL; } // TODO
+    | thernaryoperator              { $$ = NULL; } // TODO
     ;
 
-arithmeticexpression: '+' arithmeticexpression
-    | '-' arithmeticexpression
-    | '*' arithmeticexpression
-    | '&' arithmeticexpression
-    | '#' arithmeticexpression
-    | arithmeticexpression '+' arithmeticexpression
-    | arithmeticexpression '-' arithmeticexpression
-    | arithmeticexpression '*' arithmeticexpression
-    | arithmeticexpression '/' arithmeticexpression
-    | arithmeticexpression '%' arithmeticexpression
-    | arithmeticexpression '|' arithmeticexpression
-    | arithmeticexpression '&' arithmeticexpression
-    | arithmeticexpression '^' arithmeticexpression
-    | TK_LIT_INT
-    | TK_LIT_FLOAT
-    | varname
-    | funccall
-    | '(' arithmeticexpression ')'
+arithmeticexpression: '+' arithmeticexpression      { $$ = create_node("+", 1, $2); }
+    | '-' arithmeticexpression                      { $$ = create_node("-", 1, $2); }
+    | '*' arithmeticexpression                      { $$ = create_node("*", 1, $2); }
+    | '&' arithmeticexpression                      { $$ = create_node("&", 1, $2); }
+    | '#' arithmeticexpression                      { $$ = create_node("#", 1, $2); }
+    | arithmeticexpression '+' arithmeticexpression { $$ = create_node("+", 2, $1, $3); }
+    | arithmeticexpression '-' arithmeticexpression { $$ = create_node("-", 2, $1, $3); }
+    | arithmeticexpression '*' arithmeticexpression { $$ = create_node("*", 2, $1, $3); }
+    | arithmeticexpression '/' arithmeticexpression { $$ = create_node("/", 2, $1, $3); }
+    | arithmeticexpression '%' arithmeticexpression { $$ = create_node("%", 2, $1, $3); }
+    | arithmeticexpression '|' arithmeticexpression { $$ = create_node("|", 2, $1, $3); }
+    | arithmeticexpression '&' arithmeticexpression { $$ = create_node("&", 2, $1, $3); }
+    | arithmeticexpression '^' arithmeticexpression { $$ = create_node("^", 2, $1, $3); }
+    | TK_LIT_INT                                    { $$ = create_leaf($1); }
+    | TK_LIT_FLOAT                                  { $$ = create_leaf($1); }
+    | varname                                       { $$ = $1; }
+    | funccall                                      { $$ = NULL; } // TODO
+    | '(' arithmeticexpression ')'                  { $$ = $2; }
     ;
 
 logicexpression: '!' logicexpression
@@ -315,8 +311,8 @@ logicexpression: '!' logicexpression
 thernaryoperator: expression '?' expression ':' expression
     ;
 
-varname: TK_IDENTIFICADOR
-    | TK_IDENTIFICADOR '[' expression ']'
+varname: TK_IDENTIFICADOR                   { $$ = create_leaf($1); }
+    | TK_IDENTIFICADOR '[' expression ']'   { $$ = create_node("[]", 2, create_leaf($1), $3); }
     ;
 
 %%

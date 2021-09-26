@@ -2,15 +2,16 @@
 
 node_t* create_leaf(token_t* _token)
 {
-    printf("%s", _token->text);
-    return create_node_with_list(_token, 0, NULL);
+    return create_node_with_list(_token, _token->text, 0, NULL);
 }
 
-node_t* create_node_with_list(token_t* _token, int _num_children, node_t** _children)
+node_t* create_node_with_list(token_t* _token, char* _label, int _num_children, node_t** _children)
 {
     node_t* result = calloc(1, sizeof(node_t));
 
-    if (_token != NULL)
+    if (_label != NULL)
+        result->label = _label;
+    else if (_token != NULL)
         result->label = _token->text;
     else
         result->label = NULL;
@@ -22,7 +23,7 @@ node_t* create_node_with_list(token_t* _token, int _num_children, node_t** _chil
     return result;
 }
 
-node_t* create_node(token_t* _token, int _num_children, node_t* child, ...)
+node_t* create_node(char* _label, int _num_children, node_t* child, ...)
 {
     va_list ap;
     node_t* i;
@@ -38,7 +39,7 @@ node_t* create_node(token_t* _token, int _num_children, node_t* child, ...)
     }
     va_end(ap);
 
-    return create_node_with_list(_token, _num_children, children);
+    return create_node_with_list(NULL, _label, _num_children, children);
 }
 
 void delete_node(node_t* _node)
@@ -57,9 +58,9 @@ void delete_node(node_t* _node)
     }
 }
 
-node_t* link_nodes(node_t *_node_parent, node_t *_node_child)
+node_t* link_nodes(node_t* _node_parent, node_t* _node_child)
 {
-    // REVISAR linka com o próximo na lista através do ultimo node, que deve ser NULL
+    // REVISAR - linka com o próximo na lista através do ultimo node, que deve ser NULL
     _node_parent->children[_node_parent->num_children-1] = _node_child;
     return _node_parent;
 }
