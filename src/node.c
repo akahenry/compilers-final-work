@@ -2,6 +2,7 @@
 
 node_t* create_leaf(token_t* _token)
 {
+    printf("%s", _token->text);
     return create_node_with_list(_token, 0, NULL);
 }
 
@@ -31,7 +32,7 @@ node_t* create_node(token_t* _token, int _num_children, node_t* child, ...)
     children = calloc(_num_children, sizeof(node_t*));
 
     va_start(ap, child); 
-    for (i = child, count = 0; i != NULL, count < _num_children; i = va_arg(ap, node_t*), count++)
+    for (i = child, count = 0; count < _num_children; i = va_arg(ap, node_t*), count++)
     {
         children[count] = i;
     }
@@ -54,4 +55,11 @@ void delete_node(node_t* _node)
         }
         free(_node);
     }
+}
+
+node_t* link_nodes(node_t *_node_parent, node_t *_node_child)
+{
+    // REVISAR linka com o próximo na lista através do ultimo node, que deve ser NULL
+    _node_parent->children[_node_parent->num_children-1] = _node_child;
+    return _node_parent;
 }

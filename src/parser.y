@@ -83,56 +83,64 @@ int yyerror (char const *s);
 %right '#' '!'
 
 %type <node> initial
-/*%type <node> program
-%type <node> globalvardec
-%type <node> type
-%type <node> globalidentifierslist
-%type <node> globalidentifier
+%type <node> program
+// %type <node> globalvardec
+// %type <node> type
+// %type <node> globalidentifierslist
+// %type <node> globalidentifier
 %type <node> funcdec
-%type <node> funcheader
-%type <node> parameterslist
-%type <node> parameter
+%type <valor_lexico> funcheader
+// %type <node> parameterslist
+// %type <node> parameter
 %type <node> commandblock
-%type <node> commandssequence
-%type <node> command
-%type <node> localvardec
-%type <node> localidentifierslist
-%type <node> localidentifier
-*/
+// %type <node> commandssequence
+// %type <node> command
+// %type <node> localvardec
+// %type <node> localidentifierslist
+// %type <node> localidentifier
 %type <node> literal
 %type <node> literalnumber
 %type <node> literalboolean
-/*
-%type <node> varassignment
-%type <node> input
-%type <node> output
-%type <node> funccall
-%type <node> argslist
-%type <node> shiftcommand
-%type <node> shift
-%type <node> return
-%type <node> controlflowcommand
-%type <node> if
-%type <node> expression
-%type <node> arithmeticexpression
-%type <node> logicexpression
-%type <node> thernaryoperator
-%type <node> varname */
+// %type <node> varassignment
+// %type <node> input
+// %type <node> output
+// %type <node> funccall
+// %type <node> argslist
+// %type <node> shiftcommand
+// %type <node> shift
+// %type <node> return
+// %type <node> controlflowcommand
+// %type <node> if
+// %type <node> expression
+// %type <node> arithmeticexpression
+// %type <node> logicexpression
+// %type <node> thernaryoperator
+// %type <node> varname
 
 %%
 
-initial: program { arvore = (void*)$$; }
+// REVISAR: nodos que deveriam ter um filho mas não tem (e.g. função sem comandos),
+// botei pra não printar esse "filho" que na verdade é NULL 
+
+// Produções marcadas com * não precisam de regras semanticas por não terem nada a adicionar na arvore
+
+initial: program
+{
+    $$ = $1;
+    arvore = (void*)$$;
+};
+
+program: %empty             { $$ = NULL; }
+    | globalvardec program  { $$ = $2; }
+    | funcdec program       { $$ = link_nodes($1, $2); }
     ;
 
-program: %empty 
-    | globalvardec program
-    | funcdec program
-    ;
-
+// *
 globalvardec: type globalidentifierslist ';'
     | TK_PR_STATIC type globalidentifierslist ';'
     ;
 
+// *
 type: TK_PR_INT
     | TK_PR_FLOAT
     | TK_PR_BOOL
@@ -140,33 +148,38 @@ type: TK_PR_INT
     | TK_PR_STRING
     ;
 
+// *
 globalidentifierslist: globalidentifierslist ',' globalidentifier
     | globalidentifier
     ;
 
+// *
 globalidentifier: TK_IDENTIFICADOR
     | TK_IDENTIFICADOR '[' TK_LIT_INT ']'
     ;
 
-funcdec: funcheader commandblock
+// REVISAR: declara com dois filhos, um no começo é nulo pra ser preenchido depois (função seguinte na lista de funções)
+funcdec: funcheader commandblock { $$ = create_node($1, 2, $2); }
     ;
 
-funcheader: type TK_IDENTIFICADOR '(' ')'
-    | TK_PR_STATIC type TK_IDENTIFICADOR '(' ')'
-    | type TK_IDENTIFICADOR '(' parameterslist ')'
-    | TK_PR_STATIC type TK_IDENTIFICADOR '(' parameterslist ')'
+funcheader: type TK_IDENTIFICADOR '(' ')'                       { $$ = $2; }
+    | TK_PR_STATIC type TK_IDENTIFICADOR '(' ')'                { $$ = $3; }
+    | type TK_IDENTIFICADOR '(' parameterslist ')'              { $$ = $2; }
+    | TK_PR_STATIC type TK_IDENTIFICADOR '(' parameterslist ')' { $$ = $3; }
     ;
 
+// *
 parameterslist: parameterslist ',' parameter
     | parameter
     ;
 
+// *
 parameter: type TK_IDENTIFICADOR
     | TK_PR_CONST type TK_IDENTIFICADOR
     ;
 
-commandblock: '{' '}'
-    | '{' commandssequence '}'
+commandblock: '{' '}'           { $$ = NULL; }
+    | '{' commandssequence '}'  { $$ = NULL; } // TODO
     ;
 
 commandssequence: commandssequence command ';'

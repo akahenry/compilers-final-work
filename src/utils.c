@@ -40,8 +40,11 @@ void exporta(void* tree)
 
     for (int i = 0; i < node_ptr->num_children; i++)
     {
-        printf("%p, %p\n", node_ptr, node_ptr->children[i]);
-        exporta(node_ptr->children[i]);
+        if (node_ptr->children[i] != NULL)
+        {
+            printf("%p, %p\n", node_ptr, node_ptr->children[i]);
+            exporta(node_ptr->children[i]);
+        }
     }
 }
 
