@@ -11,12 +11,21 @@ Grupo D
 #include <stdarg.h>
 #include <string.h>
 
-#include "token.h"
+#include "utils.h"
 
 typedef struct _token_t token_t;
 
+typedef enum _node_type_t {
+    NODE_TYPE_INT,
+    NODE_TYPE_FLOAT,
+    NODE_TYPE_BOOL,
+    NODE_TYPE_CHAR,
+    NODE_TYPE_STRING
+} node_type_t;
+
 typedef struct _node_t{
     char* label;
+    node_type_t type;
     token_t* token;
     struct _node_t* child1;
     struct _node_t* child2;

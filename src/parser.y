@@ -7,8 +7,7 @@ Grupo D
 %{
 #include <stdio.h>
 #include <stdlib.h>
-#include "node.h"
-#include "token.h"
+#include "utils.h"
 
 #define YYERROR_VERBOSE 1
 
