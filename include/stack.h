@@ -22,8 +22,8 @@ stack_item_t* new_stack_item(void* value);
 
 stack_t* start_stack();
 void stack_push(stack_t* s, void* value);
-stack_item_t* stack_pop(stack_t* s);
-stack_item_t* stack_get(stack_t* s);
+void* stack_pop(stack_t* s);
+void* stack_get(stack_t* s);
 int is_empty_stack(stack_t* s);
 void clear_stack(stack_t* s);
 

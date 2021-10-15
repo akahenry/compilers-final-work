@@ -7,6 +7,7 @@ Grupo D
 #define HASH_H
 
 #include <stdlib.h>
+#include <stdio.h>
 
 typedef enum _hash_error_t
 {
@@ -26,5 +27,6 @@ void hash_destroy(hash_table_t* table);
 hash_error_t hash_add(hash_table_t* table, char* key, void* value);
 hash_error_t hash_remove(hash_table_t* table, char* key);
 void* hash_get(hash_table_t* table, char* key);
+void hash_print(hash_table_t* table);
 
 #endif

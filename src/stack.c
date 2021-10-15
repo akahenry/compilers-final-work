@@ -38,23 +38,28 @@ void stack_push(stack_t* s, void* value)
 	s->begin = new_item;
 }
 
-stack_item_t* stack_pop(stack_t* s) 
+void* stack_pop(stack_t* s) 
 {
 	if(s->begin == NULL)
 		return NULL;
 
 	stack_item_t* i = s->begin;
+	void* response = s->begin->value;
 	s->begin = s->begin->next;
 
 	if(s->begin == NULL)
 		s->end = NULL;
 
-	return i;
+	free(i);
+	return response;
 }
 
-stack_item_t* stack_get(stack_t* s)
+void* stack_get(stack_t* s)
 {
-	return s->begin;
+	if (s->begin == NULL)
+		return NULL;
+
+	return s->begin->value;
 }
 
 int is_empty_stack(stack_t* s) 
