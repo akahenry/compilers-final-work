@@ -79,7 +79,8 @@ void hash_print(hash_table_t* table)
     {
         for (size_t i = 0; i < table->size; i++)
         {
-            printf("Key: %ld, Value: %p\n", i, table->items[i]);
+            if (table->items[i] != NULL)
+                printf("Key: %ld, Value: %p\n", i, table->items[i]);
         }
     }
 }

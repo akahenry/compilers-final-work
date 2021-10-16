@@ -40,12 +40,12 @@ symbol_item_t* symbol_table_get_symbol(symbol_table_t* table, char* key)
     symbol_item_t* item = NULL;
     if (table != NULL)
     {
-        queue_t* queue = queue_create();
+        stack_t* stack = stack_create();
 
         while(!stack_empty(table->scopes))
         {
             hash_table_t* scope = (hash_table_t*)stack_pop(table->scopes);
-            queue_push(queue, (void*)scope);
+            stack_push(stack, (void*)scope);
             item = hash_get(scope, key);
             if (item != NULL)
             {
@@ -53,11 +53,11 @@ symbol_item_t* symbol_table_get_symbol(symbol_table_t* table, char* key)
             }
         }
 
-        while (!queue_empty(queue))
+        while (!stack_empty(stack))
         {
-            stack_push(table->scopes, queue_pop(queue));
+            stack_push(table->scopes, stack_pop(stack));
         }
-        queue_destroy(queue);
+        stack_destroy(stack);
     }
 
     return item;
@@ -88,6 +88,30 @@ void symbol_table_close_scope(symbol_table_t* table)
             hash_destroy(scope);
             table->size--;
         }
+    }
+}
+
+void symbol_table_print(symbol_table_t* table)
+{
+    if (table != NULL)
+    {
+        stack_t* stack = stack_create();
+        int scope_number = 0;
+        while(!stack_empty(table->scopes))
+        {
+            hash_table_t* scope = (hash_table_t*)stack_pop(table->scopes);
+            stack_push(stack, (void*)scope);
+            printf("Scope %d\n", scope_number);
+            hash_print(scope);
+            scope_number++;
+        }
+        printf("\n");
+
+        while (!stack_empty(stack))
+        {
+            stack_push(table->scopes, stack_pop(stack));
+        }
+        stack_destroy(stack);
     }
 }
 

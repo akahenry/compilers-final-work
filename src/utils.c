@@ -42,6 +42,14 @@ void create_symbol_table()
     }
 }
 
+void print_symbol_table()
+{
+    if (symbol_table != NULL)
+    {
+        symbol_table_print(symbol_table);
+    }
+}
+
 void open_scope()
 {
     create_symbol_table();
@@ -56,15 +64,11 @@ void close_scope()
     symbol_table_close_scope(symbol_table);
 }
 
-void add_symbol(char* key, node_t* node)
+void add_symbol_from_node(char* key, node_t* node)
 {
     if (node != NULL && node->token != NULL)
     {
-        if (symbol_table == NULL)
-            create_symbol_table();
-
         symbol_type_t s_type;
-        size_t size;
         switch (node->token->type)
         {
         case TOKEN_TYPE_IDENTIFIER:
@@ -81,8 +85,22 @@ void add_symbol(char* key, node_t* node)
             s_type = (symbol_type_t)node->token->type;
             break;
         }
+        add_symbol(key, node->token, s_type, (symbol_datatype_t)node->type);
+    }
+}
 
-        switch (node->type)
+void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t datatype)
+{
+    if (token != NULL)
+    {
+        if (symbol_table == NULL)
+        {
+            create_symbol_table();
+        }
+
+        size_t size;
+
+        switch (type)
         {
             case NODE_TYPE_INT:
                 size = 4;
@@ -97,14 +115,14 @@ void add_symbol(char* key, node_t* node)
                 size = 1;
                 break;
             case NODE_TYPE_STRING:
-                size = strlen(node->token->value.v_string) + 1;
+                size = strlen(token->value.v_string) + 1;
                 break;
             default:
                 break;
         }
 
-        symbol_table_add_symbol(symbol_table, key, node->token->line, s_type, (symbol_datatype_t)node->type, size, node->token);
-    }    
+        symbol_table_add_symbol(symbol_table, key, token->line, type, datatype, size, token);
+    }
 }
 
 void push_token_queue(void* token)

@@ -8,7 +8,6 @@ Grupo D
 
 #include "hash.h"
 #include "stack.h"
-#include "queue.h"
 #include "token.h"
 
 #define SCOPE_TABLE_SIZE 1024
@@ -54,6 +53,7 @@ symbol_error_t symbol_table_add_symbol(symbol_table_t* table, char* key, int lin
 symbol_item_t* symbol_table_get_symbol(symbol_table_t* table, char* key);
 void symbol_table_open_scope(symbol_table_t* table);
 void symbol_table_close_scope(symbol_table_t* table);
+void symbol_table_print(symbol_table_t* table);
 void symbol_table_destroy(symbol_table_t* table);
 
 #endif

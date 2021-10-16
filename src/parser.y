@@ -16,6 +16,8 @@ extern void* arvore;
 
 int yylex(void);
 int yyerror (char const *s);
+
+symbol_datatype_t current_type;
 %}
 
 %define parse.error verbose
@@ -114,8 +116,8 @@ int yyerror (char const *s);
 %%
 
 // TODO de analise sintatica:
-// criar e destruir escopo
-// adicionar simbolos na tabela de simbolos
+// [x] criar e destruir escopo
+// [ ] adicionar simbolos na tabela de simbolos
 //      localização
 //      natureza
 //      tipo
@@ -123,31 +125,31 @@ int yyerror (char const *s);
 //      argumentos e tipos
 //      valor do token (yylval)
 // declaracoes:
-//      erro na dupla declaração no mesmo escopo                            ERR_DECLARED
-//      erro no uso sem declaração em escopos superiores                    ERR_UNDECLARED
-//      erro na declaração de vetor de string                               ERR_STRING_VECTOR
+//      [ ] erro na dupla declaração no mesmo escopo                            ERR_DECLARED
+//      [ ] erro no uso sem declaração em escopos superiores                    ERR_UNDECLARED
+//      [ ] erro na declaração de vetor de string                               ERR_STRING_VECTOR
 // uso de identificadores:
-//      erro vetor sendo usado como função ou variavel                      ERR_VECTOR
+//      [ ] erro vetor sendo usado como função ou variavel                      ERR_VECTOR
 //      (deve ser usado com indexação)
-//      erro função sendo usada como vetor ou variavel                      ERR_FUNCTION
+//      [ ] erro função sendo usada como vetor ou variavel                      ERR_FUNCTION
 //      (deve ser usada com parentesis e args)
-//      erro variavel sendo usada como vetor ou função                      ERR_VARIABLE
+//      [ ] erro variavel sendo usada como vetor ou função                      ERR_VARIABLE
 //      (deve ser usado sem nada)
-// tipo do token é herdado pelo nó (conversão implicita e inferencia)
+// [ ] tipo do token é herdado pelo nó (conversão implicita e inferencia)
 //      erro na conversão implicita (coerção) de string e char:
-//          char para algo                                                  ERR_CHAR_TO_X
-//          string para algo                                                ERR_STRING_TO_X
+//          [ ] char para algo                                                  ERR_CHAR_TO_X
+//          [ ] string para algo                                                ERR_STRING_TO_X
 // argumentos compativeis com declaração de função:
-//      erro no uso com menos argumentos                                    ERR_MISSING_ARGS
-//      erro no uso com mais argumentos                                     ERR_EXCESS_ARGS
-//      erro no uso com argumentos de tipos errados                         ERR_WRONG_TYPE_ARGS
-// erro quando argumentos, retorno e parametros de funções são string       ERR_FUNCTION_STRING
-// erro na atribuição de um valor de um tipo para variavel de outro         ERR_WRONG_TYPE
+//      [ ] erro no uso com menos argumentos                                    ERR_MISSING_ARGS
+//      [ ] erro no uso com mais argumentos                                     ERR_EXCESS_ARGS
+//      [ ] erro no uso com argumentos de tipos errados                         ERR_WRONG_TYPE_ARGS
+// [ ] erro quando argumentos, retorno e parametros de funções são string       ERR_FUNCTION_STRING
+// [ ] erro na atribuição de um valor de um tipo para variavel de outro         ERR_WRONG_TYPE
 // input e output só aceitam int e float:
-//      erro se tipo no input não é int ou float                            ERR_WRONG_PAR_INPUT
-//      erro se tipo no output não é int ou float                           ERR_WRONG_PAR_OUTPUT
-// erro se o numero de shift for maior que 16                               ERR_WRONG_PAR_SHIFT
-// erro se a atribuição de string for maior que o tamanho max declarado     ERR_STRING_MAX
+//      [ ] erro se tipo no input não é int ou float                            ERR_WRONG_PAR_INPUT
+//      [ ] erro se tipo no output não é int ou float                           ERR_WRONG_PAR_OUTPUT
+// [ ] erro se o numero de shift for maior que 16                               ERR_WRONG_PAR_SHIFT
+// [ ] erro se a atribuição de string for maior que o tamanho max declarado     ERR_STRING_MAX
 
 // conversões implícitas
 //      int -> float | bool
@@ -176,6 +178,8 @@ initial: program
 {
     $$ = $1;
     arvore = (void*)$$;
+    printf("PROGRAMA: \n");
+    print_symbol_table();
 };
 
 program: %empty             { $$ = NULL; }
@@ -187,11 +191,11 @@ globalvardec: type globalidentifierslist ';'
     | TK_PR_STATIC type globalidentifierslist ';'
     ;
 
-type: TK_PR_INT
-    | TK_PR_FLOAT
-    | TK_PR_BOOL
-    | TK_PR_CHAR
-    | TK_PR_STRING
+type: TK_PR_INT     { current_type = SYMBOL_DATATYPE_INT; }
+    | TK_PR_FLOAT   { current_type = SYMBOL_DATATYPE_FLOAT; }
+    | TK_PR_BOOL    { current_type = SYMBOL_DATATYPE_BOOL; }
+    | TK_PR_CHAR    { current_type = SYMBOL_DATATYPE_CHAR; }
+    | TK_PR_STRING  { current_type = SYMBOL_DATATYPE_STRING; }
     ;
 
 globalidentifierslist: globalidentifierslist ',' globalidentifier
@@ -199,6 +203,10 @@ globalidentifierslist: globalidentifierslist ',' globalidentifier
     ;
 
 globalidentifier: TK_IDENTIFICADOR
+    {
+        printf("Identificador %s, Tipo: %d\n", $1->text, (int)current_type);
+        add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type);
+    }
     | TK_IDENTIFICADOR '[' TK_LIT_INT ']'
     ;
 
@@ -219,12 +227,21 @@ parameter: type TK_IDENTIFICADOR
     | TK_PR_CONST type TK_IDENTIFICADOR
     ;
 
-commandblock: '{' '}'           { $$ = NULL; }
-    | '{' commandssequence '}'  { $$ = $2; }
+commandblock: openscope closescope           { $$ = NULL; }
+    | openscope commandssequence closescope
+        {
+            $$ = $2;
+        }
+    ;
+
+openscope: '{' { open_scope(); }
+    ;
+
+closescope: '}' { printf("\nBLOCO DE COMANDO: \n"); print_symbol_table(); close_scope(); }
     ;
 
 commandssequence: command ';' commandssequence { if ($1 != NULL) { $$ = node_link($1, $3); } else { $$ = $3; }; }
-    | command ';'                               { $$ = $1; }
+    | command ';' { $$ = $1; }
     ;
 
 command: localvardec        { $$ = $1; }
