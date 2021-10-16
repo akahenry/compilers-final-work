@@ -34,9 +34,9 @@ typedef struct _node_t{
     struct _node_t* child5;
 } node_t;
 
-node_t* create_leaf(token_t* _token);
-node_t *create_node(char *_label, node_t *_child1, node_t *_child2, node_t *_child3, node_t *_child4, node_t *_child5);
-void delete_node(node_t* _node);
-node_t* link_nodes(node_t *_node_parent, node_t *_node_child);
+node_t* node_create_leaf(token_t* _token);
+node_t *node_create(char *_label, node_t *_child1, node_t *_child2, node_t *_child3, node_t *_child4, node_t *_child5);
+void node_destroy(node_t* _node);
+node_t* node_link(node_t *_node_parent, node_t *_node_child);
 
 #endif

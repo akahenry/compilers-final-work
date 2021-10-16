@@ -180,7 +180,7 @@ initial: program
 
 program: %empty             { $$ = NULL; }
     | globalvardec program  { $$ = $2; }
-    | funcdec program       { if ($1 != NULL) { $$ = link_nodes($1, $2); } else { $$ = $2; }; }
+    | funcdec program       { if ($1 != NULL) { $$ = node_link($1, $2); } else { $$ = $2; }; }
     ;
 
 globalvardec: type globalidentifierslist ';'
@@ -202,7 +202,7 @@ globalidentifier: TK_IDENTIFICADOR
     | TK_IDENTIFICADOR '[' TK_LIT_INT ']'
     ;
 
-funcdec: funcheader commandblock { $$ = create_node($1->text, $2, NULL, NULL, NULL, NULL); }
+funcdec: funcheader commandblock { $$ = node_create($1->text, $2, NULL, NULL, NULL, NULL); }
     ;
 
 funcheader: type TK_IDENTIFICADOR '(' ')'                       { $$ = $2; }
@@ -223,7 +223,7 @@ commandblock: '{' '}'           { $$ = NULL; }
     | '{' commandssequence '}'  { $$ = $2; }
     ;
 
-commandssequence: command ';' commandssequence { if ($1 != NULL) { $$ = link_nodes($1, $3); } else { $$ = $3; }; }
+commandssequence: command ';' commandssequence { if ($1 != NULL) { $$ = node_link($1, $3); } else { $$ = $3; }; }
     | command ';'                               { $$ = $1; }
     ;
 
@@ -234,8 +234,8 @@ command: localvardec        { $$ = $1; }
     | shiftcommand          { $$ = $1; }
     | controlflowcommand    { $$ = $1; }
     | return                { $$ = $1; }
-    | TK_PR_BREAK           { $$ = create_node("break", NULL, NULL, NULL, NULL, NULL); }
-    | TK_PR_CONTINUE        { $$ = create_node("continue", NULL, NULL, NULL, NULL, NULL); }
+    | TK_PR_BREAK           { $$ = node_create("break", NULL, NULL, NULL, NULL, NULL); }
+    | TK_PR_CONTINUE        { $$ = node_create("continue", NULL, NULL, NULL, NULL, NULL); }
     | commandblock          { $$ = $1; }
     | funccall              { $$ = $1; }
     ;
@@ -246,77 +246,77 @@ localvardec: type localidentifierslist { $$ = $2; }
     | TK_PR_CONST type localidentifierslist { $$ = $3; }
     ;
 
-localidentifierslist: localidentifier ',' localidentifierslist { if ($1 != NULL) { $$ = link_nodes($1, $3); } else { $$ = $3; }; }
+localidentifierslist: localidentifier ',' localidentifierslist { if ($1 != NULL) { $$ = node_link($1, $3); } else { $$ = $3; }; }
     | localidentifier { $$ = $1; }
     | localidentifierdeclaration { $$ = $1; }
     | localidentifierdeclaration ',' localidentifierslist { $$ = $3; }
     ;
 
-localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR { $$ = create_node($2->text, create_leaf($1), create_leaf($3), NULL, NULL, NULL); }
-    | TK_IDENTIFICADOR TK_OC_LE literal { $$ = create_node($2->text, create_leaf($1), $3, NULL, NULL, NULL); }
+localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR { $$ = node_create($2->text, node_create_leaf($1), node_create_leaf($3), NULL, NULL, NULL); }
+    | TK_IDENTIFICADOR TK_OC_LE literal { $$ = node_create($2->text, node_create_leaf($1), $3, NULL, NULL, NULL); }
     ;
 
 localidentifierdeclaration: TK_IDENTIFICADOR { $$ = NULL; }
     ;
 
-literal: TK_LIT_CHAR { $$ = create_leaf($1); }
-    | TK_LIT_STRING { $$ = create_leaf($1); }
+literal: TK_LIT_CHAR { $$ = node_create_leaf($1); }
+    | TK_LIT_STRING { $$ = node_create_leaf($1); }
     | literalboolean { $$ = $1; }
     | literalnumber { $$ = $1; }
     ;
 
-literalnumber: TK_LIT_FLOAT { $$ = create_leaf($1); }
-    | TK_LIT_INT { $$ = create_leaf($1); }
+literalnumber: TK_LIT_FLOAT { $$ = node_create_leaf($1); }
+    | TK_LIT_INT { $$ = node_create_leaf($1); }
     ;
 
-literalboolean: TK_LIT_FALSE { $$ = create_leaf($1); }
-    | TK_LIT_TRUE { $$ = create_leaf($1); }
+literalboolean: TK_LIT_FALSE { $$ = node_create_leaf($1); }
+    | TK_LIT_TRUE { $$ = node_create_leaf($1); }
     ;
 
-varassignment: varname '=' expression { $$ = create_node("=", $1, $3, NULL, NULL, NULL); }
+varassignment: varname '=' expression { $$ = node_create("=", $1, $3, NULL, NULL, NULL); }
     ;
 
-input: TK_PR_INPUT TK_IDENTIFICADOR { $$ = create_node("input", create_leaf($2), NULL, NULL, NULL, NULL); }
+input: TK_PR_INPUT TK_IDENTIFICADOR { $$ = node_create("input", node_create_leaf($2), NULL, NULL, NULL, NULL); }
     ;
 
-output: TK_PR_OUTPUT TK_IDENTIFICADOR { $$ = create_node("output", create_leaf($2), NULL, NULL, NULL, NULL); }
-    | TK_PR_OUTPUT literal { $$ = create_node("output", $2, NULL, NULL, NULL, NULL); }
+output: TK_PR_OUTPUT TK_IDENTIFICADOR { $$ = node_create("output", node_create_leaf($2), NULL, NULL, NULL, NULL); }
+    | TK_PR_OUTPUT literal { $$ = node_create("output", $2, NULL, NULL, NULL, NULL); }
     ;
 
 funccall: TK_IDENTIFICADOR '(' ')' 
 { 
     char* label = calloc(strlen($1->text) + strlen("call ") + 1, sizeof(char));
     sprintf(label, "call %s", $1->text);
-    $$ = create_node(label, NULL, NULL, NULL, NULL, NULL);
+    $$ = node_create(label, NULL, NULL, NULL, NULL, NULL);
     free(label);
 }
     | TK_IDENTIFICADOR '(' argslist ')' 
 { 
     char* label = calloc(strlen($1->text) + strlen("call ") + 1, sizeof(char));
     sprintf(label, "call %s", $1->text);
-    $$ = create_node(label, $3, NULL, NULL, NULL, NULL); 
+    $$ = node_create(label, $3, NULL, NULL, NULL, NULL); 
     free(label);
 }
     ;
 
-argslist: expression ',' argslist {  if ($1 != NULL) { $$ = link_nodes($1, $3); } else { $$ = $3; };  }
+argslist: expression ',' argslist {  if ($1 != NULL) { $$ = node_link($1, $3); } else { $$ = $3; };  }
     | expression { $$ = $1; }
     ;
 
-shiftcommand: varname TK_OC_SL TK_LIT_INT { $$ = create_node($2->text, $1, create_leaf($3), NULL, NULL, NULL); }
-    | varname TK_OC_SR TK_LIT_INT { $$ = create_node($2->text, $1, create_leaf($3), NULL, NULL, NULL); }
+shiftcommand: varname TK_OC_SL TK_LIT_INT { $$ = node_create($2->text, $1, node_create_leaf($3), NULL, NULL, NULL); }
+    | varname TK_OC_SR TK_LIT_INT { $$ = node_create($2->text, $1, node_create_leaf($3), NULL, NULL, NULL); }
     ;
 
-return: TK_PR_RETURN expression { $$ = create_node("return", $2, NULL, NULL, NULL, NULL); }
+return: TK_PR_RETURN expression { $$ = node_create("return", $2, NULL, NULL, NULL, NULL); }
     ;
 
 controlflowcommand: if { $$ = $1; }
-    | TK_PR_FOR '(' varassignment ':' expression ':' varassignment ')' commandblock { $$ = create_node("for", $3, $5, $7, $9, NULL); }
-    | TK_PR_WHILE '(' expression ')' TK_PR_DO commandblock { $$ = create_node("while", $3, $6, NULL, NULL, NULL); }
+    | TK_PR_FOR '(' varassignment ':' expression ':' varassignment ')' commandblock { $$ = node_create("for", $3, $5, $7, $9, NULL); }
+    | TK_PR_WHILE '(' expression ')' TK_PR_DO commandblock { $$ = node_create("while", $3, $6, NULL, NULL, NULL); }
     ;
 
-if: TK_PR_IF '(' expression ')' commandblock { $$ = create_node("if", $3, $5, NULL, NULL, NULL); }
-    | TK_PR_IF '(' expression ')' commandblock TK_PR_ELSE commandblock { $$ = create_node("if", $3, $5, $7, NULL, NULL); }
+if: TK_PR_IF '(' expression ')' commandblock { $$ = node_create("if", $3, $5, NULL, NULL, NULL); }
+    | TK_PR_IF '(' expression ')' commandblock TK_PR_ELSE commandblock { $$ = node_create("if", $3, $5, $7, NULL, NULL); }
     ;
 
 expression: arithmeticexpression    { $$ = $1; }
@@ -324,53 +324,53 @@ expression: arithmeticexpression    { $$ = $1; }
     | thernaryoperator              { $$ = $1; }
     ;
 
-arithmeticexpression: '+' arithmeticexpression      { $$ = create_node("+", $2, NULL, NULL, NULL, NULL); }
-    | '-' arithmeticexpression                      { $$ = create_node("-", $2, NULL, NULL, NULL, NULL); }
-    | '*' arithmeticexpression                      { $$ = create_node("*", $2, NULL, NULL, NULL, NULL); }
-    | '&' arithmeticexpression                      { $$ = create_node("&", $2, NULL, NULL, NULL, NULL); }
-    | '#' arithmeticexpression                      { $$ = create_node("#", $2, NULL, NULL, NULL, NULL); }
-    | arithmeticexpression '+' arithmeticexpression { $$ = create_node("+", $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression '-' arithmeticexpression { $$ = create_node("-", $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression '*' arithmeticexpression { $$ = create_node("*", $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression '/' arithmeticexpression { $$ = create_node("/", $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression '%' arithmeticexpression { $$ = create_node("%", $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression '|' arithmeticexpression { $$ = create_node("|", $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression '&' arithmeticexpression { $$ = create_node("&", $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression '^' arithmeticexpression { $$ = create_node("^", $1, $3, NULL, NULL, NULL); }
-    | TK_LIT_INT                                    { $$ = create_leaf($1); }
-    | TK_LIT_FLOAT                                  { $$ = create_leaf($1); }
+arithmeticexpression: '+' arithmeticexpression      { $$ = node_create("+", $2, NULL, NULL, NULL, NULL); }
+    | '-' arithmeticexpression                      { $$ = node_create("-", $2, NULL, NULL, NULL, NULL); }
+    | '*' arithmeticexpression                      { $$ = node_create("*", $2, NULL, NULL, NULL, NULL); }
+    | '&' arithmeticexpression                      { $$ = node_create("&", $2, NULL, NULL, NULL, NULL); }
+    | '#' arithmeticexpression                      { $$ = node_create("#", $2, NULL, NULL, NULL, NULL); }
+    | arithmeticexpression '+' arithmeticexpression { $$ = node_create("+", $1, $3, NULL, NULL, NULL); }
+    | arithmeticexpression '-' arithmeticexpression { $$ = node_create("-", $1, $3, NULL, NULL, NULL); }
+    | arithmeticexpression '*' arithmeticexpression { $$ = node_create("*", $1, $3, NULL, NULL, NULL); }
+    | arithmeticexpression '/' arithmeticexpression { $$ = node_create("/", $1, $3, NULL, NULL, NULL); }
+    | arithmeticexpression '%' arithmeticexpression { $$ = node_create("%", $1, $3, NULL, NULL, NULL); }
+    | arithmeticexpression '|' arithmeticexpression { $$ = node_create("|", $1, $3, NULL, NULL, NULL); }
+    | arithmeticexpression '&' arithmeticexpression { $$ = node_create("&", $1, $3, NULL, NULL, NULL); }
+    | arithmeticexpression '^' arithmeticexpression { $$ = node_create("^", $1, $3, NULL, NULL, NULL); }
+    | TK_LIT_INT                                    { $$ = node_create_leaf($1); }
+    | TK_LIT_FLOAT                                  { $$ = node_create_leaf($1); }
     | varname                                       { $$ = $1; }
     | funccall                                      { $$ = $1; }
     | '(' arithmeticexpression ')'                  { $$ = $2; }
     ;
 
-logicexpression: '!' logicexpression { $$ = create_node("!", $2, NULL, NULL, NULL, NULL); }
-    | '!' varname { $$ = create_node("!", $2, NULL, NULL, NULL, NULL); }
-    | '?' logicexpression { $$ = create_node("?", $2, NULL, NULL, NULL, NULL); }
-    | '?' varname { $$ = create_node("?", $2, NULL, NULL, NULL, NULL); }
-    | arithmeticexpression TK_OC_EQ arithmeticexpression { $$ = create_node($2->text, $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression TK_OC_NE arithmeticexpression { $$ = create_node($2->text, $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression TK_OC_GE arithmeticexpression { $$ = create_node($2->text, $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression TK_OC_LE arithmeticexpression { $$ = create_node($2->text, $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression '>' arithmeticexpression { $$ = create_node(">", $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression '<' arithmeticexpression { $$ = create_node("<", $1, $3, NULL, NULL, NULL); }
-    | logicexpression TK_OC_AND logicexpression { $$ = create_node($2->text, $1, $3, NULL, NULL, NULL); }
-    | varname TK_OC_AND logicexpression { $$ = create_node($2->text, $1, $3, NULL, NULL, NULL); }
-    | logicexpression TK_OC_AND varname { $$ = create_node($2->text, $1, $3, NULL, NULL, NULL); }
-    | varname TK_OC_AND varname { $$ = create_node($2->text, $1, $3, NULL, NULL, NULL); }
-    | logicexpression TK_OC_OR logicexpression { $$ = create_node($2->text, $1, $3, NULL, NULL, NULL); }
-    | varname TK_OC_OR logicexpression { $$ = create_node($2->text, $1, $3, NULL, NULL, NULL); }
-    | logicexpression TK_OC_OR varname { $$ = create_node($2->text, $1, $3, NULL, NULL, NULL); }
-    | varname TK_OC_OR varname { $$ = create_node($2->text, $1, $3, NULL, NULL, NULL); }
-    | TK_LIT_TRUE { $$ = create_leaf($1); }
-    | TK_LIT_FALSE { $$ = create_leaf($1); }
+logicexpression: '!' logicexpression { $$ = node_create("!", $2, NULL, NULL, NULL, NULL); }
+    | '!' varname { $$ = node_create("!", $2, NULL, NULL, NULL, NULL); }
+    | '?' logicexpression { $$ = node_create("?", $2, NULL, NULL, NULL, NULL); }
+    | '?' varname { $$ = node_create("?", $2, NULL, NULL, NULL, NULL); }
+    | arithmeticexpression TK_OC_EQ arithmeticexpression { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
+    | arithmeticexpression TK_OC_NE arithmeticexpression { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
+    | arithmeticexpression TK_OC_GE arithmeticexpression { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
+    | arithmeticexpression TK_OC_LE arithmeticexpression { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
+    | arithmeticexpression '>' arithmeticexpression { $$ = node_create(">", $1, $3, NULL, NULL, NULL); }
+    | arithmeticexpression '<' arithmeticexpression { $$ = node_create("<", $1, $3, NULL, NULL, NULL); }
+    | logicexpression TK_OC_AND logicexpression { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
+    | varname TK_OC_AND logicexpression { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
+    | logicexpression TK_OC_AND varname { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
+    | varname TK_OC_AND varname { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
+    | logicexpression TK_OC_OR logicexpression { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
+    | varname TK_OC_OR logicexpression { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
+    | logicexpression TK_OC_OR varname { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
+    | varname TK_OC_OR varname { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
+    | TK_LIT_TRUE { $$ = node_create_leaf($1); }
+    | TK_LIT_FALSE { $$ = node_create_leaf($1); }
     ;
 
-thernaryoperator: expression '?' expression ':' expression { $$ = create_node("?:", $1, $3, $5, NULL, NULL); }
+thernaryoperator: expression '?' expression ':' expression { $$ = node_create("?:", $1, $3, $5, NULL, NULL); }
     ;
 
-varname: TK_IDENTIFICADOR                   { $$ = create_leaf($1); }
-    | TK_IDENTIFICADOR '[' expression ']'   { $$ = create_node("[]", create_leaf($1), $3, NULL, NULL, NULL); }
+varname: TK_IDENTIFICADOR                   { $$ = node_create_leaf($1); }
+    | TK_IDENTIFICADOR '[' expression ']'   { $$ = node_create("[]", node_create_leaf($1), $3, NULL, NULL, NULL); }
     ;
 
 %%

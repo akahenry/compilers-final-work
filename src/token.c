@@ -5,11 +5,9 @@ Grupo D
 */
 #include "token.h"
 
-token_t* create_token(int _line, token_type_t _type, char* _value)
+token_t* token_create(int _line, token_type_t _type, char* _value)
 {
-	create_token_queue();
     token_t* token = calloc(1, sizeof(token_t));
-	push_token_queue((void*)token);
 
     token->line = _line;
     token->type = _type;
@@ -42,4 +40,17 @@ token_t* create_token(int _line, token_type_t _type, char* _value)
 	}
 
     return token;
+}
+
+void token_destroy(token_t* token)
+{
+	if (token != NULL)
+	{
+		free(token->text);
+		if (token->type == TOKEN_TYPE_IDENTIFIER || token->type == TOKEN_TYPE_LITERAL_STRING)
+		{
+			free(token->value.v_string);
+		}
+		free(token);
+	}
 }

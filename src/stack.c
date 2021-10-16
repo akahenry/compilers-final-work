@@ -5,7 +5,7 @@ Grupo D
 */
 #include "stack.h"
 
-stack_t* start_stack() 
+stack_t* stack_create() 
 {
 	stack_t* s = calloc(1, sizeof(stack_t));
 
@@ -14,7 +14,7 @@ stack_t* start_stack()
 	return s;
 }
 
-stack_item_t* new_stack_item(void* value) 
+stack_item_t* stack_new_item(void* value) 
 {
 	stack_item_t *i = calloc(1, sizeof(stack_item_t));
 
@@ -25,7 +25,7 @@ stack_item_t* new_stack_item(void* value)
 
 void stack_push(stack_t* s, void* value) 
 {
-	stack_item_t* new_item = new_stack_item(value);
+	stack_item_t* new_item = stack_new_item(value);
 
 	if(s->begin == NULL) 
 	{
@@ -62,14 +62,14 @@ void* stack_get(stack_t* s)
 	return s->begin->value;
 }
 
-int is_empty_stack(stack_t* s) 
+int stack_empty(stack_t* s) 
 {
 	if(s->end == NULL && s->begin == NULL)
 		return 1;
 	return 0;
 }
 
-void clear_stack(stack_t* s) 
+void stack_destroy(stack_t* s) 
 {
 	stack_item_t* i = s->begin;
 

@@ -5,7 +5,7 @@ Grupo D
 */
 #include "node.h"
 
-node_t* create_leaf(token_t* _token)
+node_t* node_create_leaf(token_t* _token)
 {
     if (_token != NULL && (_token->type == TOKEN_TYPE_LITERAL_STRING ) || _token->type == TOKEN_TYPE_LITERAL_CHAR)
     {
@@ -17,13 +17,13 @@ node_t* create_leaf(token_t* _token)
             memmove(_token->text, _token->text + 1, len - 1);
         }
     }
-    node_t* node = create_node(_token->text, NULL, NULL, NULL, NULL, NULL);
+    node_t* node = node_create(_token->text, NULL, NULL, NULL, NULL, NULL);
     node->token = _token;
 
     return node;
 }
 
-node_t *create_node(char *_label, node_t *_child1, node_t *_child2, node_t *_child3, node_t *_child4, node_t *_child5)
+node_t *node_create(char *_label, node_t *_child1, node_t *_child2, node_t *_child3, node_t *_child4, node_t *_child5)
 {
     node_t* result = calloc(1, sizeof(node_t));
 
@@ -41,29 +41,29 @@ node_t *create_node(char *_label, node_t *_child1, node_t *_child2, node_t *_chi
     return result;
 }
 
-void delete_node(node_t* _node)
+void node_destroy(node_t* _node)
 {
     if (_node != NULL)
     {
         if (_node->child1 != NULL)
         {
-            delete_node(_node->child1);
+            node_destroy(_node->child1);
         }
         if (_node->child2 != NULL)
         {
-            delete_node(_node->child2);
+            node_destroy(_node->child2);
         }
         if (_node->child3 != NULL)
         {
-            delete_node(_node->child3);
+            node_destroy(_node->child3);
         }
         if (_node->child4 != NULL)
         {
-            delete_node(_node->child4);
+            node_destroy(_node->child4);
         }
         if (_node->child5 != NULL)
         {
-            delete_node(_node->child5);
+            node_destroy(_node->child5);
         }
 
         free(_node->label);
@@ -71,7 +71,7 @@ void delete_node(node_t* _node)
     }
 }
 
-node_t* link_nodes(node_t* _node_parent, node_t* _node_child)
+node_t* node_link(node_t* _node_parent, node_t* _node_child)
 {
     if (_node_parent != NULL)
     {

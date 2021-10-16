@@ -8,9 +8,15 @@ Grupo D
 
 #include "hash.h"
 #include "stack.h"
+#include "queue.h"
 #include "token.h"
 
 #define SCOPE_TABLE_SIZE 1024
+
+typedef enum _symbol_error_t {
+    SYMBOL_NO_ERROR,
+    SYMBOL_ERROR_KEY_ALREADY_EXISTS
+} symbol_error_t;
 
 typedef enum _symbol_datatype_t {
     SYMBOL_DATATYPE_INT,
@@ -44,8 +50,8 @@ typedef struct _symbol_table_t {
 } symbol_table_t;
 
 symbol_table_t* symbol_table_create();
-void symbol_table_add_symbol(symbol_table_t* table, char* key, int line_number, symbol_type_t type, symbol_datatype_t datatype, size_t size, token_t* token);
-void symbol_table_get_symbol(symbol_table_t* table, char* key);
+symbol_error_t symbol_table_add_symbol(symbol_table_t* table, char* key, int line_number, symbol_type_t type, symbol_datatype_t datatype, size_t size, token_t* token);
+symbol_item_t* symbol_table_get_symbol(symbol_table_t* table, char* key);
 void symbol_table_open_scope(symbol_table_t* table);
 void symbol_table_close_scope(symbol_table_t* table);
 void symbol_table_destroy(symbol_table_t* table);

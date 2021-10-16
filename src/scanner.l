@@ -66,49 +66,49 @@ string \".*\"
 "end" { return TK_PR_END; } 
 "default" { return TK_PR_DEFAULT; } 
 
-"," { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)','; }
-";" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)';'; } 
-":" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)':'; } 
-"(" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'('; } 
-")" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)')'; } 
-"[" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'['; } 
-"]" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)']'; } 
-"{" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'{'; }
-"}" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'}'; } 
-"+" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'+'; } 
-"-" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'-'; } 
-"|" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'|'; }
-"*" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'*'; } 
-"/" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'/'; } 
-"<" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'<'; } 
-">" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'>'; } 
-"=" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'='; } 
-"!" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'!'; } 
-"&" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'&'; } 
-"%" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'%'; } 
-"#" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'#'; } 
-"^" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'^'; }
-"." { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'.'; } 
-"$" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'$'; }
-"?" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'?'; }
+"," { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)','; }
+";" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)';'; } 
+":" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)':'; } 
+"(" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'('; } 
+")" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)')'; } 
+"[" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'['; } 
+"]" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)']'; } 
+"{" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'{'; }
+"}" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'}'; } 
+"+" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'+'; } 
+"-" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'-'; } 
+"|" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'|'; }
+"*" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'*'; } 
+"/" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'/'; } 
+"<" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'<'; } 
+">" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'>'; } 
+"=" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'='; } 
+"!" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'!'; } 
+"&" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'&'; } 
+"%" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'%'; } 
+"#" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'#'; } 
+"^" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'^'; }
+"." { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'.'; } 
+"$" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'$'; }
+"?" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_SPECIAL_CHARACTER, yytext); return (int)'?'; }
 
-"<=" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_COMPOSITE_OPERATOR, yytext); return TK_OC_LE; }
-">=" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_COMPOSITE_OPERATOR, yytext); return TK_OC_GE; }
-"==" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_COMPOSITE_OPERATOR, yytext); return TK_OC_EQ; }
-"!=" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_COMPOSITE_OPERATOR, yytext); return TK_OC_NE; }
-"&&" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_COMPOSITE_OPERATOR, yytext); return TK_OC_AND; }
-"||" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_COMPOSITE_OPERATOR, yytext); return TK_OC_OR; }
-">>" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_COMPOSITE_OPERATOR, yytext); return TK_OC_SL; }
-"<<" { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_COMPOSITE_OPERATOR, yytext); return TK_OC_SR; }
+"<=" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_COMPOSITE_OPERATOR, yytext); return TK_OC_LE; }
+">=" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_COMPOSITE_OPERATOR, yytext); return TK_OC_GE; }
+"==" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_COMPOSITE_OPERATOR, yytext); return TK_OC_EQ; }
+"!=" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_COMPOSITE_OPERATOR, yytext); return TK_OC_NE; }
+"&&" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_COMPOSITE_OPERATOR, yytext); return TK_OC_AND; }
+"||" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_COMPOSITE_OPERATOR, yytext); return TK_OC_OR; }
+">>" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_COMPOSITE_OPERATOR, yytext); return TK_OC_SL; }
+"<<" { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_COMPOSITE_OPERATOR, yytext); return TK_OC_SR; }
 
-{int} { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_LITERAL_INT, yytext); return TK_LIT_INT; }
-{float} { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_LITERAL_FLOAT, yytext); return TK_LIT_FLOAT; }
-{false} { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_LITERAL_BOOL, yytext); return TK_LIT_FALSE; }
-{true} { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_LITERAL_BOOL, yytext); return TK_LIT_TRUE; }
-{char} { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_LITERAL_CHAR, yytext); return TK_LIT_CHAR; }
-{string} { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_LITERAL_STRING, yytext); return TK_LIT_STRING; }
+{int} { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_LITERAL_INT, yytext); return TK_LIT_INT; }
+{float} { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_LITERAL_FLOAT, yytext); return TK_LIT_FLOAT; }
+{false} { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_LITERAL_BOOL, yytext); return TK_LIT_FALSE; }
+{true} { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_LITERAL_BOOL, yytext); return TK_LIT_TRUE; }
+{char} { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_LITERAL_CHAR, yytext); return TK_LIT_CHAR; }
+{string} { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_LITERAL_STRING, yytext); return TK_LIT_STRING; }
 
-{identifier} { yylval.valor_lexico = create_token(num_lines, TOKEN_TYPE_IDENTIFIER, yytext); return TK_IDENTIFICADOR; }
+{identifier} { yylval.valor_lexico = token_create(num_lines, TOKEN_TYPE_IDENTIFIER, yytext); return TK_IDENTIFICADOR; }
 
 {single_comment} { ; }
 {multi_comment} BEGIN(COMMENT);

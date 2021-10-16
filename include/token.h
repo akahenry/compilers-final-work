@@ -10,7 +10,6 @@ Grupo D
 #include <string.h>
 
 #include "utils.h"
-
 typedef union _token_value_t {
     int v_integer;
     float v_float;
@@ -38,6 +37,7 @@ typedef struct _token_t
     char* text;
 } token_t;
 
-token_t* create_token(int _line, token_type_t _type, char* _value);
+token_t* token_create(int _line, token_type_t _type, char* _value);
+void token_destroy(token_t* token);
 
 #endif

@@ -5,7 +5,7 @@ Grupo D
 */
 #include "queue.h"
 
-queue_t* start_queue() 
+queue_t* queue_create() 
 {
 	queue_t* q = calloc(1, sizeof(queue_t));
 
@@ -14,7 +14,7 @@ queue_t* start_queue()
 	return q;
 }
 
-queue_item_t* new_queue_item(void* value) 
+queue_item_t* queue_new_item(void* value) 
 {
 	queue_item_t *i = calloc(1, sizeof(queue_item_t));
 
@@ -25,7 +25,7 @@ queue_item_t* new_queue_item(void* value)
 
 void queue_push(queue_t* q, void* value) 
 {
-	queue_item_t* new_item = new_queue_item(value);
+	queue_item_t* new_item = queue_new_item(value);
 
 	if(q->end == NULL) 
 	{
@@ -38,28 +38,30 @@ void queue_push(queue_t* q, void* value)
 	q->end = new_item;
 }
 
-queue_item_t* queue_pop(queue_t* q) 
+void* queue_pop(queue_t* q) 
 {
 	if(q->begin == NULL)
 		return NULL;
 
 	queue_item_t* i = q->begin;
+	void* response = q->begin->value;
 	q->begin = q->begin->next;
 
 	if(q->begin == NULL)
 		q->end = NULL;
 
-	return i;
+	free(i);
+	return response;
 }
 
-int is_empty_queue(queue_t* q) 
+int queue_empty(queue_t* q) 
 {
 	if(q->end == NULL && q->begin == NULL)
 		return 1;
 	return 0;
 }
 
-void clear_queue(queue_t* q) 
+void queue_destroy(queue_t* q) 
 {
 	queue_item_t* i = q->begin;
 
