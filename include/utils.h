@@ -13,6 +13,7 @@ typedef struct _node_t node_t;
 #include "node.h"
 #include "queue.h"
 #include "symbol_table.h"
+#include "errors.h"
 
 int char_to_bool(char* str);
 void create_token_queue();
@@ -25,7 +26,8 @@ void print_symbol_table();
 void open_scope();
 void close_scope();
 void add_symbol_from_node(char* key, node_t* node);
-void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t datatype);
+void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t datatype, token_t* vector_size_token);
+symbol_item_t* get_symbol(char* key);
 
 void exporta (void *arvore);
 void libera (void *arvore);

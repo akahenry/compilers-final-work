@@ -85,11 +85,11 @@ void add_symbol_from_node(char* key, node_t* node)
             s_type = (symbol_type_t)node->token->type;
             break;
         }
-        add_symbol(key, node->token, s_type, (symbol_datatype_t)node->type);
+        add_symbol(key, node->token, s_type, (symbol_datatype_t)node->type, NULL); // TODO: Verificar se pode ser vetor e setar o ultimo parametro adequadamente nesse caso
     }
 }
 
-void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t datatype)
+void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t datatype, token_t* vector_size_token)
 {
     if (token != NULL)
     {
@@ -98,30 +98,68 @@ void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t
             create_symbol_table();
         }
 
-        size_t size;
+        size_t size = 0;
 
-        switch (type)
+        switch (datatype)
         {
-            case NODE_TYPE_INT:
+            case SYMBOL_DATATYPE_INT:
                 size = 4;
                 break;
-            case NODE_TYPE_FLOAT:
+            case SYMBOL_DATATYPE_FLOAT:
                 size = 8;
                 break;
-            case NODE_TYPE_BOOL:
+            case SYMBOL_DATATYPE_BOOL:
                 size = 1;
                 break;
-            case NODE_TYPE_CHAR:
+            case SYMBOL_DATATYPE_CHAR:
                 size = 1;
                 break;
-            case NODE_TYPE_STRING:
-                size = strlen(token->value.v_string) + 1;
+            case SYMBOL_DATATYPE_STRING:
+                if (type == SYMBOL_TYPE_IDENTIFIER_FUNCTION || type == SYMBOL_TYPE_IDENTIFIER_VARIABLE)
+                {
+                    size = 0; // O tamanho de variáveis do tipo string é definido na inicialização da variável
+                }
+                else if (type == SYMBOL_TYPE_LITERAL_STRING)
+                {
+                    size = strlen(token->value.v_string) + 1;
+                }
                 break;
             default:
                 break;
         }
 
-        symbol_table_add_symbol(symbol_table, key, token->line, type, datatype, size, token);
+        if (vector_size_token != NULL)
+        {
+            if (datatype != SYMBOL_DATATYPE_STRING)
+            {
+                size = size * vector_size_token->value.v_integer;
+            }
+            else
+            {
+                fprintf(stderr, "Semantic Error: vector `%s`, declared on line %d, is of type `string` and vectors cannot be of type `string`", token->text, token->line);
+                exit(ERR_STRING_VECTOR);
+            }
+        }
+
+        if (symbol_table_add_symbol(symbol_table, key, token->line, type, datatype, size, token) == SYMBOL_ERROR_KEY_ALREADY_EXISTS &&
+            type == SYMBOL_TYPE_IDENTIFIER_VARIABLE || type == SYMBOL_TYPE_IDENTIFIER_FUNCTION)
+        {
+            symbol_item_t* declared_symbol = get_symbol(key);
+            fprintf(stderr, "Semantic Error: duplicated identifier `%s` declaration on line %d and %d", key, declared_symbol->line_number, token->line);
+            exit(ERR_DECLARED);
+        }
+    }
+}
+
+symbol_item_t* get_symbol(char* key)
+{
+    if (key != NULL)
+    {
+        return symbol_table_get_symbol(symbol_table, key);
+    }
+    else 
+    {
+        return NULL;
     }
 }
 

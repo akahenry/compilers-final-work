@@ -28,6 +28,7 @@ symbol_error_t symbol_table_add_symbol(symbol_table_t* table, char* key, int lin
             if (hash_add(scope, key, (void*)item) == HASH_ERROR_KEY_ALREADY_EXISTS)
             {
                 response = SYMBOL_ERROR_KEY_ALREADY_EXISTS;
+                free(item);
             }
         }
         stack_push(table->scopes, (void*)scope);

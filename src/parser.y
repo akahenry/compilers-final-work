@@ -126,8 +126,12 @@ symbol_datatype_t current_type;
 //      valor do token (yylval)
 // declaracoes:
 //      [ ] erro na dupla declaração no mesmo escopo                            ERR_DECLARED
+//          [x] declaração global
+//          [ ] declaração local
 //      [ ] erro no uso sem declaração em escopos superiores                    ERR_UNDECLARED
 //      [ ] erro na declaração de vetor de string                               ERR_STRING_VECTOR
+//          [x] declaração global
+//          [ ] declaração local
 // uso de identificadores:
 //      [ ] erro vetor sendo usado como função ou variavel                      ERR_VECTOR
 //      (deve ser usado com indexação)
@@ -204,10 +208,19 @@ globalidentifierslist: globalidentifierslist ',' globalidentifier
 
 globalidentifier: TK_IDENTIFICADOR
     {
-        printf("Identificador %s, Tipo: %d\n", $1->text, (int)current_type);
-        add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type);
+        add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL);
+        symbol_item_t* identifier = get_symbol($1->text);
+        printf("Identificador %s, Tipo do símbolo: %d, Tipo do dado: %d, Tamanho do dado: %ld\n", identifier->token->text, identifier->type, identifier->datatype, identifier->size);
     }
-    | TK_IDENTIFICADOR '[' TK_LIT_INT ']'
+    | TK_IDENTIFICADOR '[' TK_LIT_INT ']' 
+    {
+        add_symbol($3->text, $3, SYMBOL_TYPE_LITERAL_INT, SYMBOL_DATATYPE_INT, NULL);
+        add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, $3);
+        symbol_item_t* identifier = get_symbol($1->text);
+        symbol_item_t* literal = get_symbol($3->text);
+        printf("Identificador %s, Tipo do símbolo: %d, Tipo do dado: %d, Tamanho do dado: %ld\n", identifier->token->text, identifier->type, identifier->datatype, identifier->size);
+        printf("Literal: %s, Tipo do símbolo: %d, Tipo do dado: %d, Tamanho do dado: %ld\n", literal->token->text, literal->type, literal->datatype, literal->size);
+    }
     ;
 
 funcdec: funcheader commandblock { $$ = node_create($1->text, $2, NULL, NULL, NULL, NULL); }
@@ -394,7 +407,7 @@ varname: TK_IDENTIFICADOR                   { $$ = node_create_leaf($1); }
 
 int yyerror(const char *s)
 {
-    fprintf(stderr,"Error: %s in line %d\n", s, num_lines);
+    fprintf(stderr,"Syntax Error: %s in line %d\n", s, num_lines);
 
     return 1;
 }
