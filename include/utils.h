@@ -16,6 +16,7 @@ typedef struct _node_t node_t;
 
 int char_to_bool(char* str);
 void create_token_queue();
+token_t* create_token(int line, token_type_t type, char* value);
 void push_token_queue(void* token);
 void clear_token_queue();
 

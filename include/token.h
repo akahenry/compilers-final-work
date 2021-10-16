@@ -9,7 +9,6 @@ Grupo D
 #include <stdlib.h>
 #include <string.h>
 
-#include "utils.h"
 typedef union _token_value_t {
     int v_integer;
     float v_float;

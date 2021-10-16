@@ -24,6 +24,15 @@ void create_token_queue()
         q_alloc_token = queue_create();
 }
 
+token_t* create_token(int line, token_type_t type, char* value)
+{
+    create_token_queue();
+    token_t* token = token_create(line, type, value);
+    push_token_queue(token);
+
+    return token;
+}
+
 void create_symbol_table()
 {
     if (symbol_table == NULL)

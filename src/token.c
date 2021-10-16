@@ -5,6 +5,8 @@ Grupo D
 */
 #include "token.h"
 
+#include "utils.h"
+
 token_t* token_create(int _line, token_type_t _type, char* _value)
 {
     token_t* token = calloc(1, sizeof(token_t));
