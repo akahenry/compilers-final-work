@@ -125,13 +125,12 @@ symbol_datatype_t current_type;
 //      argumentos e tipos
 //      valor do token (yylval)
 // declaracoes:
-//      [ ] erro na dupla declaração no mesmo escopo                            ERR_DECLARED
+//      [x] erro na dupla declaração no mesmo escopo                            ERR_DECLARED
 //          [x] declaração global
-//          [ ] declaração local
-//      [ ] erro no uso sem declaração em escopos superiores                    ERR_UNDECLARED
-//      [ ] erro na declaração de vetor de string                               ERR_STRING_VECTOR
+//          [x] declaração local
+//      [x] erro no uso sem declaração em escopos superiores                    ERR_UNDECLARED
+//      [x] erro na declaração de vetor de string                               ERR_STRING_VECTOR
 //          [x] declaração global
-//          [ ] declaração local
 // uso de identificadores:
 //      [ ] erro vetor sendo usado como função ou variavel                      ERR_VECTOR
 //      (deve ser usado com indexação)
@@ -142,7 +141,11 @@ symbol_datatype_t current_type;
 // [ ] tipo do token é herdado pelo nó (conversão implicita e inferencia)
 //      erro na conversão implicita (coerção) de string e char:
 //          [ ] char para algo                                                  ERR_CHAR_TO_X
+//              [x] inicialização de variável
+//              [ ] atribuições
 //          [ ] string para algo                                                ERR_STRING_TO_X
+//              [x] inicialização de variável
+//              [ ] atribuições
 // argumentos compativeis com declaração de função:
 //      [ ] erro no uso com menos argumentos                                    ERR_MISSING_ARGS
 //      [ ] erro no uso com mais argumentos                                     ERR_EXCESS_ARGS
@@ -226,10 +229,26 @@ globalidentifier: TK_IDENTIFICADOR
 funcdec: funcheader commandblock { $$ = node_create($1->text, $2, NULL, NULL, NULL, NULL); }
     ;
 
-funcheader: type TK_IDENTIFICADOR '(' ')'                       { $$ = $2; }
-    | TK_PR_STATIC type TK_IDENTIFICADOR '(' ')'                { $$ = $3; }
-    | type TK_IDENTIFICADOR '(' parameterslist ')'              { $$ = $2; }
-    | TK_PR_STATIC type TK_IDENTIFICADOR '(' parameterslist ')' { $$ = $3; }
+funcheader: type TK_IDENTIFICADOR '(' ')'
+    { 
+        $$ = $2; 
+        add_symbol($2->text, $2, SYMBOL_TYPE_IDENTIFIER_FUNCTION, current_type, NULL);
+    }
+    | TK_PR_STATIC type TK_IDENTIFICADOR '(' ')'
+    { 
+        $$ = $3;
+        add_symbol($3->text, $3, SYMBOL_TYPE_IDENTIFIER_FUNCTION, current_type, NULL);
+    }
+    | type TK_IDENTIFICADOR '(' parameterslist ')'
+    { 
+        $$ = $2; 
+        add_symbol($2->text, $2, SYMBOL_TYPE_IDENTIFIER_FUNCTION, current_type, NULL);
+    }
+    | TK_PR_STATIC type TK_IDENTIFICADOR '(' parameterslist ')'
+    { 
+        $$ = $3;
+        add_symbol($3->text, $3, SYMBOL_TYPE_IDENTIFIER_FUNCTION, current_type, NULL);
+    }
     ;
 
 parameterslist: parameterslist ',' parameter
@@ -282,25 +301,121 @@ localidentifierslist: localidentifier ',' localidentifierslist { if ($1 != NULL)
     | localidentifierdeclaration ',' localidentifierslist { $$ = $3; }
     ;
 
-localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR { $$ = node_create($2->text, node_create_leaf($1), node_create_leaf($3), NULL, NULL, NULL); }
-    | TK_IDENTIFICADOR TK_OC_LE literal { $$ = node_create($2->text, node_create_leaf($1), $3, NULL, NULL, NULL); }
+localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR 
+    { 
+        $$ = node_create($2->text, node_create_leaf($1), node_create_leaf($3), NULL, NULL, NULL);
+        symbol_item_t* second = get_symbol($3->text);
+        if (second != NULL)
+        {
+            if (current_type == second->datatype)
+            {
+                add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL);
+                if (current_type == SYMBOL_DATATYPE_STRING)
+                {
+                    symbol_item_t* first = get_symbol($1->text);
+                    first->size = second->size;
+                }
+            }
+            else
+            {
+                if (second->datatype == SYMBOL_DATATYPE_STRING)
+                {
+                    fprintf(stderr, "Semantic Error: cannot convert datatype `string` to another type in line %d", $1->line);
+                    exit(ERR_STRING_TO_X);
+                }
+                else if (second->datatype == SYMBOL_DATATYPE_CHAR)
+                {
+                    fprintf(stderr, "Semantic Error: cannot convert datatype `char` to another type in line %d", $1->line);
+                    exit(ERR_CHAR_TO_X);
+                } // TODO: implementar a inferência de tipos
+            }
+        }
+        else
+        {
+            fprintf(stderr, "Semantic Error: undefined identifier `%s` in line %d", $3->text, $3->line);
+            exit(ERR_UNDECLARED);
+        }
+    }
+    | TK_IDENTIFICADOR TK_OC_LE literal 
+    { 
+        $$ = node_create($2->text, node_create_leaf($1), $3, NULL, NULL, NULL);
+        symbol_item_t* second = get_symbol($3->token->text);
+        if (second != NULL)
+        {
+            if (current_type == second->datatype)
+            {
+                add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL);
+                if (current_type == SYMBOL_DATATYPE_STRING)
+                {
+                    symbol_item_t* first = get_symbol($1->text);
+                    first->size = second->size;
+                }
+            }
+            else
+            {
+                if (second->datatype == SYMBOL_DATATYPE_STRING)
+                {
+                    fprintf(stderr, "Semantic Error: cannot convert datatype `string` to another type in line %d", $1->line);
+                    exit(ERR_STRING_TO_X);
+                }
+                else if (second->datatype == SYMBOL_DATATYPE_CHAR)
+                {
+                    fprintf(stderr, "Semantic Error: cannot convert datatype `char` to another type in line %d", $1->line);
+                    exit(ERR_CHAR_TO_X);
+                } // TODO: implementar a inferência de tipos
+            }
+        }
+        else
+        {
+            fprintf(stderr, "Semantic Error: undefined identifier `%s` in line %d", $3->token->text, $3->token->line);
+            exit(ERR_UNDECLARED);
+        }
+    }
     ;
 
-localidentifierdeclaration: TK_IDENTIFICADOR { $$ = NULL; }
+localidentifierdeclaration: TK_IDENTIFICADOR 
+    { 
+        $$ = NULL;
+        add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL);
+    }
     ;
 
-literal: TK_LIT_CHAR { $$ = node_create_leaf($1); }
-    | TK_LIT_STRING { $$ = node_create_leaf($1); }
+literal: TK_LIT_CHAR
+    { 
+        $$ = node_create_leaf($1);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_CHAR, SYMBOL_DATATYPE_CHAR, NULL);
+    }
+    | TK_LIT_STRING
+    { 
+        $$ = node_create_leaf($1);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_STRING, SYMBOL_DATATYPE_STRING, NULL);
+    }
     | literalboolean { $$ = $1; }
     | literalnumber { $$ = $1; }
     ;
 
-literalnumber: TK_LIT_FLOAT { $$ = node_create_leaf($1); }
-    | TK_LIT_INT { $$ = node_create_leaf($1); }
+literalnumber: TK_LIT_FLOAT
+    { 
+        $$ = node_create_leaf($1);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_FLOAT, SYMBOL_DATATYPE_FLOAT, NULL);
+    }
+    | TK_LIT_INT
+    { 
+        $$ = node_create_leaf($1);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_INT, SYMBOL_DATATYPE_INT, NULL);
+    }
     ;
 
-literalboolean: TK_LIT_FALSE { $$ = node_create_leaf($1); }
-    | TK_LIT_TRUE { $$ = node_create_leaf($1); }
+literalboolean: TK_LIT_FALSE
+    { 
+        $$ = node_create_leaf($1);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_BOOL, SYMBOL_DATATYPE_BOOL, NULL);
+    }
+    | TK_LIT_TRUE
+    { 
+        $$ = node_create_leaf($1);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_BOOL, SYMBOL_DATATYPE_BOOL, NULL);
+    }
     ;
 
 varassignment: varname '=' expression { $$ = node_create("=", $1, $3, NULL, NULL, NULL); }
