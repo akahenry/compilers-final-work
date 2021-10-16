@@ -113,6 +113,65 @@ int yyerror (char const *s);
 
 %%
 
+// TODO de analise sintatica:
+// criar e destruir escopo
+// adicionar simbolos na tabela de simbolos
+//      localização
+//      natureza
+//      tipo
+//      tamanho
+//      argumentos e tipos
+//      valor do token (yylval)
+// declaracoes:
+//      erro na dupla declaração no mesmo escopo                            ERR_DECLARED
+//      erro no uso sem declaração em escopos superiores                    ERR_UNDECLARED
+//      erro na declaração de vetor de string                               ERR_STRING_VECTOR
+// uso de identificadores:
+//      erro vetor sendo usado como função ou variavel                      ERR_VECTOR
+//      (deve ser usado com indexação)
+//      erro função sendo usada como vetor ou variavel                      ERR_FUNCTION
+//      (deve ser usada com parentesis e args)
+//      erro variavel sendo usada como vetor ou função                      ERR_VARIABLE
+//      (deve ser usado sem nada)
+// tipo do token é herdado pelo nó (conversão implicita e inferencia)
+//      erro na conversão implicita (coerção) de string e char:
+//          char para algo                                                  ERR_CHAR_TO_X
+//          string para algo                                                ERR_STRING_TO_X
+// argumentos compativeis com declaração de função:
+//      erro no uso com menos argumentos                                    ERR_MISSING_ARGS
+//      erro no uso com mais argumentos                                     ERR_EXCESS_ARGS
+//      erro no uso com argumentos de tipos errados                         ERR_WRONG_TYPE_ARGS
+// erro quando argumentos, retorno e parametros de funções são string       ERR_FUNCTION_STRING
+// erro na atribuição de um valor de um tipo para variavel de outro         ERR_WRONG_TYPE
+// input e output só aceitam int e float:
+//      erro se tipo no input não é int ou float                            ERR_WRONG_PAR_INPUT
+//      erro se tipo no output não é int ou float                           ERR_WRONG_PAR_OUTPUT
+// erro se o numero de shift for maior que 16                               ERR_WRONG_PAR_SHIFT
+// erro se a atribuição de string for maior que o tamanho max declarado     ERR_STRING_MAX
+
+// conversões implícitas
+//      int -> float | bool
+//      bool -> float | int
+//      float -> int | bool
+// inferência
+//      dois (float | int | bool) -> mesmo tipo dos dois
+//      float e int -> float
+//      bool e int -> int
+//      bool e float -> float
+
+// tamanhos
+//      char    1 byte
+//      bool    1 byte
+//      int     4 bytes
+//      float   8 bytes
+//      string  tamanho definido na declaração (em bytes)
+//      vetor   tamanho do vetor na declaração * tamanho do tipo
+
+// mensagens de erro em linguagem natural:
+//      linha
+//      identificador
+//      natureza
+
 initial: program
 {
     $$ = $1;
@@ -124,12 +183,10 @@ program: %empty             { $$ = NULL; }
     | funcdec program       { if ($1 != NULL) { $$ = link_nodes($1, $2); } else { $$ = $2; }; }
     ;
 
-// *
 globalvardec: type globalidentifierslist ';'
     | TK_PR_STATIC type globalidentifierslist ';'
     ;
 
-// *
 type: TK_PR_INT
     | TK_PR_FLOAT
     | TK_PR_BOOL
@@ -137,12 +194,10 @@ type: TK_PR_INT
     | TK_PR_STRING
     ;
 
-// *
 globalidentifierslist: globalidentifierslist ',' globalidentifier
     | globalidentifier
     ;
 
-// *
 globalidentifier: TK_IDENTIFICADOR
     | TK_IDENTIFICADOR '[' TK_LIT_INT ']'
     ;
@@ -156,12 +211,10 @@ funcheader: type TK_IDENTIFICADOR '(' ')'                       { $$ = $2; }
     | TK_PR_STATIC type TK_IDENTIFICADOR '(' parameterslist ')' { $$ = $3; }
     ;
 
-// *
 parameterslist: parameterslist ',' parameter
     | parameter
     ;
 
-// *
 parameter: type TK_IDENTIFICADOR
     | TK_PR_CONST type TK_IDENTIFICADOR
     ;
