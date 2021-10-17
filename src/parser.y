@@ -525,7 +525,18 @@ varassignment: varname '=' expression
 
         check_implicit_conversion($1->type, $3->type, $2->line, 0);
 
-        symbol_item_t* first = get_symbol($1->token->text);
+        symbol_item_t* first = NULL;
+        if($1->token != NULL)
+        {
+            first = get_symbol($1->token->text);
+        }
+        else
+        {
+            // in this case, the node isn't leaf because it is a vector, so it doesn't have a token
+            // so it gets the token with the varname in the first child
+            first = get_symbol($1->child1->token->text);
+        }
+
         symbol_item_t* second = get_symbol($3->token->text);
         if (first != NULL && second != NULL)
         {
