@@ -69,6 +69,15 @@ symbol_datatype_t current_type;
 %token <valor_lexico> TK_LIT_CHAR      // 'a'
 %token <valor_lexico> TK_LIT_STRING    // "str"
 %token <valor_lexico> TK_IDENTIFICADOR // x0
+%token <valor_lexico> '^'
+%token <valor_lexico> '&'
+%token <valor_lexico> '#'
+%token <valor_lexico> '+'
+%token <valor_lexico> '-'
+%token <valor_lexico> '*'
+%token <valor_lexico> '/'
+%token <valor_lexico> '%'
+%token <valor_lexico> '|'
 %token TOKEN_ERRO
 
 %left '?' ':'
@@ -152,8 +161,8 @@ symbol_datatype_t current_type;
 //      [ ] erro no uso com argumentos de tipos errados                         ERR_WRONG_TYPE_ARGS
 // [ ] erro quando argumentos, retorno e parametros de funções são string       ERR_FUNCTION_STRING
 // erro na atribuição de um valor de um tipo para variavel de outro:            ERR_WRONG_TYPE
-//      [x] atribuição na declaração
-//      [ ] atribuição depois da declaração
+//      [x] inicialização de variável
+//      [ ] atribuições
 // input e output só aceitam int e float:
 //      [ ] erro se tipo no input não é int ou float                            ERR_WRONG_PAR_INPUT
 //      [ ] erro se tipo no output não é int ou float                           ERR_WRONG_PAR_OUTPUT
@@ -228,7 +237,11 @@ globalidentifier: TK_IDENTIFICADOR
     }
     ;
 
-funcdec: funcheader commandblock { $$ = node_create($1->text, $2, NULL, NULL, NULL, NULL); }
+funcdec: funcheader commandblock
+    {
+        $$ = node_create($1->text, $2, NULL, NULL, NULL, NULL);
+        $$->type = current_type;
+    }
     ;
 
 funcheader: type TK_IDENTIFICADOR '(' ')'
@@ -340,7 +353,7 @@ localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR
         }
         else
         {
-            fprintf(stderr, "Semantic Error: undefined identifier `%s` in line %d", $3->text, $3->line);
+            fprintf(stderr, "Semantic Error: undefined identifier `%s` in line %d\n", $3->text, $3->line);
             exit(ERR_UNDECLARED);
         }
     }
@@ -432,7 +445,17 @@ literalboolean: TK_LIT_FALSE
     }
     ;
 
-varassignment: varname '=' expression { $$ = node_create("=", $1, $3, NULL, NULL, NULL); }
+varassignment: varname '=' expression
+    {
+        $$ = node_create("=", $1, $3, NULL, NULL, NULL);
+        $$->type = $1->type;
+
+        if ($1->type != $3->type)
+        {
+            fprintf(stderr, "Semantic Error: cannot attribute datatype `%s` to variable of type `%s` in line %d\n", datatype_string($3->type), datatype_string($1->type), $1->token->line);
+            exit(ERR_WRONG_TYPE);
+        }
+    }
     ;
 
 input: TK_PR_INPUT TK_IDENTIFICADOR { $$ = node_create("input", node_create_leaf($2), NULL, NULL, NULL, NULL); }
@@ -448,6 +471,17 @@ funccall: TK_IDENTIFICADOR '(' ')'
     sprintf(label, "call %s", $1->text);
     $$ = node_create(label, NULL, NULL, NULL, NULL, NULL);
     free(label);
+
+    symbol_item_t* identifier = get_symbol($1->text);
+    if (identifier != NULL)
+    {
+        $$->type = identifier->datatype;
+    }
+    else
+    {
+        fprintf(stderr, "Semantic Error: undefined function identifier `%s` in line %d\n", $1->text, $1->line);
+        exit(ERR_UNDECLARED);
+    }
 }
     | TK_IDENTIFICADOR '(' argslist ')' 
 { 
@@ -483,19 +517,71 @@ expression: arithmeticexpression    { $$ = $1; }
     | thernaryoperator              { $$ = $1; }
     ;
 
-arithmeticexpression: '+' arithmeticexpression      { $$ = node_create("+", $2, NULL, NULL, NULL, NULL); }
-    | '-' arithmeticexpression                      { $$ = node_create("-", $2, NULL, NULL, NULL, NULL); }
-    | '*' arithmeticexpression                      { $$ = node_create("*", $2, NULL, NULL, NULL, NULL); }
-    | '&' arithmeticexpression                      { $$ = node_create("&", $2, NULL, NULL, NULL, NULL); }
-    | '#' arithmeticexpression                      { $$ = node_create("#", $2, NULL, NULL, NULL, NULL); }
-    | arithmeticexpression '+' arithmeticexpression { $$ = node_create("+", $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression '-' arithmeticexpression { $$ = node_create("-", $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression '*' arithmeticexpression { $$ = node_create("*", $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression '/' arithmeticexpression { $$ = node_create("/", $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression '%' arithmeticexpression { $$ = node_create("%", $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression '|' arithmeticexpression { $$ = node_create("|", $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression '&' arithmeticexpression { $$ = node_create("&", $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression '^' arithmeticexpression { $$ = node_create("^", $1, $3, NULL, NULL, NULL); }
+arithmeticexpression: '+' arithmeticexpression
+    {
+        $$ = node_create("+", $2, NULL, NULL, NULL, NULL);
+        $$->type = $2->type;
+    }
+    | '-' arithmeticexpression
+    {
+        $$ = node_create("-", $2, NULL, NULL, NULL, NULL);
+        $$->type = $2->type;
+    }
+    | '*' arithmeticexpression
+    {
+        $$ = node_create("*", $2, NULL, NULL, NULL, NULL);
+        $$->type = $2->type;
+    }
+    | '&' arithmeticexpression
+    {
+        $$ = node_create("&", $2, NULL, NULL, NULL, NULL);
+        $$->type = $2->type;
+    }
+    | '#' arithmeticexpression
+    {
+        $$ = node_create("#", $2, NULL, NULL, NULL, NULL);
+        $$->type = $2->type;
+    }
+    | arithmeticexpression '+' arithmeticexpression
+    {
+        $$ = node_create("+", $1, $3, NULL, NULL, NULL);
+        $$->type = infer_type_nodes($1, $3, $2->line);
+    }
+    | arithmeticexpression '-' arithmeticexpression
+    {
+        $$ = node_create("-", $1, $3, NULL, NULL, NULL);
+        $$->type = infer_type_nodes($1, $3, $2->line);
+    }
+    | arithmeticexpression '*' arithmeticexpression
+    {
+        $$ = node_create("*", $1, $3, NULL, NULL, NULL);
+        $$->type = infer_type_nodes($1, $3, $2->line);
+    }
+    | arithmeticexpression '/' arithmeticexpression
+    {
+        $$ = node_create("/", $1, $3, NULL, NULL, NULL);
+        $$->type = infer_type_nodes($1, $3, $2->line);
+    }
+    | arithmeticexpression '%' arithmeticexpression
+    {
+        $$ = node_create("%", $1, $3, NULL, NULL, NULL);
+        $$->type = infer_type_nodes($1, $3, $2->line);
+    }
+    | arithmeticexpression '|' arithmeticexpression
+    {
+        $$ = node_create("|", $1, $3, NULL, NULL, NULL);
+        $$->type = infer_type_nodes($1, $3, $2->line);
+    }
+    | arithmeticexpression '&' arithmeticexpression
+    {
+        $$ = node_create("&", $1, $3, NULL, NULL, NULL);
+        $$->type = infer_type_nodes($1, $3, $2->line);
+    }
+    | arithmeticexpression '^' arithmeticexpression
+    {
+        $$ = node_create("^", $1, $3, NULL, NULL, NULL);
+        $$->type = infer_type_nodes($1, $3, $2->line);
+    }
     | TK_LIT_INT
     {
         $$ = node_create_leaf($1);
@@ -529,15 +615,49 @@ logicexpression: '!' logicexpression { $$ = node_create("!", $2, NULL, NULL, NUL
     | varname TK_OC_OR logicexpression { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
     | logicexpression TK_OC_OR varname { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
     | varname TK_OC_OR varname { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
-    | TK_LIT_TRUE { $$ = node_create_leaf($1); }
-    | TK_LIT_FALSE { $$ = node_create_leaf($1); }
+    | TK_LIT_TRUE
+    {
+        $$ = node_create_leaf($1);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_BOOL, SYMBOL_DATATYPE_BOOL, NULL);
+    }
+    | TK_LIT_FALSE
+    {
+        $$ = node_create_leaf($1);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_BOOL, SYMBOL_DATATYPE_BOOL, NULL);
+    }
     ;
 
 thernaryoperator: expression '?' expression ':' expression { $$ = node_create("?:", $1, $3, $5, NULL, NULL); }
     ;
 
-varname: TK_IDENTIFICADOR                   { $$ = node_create_leaf($1); }
-    | TK_IDENTIFICADOR '[' expression ']'   { $$ = node_create("[]", node_create_leaf($1), $3, NULL, NULL, NULL); }
+varname: TK_IDENTIFICADOR
+    {
+        symbol_item_t* identifier = get_symbol($1->text);
+        if (identifier != NULL)
+        {
+            $$ = node_create_leaf($1);
+            $$->type = identifier->datatype;
+        }
+        else
+        {
+            fprintf(stderr, "Semantic Error: undefined identifier `%s` in line %d\n", $1->text, $1->line);
+            exit(ERR_UNDECLARED);
+        }
+    }
+    | TK_IDENTIFICADOR '[' expression ']'
+    {
+        symbol_item_t* identifier = get_symbol($1->text);
+        if (identifier != NULL)
+        {
+            $$ = node_create("[]", node_create_leaf($1), $3, NULL, NULL, NULL);
+            $$->type = identifier->datatype;
+        }
+        else
+        {
+            fprintf(stderr, "Semantic Error: undefined identifier `%s` in line %d\n", $1->text, $1->line);
+            exit(ERR_UNDECLARED);
+        }
+    }
     ;
 
 %%

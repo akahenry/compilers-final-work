@@ -38,5 +38,7 @@ node_t* node_create_leaf(token_t* _token);
 node_t *node_create(char *_label, node_t *_child1, node_t *_child2, node_t *_child3, node_t *_child4, node_t *_child5);
 void node_destroy(node_t* _node);
 node_t* node_link(node_t *_node_parent, node_t *_node_child);
+node_type_t infer_type(node_type_t type1, node_type_t type2);
+node_type_t infer_type_nodes(node_t *node1, node_t *node2, int line);
 
 #endif

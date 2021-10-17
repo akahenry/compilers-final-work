@@ -165,25 +165,25 @@ symbol_item_t* get_symbol(char* key)
 
 const char* datatype_string(symbol_datatype_t datatype)
 {
-    if (datatype == SYMBOL_DATATYPE_INT)
+    switch (datatype)
     {
-        return datatype_string_int;
-    }
-    if (datatype == SYMBOL_DATATYPE_FLOAT)
-    {
-        return datatype_string_float;
-    }
-    if (datatype == SYMBOL_DATATYPE_BOOL)
-    {
-        return datatype_string_bool;
-    }
-    if (datatype == SYMBOL_DATATYPE_CHAR)
-    {
-        return datatype_string_char;
-    }
-    if (datatype == SYMBOL_DATATYPE_STRING)
-    {
-        return datatype_string_string;
+        case SYMBOL_DATATYPE_INT:
+            return datatype_string_int;
+            break;
+        case SYMBOL_DATATYPE_FLOAT:
+            return datatype_string_float;
+            break;
+        case SYMBOL_DATATYPE_BOOL:
+            return datatype_string_bool;
+            break;
+        case SYMBOL_DATATYPE_CHAR:
+            return datatype_string_char;
+            break;
+        case SYMBOL_DATATYPE_STRING:
+            return datatype_string_string;
+            break;
+        default:
+            break;
     }
 }
 
@@ -205,7 +205,8 @@ void exporta(void* tree)
     }
     
     node_t* node_ptr = (node_t*) tree;
-    printf("%p [label=\"%s\"];\n", node_ptr, node_ptr->label);
+    // printf("%p [label=\"%s\"];\n", node_ptr, node_ptr->label);
+    printf("%p [label=\"%s\"] [type=%d];\n", node_ptr, node_ptr->label, node_ptr->type);
 
 
     if (node_ptr->child1 != NULL)

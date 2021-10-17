@@ -80,3 +80,35 @@ node_t* node_link(node_t* _node_parent, node_t* _node_child)
     }
     return _node_parent;
 }
+
+// type infer according to the specification, for bool, int and float
+node_type_t infer_type(node_type_t type1, node_type_t type2)
+{
+    if (type1 == NODE_TYPE_FLOAT || type2 == NODE_TYPE_FLOAT)
+    {
+        return NODE_TYPE_FLOAT;
+    }
+    else
+    {
+        return NODE_TYPE_INT;
+    }
+}
+
+// Uses infer_type for nodes, but first checks if you're trying to infer types for char or string
+node_type_t infer_type_nodes(node_t *node1, node_t *node2, int line)
+{
+    if (node1->type == NODE_TYPE_STRING || node2->type == NODE_TYPE_STRING)
+    {
+        fprintf(stderr, "Semantic Error: cannot convert datatype `string` to another type in line %d\n", line);
+        exit(ERR_STRING_TO_X);
+    }
+    else if (node1->type == NODE_TYPE_CHAR || node2->type == NODE_TYPE_CHAR)
+    {
+        fprintf(stderr, "Semantic Error: cannot convert datatype `char` to another type in line %d\n", line);
+        exit(ERR_CHAR_TO_X);
+    }
+    else
+    {
+        return infer_type(node1->type, node2->type);
+    }
+}
