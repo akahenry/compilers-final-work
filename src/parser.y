@@ -139,19 +139,21 @@ symbol_datatype_t current_type;
 //      [ ] erro variavel sendo usada como vetor ou função                      ERR_VARIABLE
 //      (deve ser usado sem nada)
 // [ ] tipo do token é herdado pelo nó (conversão implicita e inferencia)
-//      erro na conversão implicita (coerção) de string e char:
-//          [ ] char para algo                                                  ERR_CHAR_TO_X
-//              [x] inicialização de variável
-//              [ ] atribuições
-//          [ ] string para algo                                                ERR_STRING_TO_X
-//              [x] inicialização de variável
-//              [ ] atribuições
+// erro na conversão implicita (coerção) de string e char:
+//      [ ] char para algo                                                      ERR_CHAR_TO_X
+//          [x] inicialização de variável
+//          [ ] atribuições
+//      [ ] string para algo                                                    ERR_STRING_TO_X
+//          [x] inicialização de variável
+//          [ ] atribuições
 // argumentos compativeis com declaração de função:
 //      [ ] erro no uso com menos argumentos                                    ERR_MISSING_ARGS
 //      [ ] erro no uso com mais argumentos                                     ERR_EXCESS_ARGS
 //      [ ] erro no uso com argumentos de tipos errados                         ERR_WRONG_TYPE_ARGS
 // [ ] erro quando argumentos, retorno e parametros de funções são string       ERR_FUNCTION_STRING
-// [ ] erro na atribuição de um valor de um tipo para variavel de outro         ERR_WRONG_TYPE
+// erro na atribuição de um valor de um tipo para variavel de outro:            ERR_WRONG_TYPE
+//      [x] atribuição na declaração
+//      [ ] atribuição depois da declaração
 // input e output só aceitam int e float:
 //      [ ] erro se tipo no input não é int ou float                            ERR_WRONG_PAR_INPUT
 //      [ ] erro se tipo no output não é int ou float                           ERR_WRONG_PAR_OUTPUT
@@ -320,14 +322,20 @@ localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR
             {
                 if (second->datatype == SYMBOL_DATATYPE_STRING)
                 {
-                    fprintf(stderr, "Semantic Error: cannot convert datatype `string` to another type in line %d", $1->line);
+                    fprintf(stderr, "Semantic Error: cannot convert datatype `string` to another type in line %d\n", $1->line);
                     exit(ERR_STRING_TO_X);
                 }
                 else if (second->datatype == SYMBOL_DATATYPE_CHAR)
                 {
-                    fprintf(stderr, "Semantic Error: cannot convert datatype `char` to another type in line %d", $1->line);
+                    fprintf(stderr, "Semantic Error: cannot convert datatype `char` to another type in line %d\n", $1->line);
                     exit(ERR_CHAR_TO_X);
-                } // TODO: implementar a inferência de tipos
+                }
+                // TODO: implementar a inferência de tipos
+                else
+                {
+                    fprintf(stderr, "Semantic Error: cannot attribute datatype `%s` to variable of type `%s` in line %d\n", datatype_string(current_type), datatype_string(second->datatype), $1->line);
+                    exit(ERR_WRONG_TYPE);
+                }
             }
         }
         else
@@ -355,19 +363,25 @@ localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR
             {
                 if (second->datatype == SYMBOL_DATATYPE_STRING)
                 {
-                    fprintf(stderr, "Semantic Error: cannot convert datatype `string` to another type in line %d", $1->line);
+                    fprintf(stderr, "Semantic Error: cannot convert datatype `string` to another type in line %d\n", $1->line);
                     exit(ERR_STRING_TO_X);
                 }
                 else if (second->datatype == SYMBOL_DATATYPE_CHAR)
                 {
-                    fprintf(stderr, "Semantic Error: cannot convert datatype `char` to another type in line %d", $1->line);
+                    fprintf(stderr, "Semantic Error: cannot convert datatype `char` to another type in line %d\n", $1->line);
                     exit(ERR_CHAR_TO_X);
-                } // TODO: implementar a inferência de tipos
+                }
+                // TODO: implementar a inferência de tipos
+                else
+                {
+                    fprintf(stderr, "Semantic Error: cannot attribute datatype `%s` to variable of type `%s` in line %d\n", datatype_string(current_type), datatype_string(second->datatype), $1->line);
+                    exit(ERR_WRONG_TYPE);
+                }
             }
         }
         else
         {
-            fprintf(stderr, "Semantic Error: undefined identifier `%s` in line %d", $3->token->text, $3->token->line);
+            fprintf(stderr, "Semantic Error: undefined identifier `%s` in line %d\n", $3->token->text, $3->token->line);
             exit(ERR_UNDECLARED);
         }
     }
@@ -482,8 +496,16 @@ arithmeticexpression: '+' arithmeticexpression      { $$ = node_create("+", $2, 
     | arithmeticexpression '|' arithmeticexpression { $$ = node_create("|", $1, $3, NULL, NULL, NULL); }
     | arithmeticexpression '&' arithmeticexpression { $$ = node_create("&", $1, $3, NULL, NULL, NULL); }
     | arithmeticexpression '^' arithmeticexpression { $$ = node_create("^", $1, $3, NULL, NULL, NULL); }
-    | TK_LIT_INT                                    { $$ = node_create_leaf($1); }
-    | TK_LIT_FLOAT                                  { $$ = node_create_leaf($1); }
+    | TK_LIT_INT
+    {
+        $$ = node_create_leaf($1);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_INT, SYMBOL_DATATYPE_INT, NULL);
+    }
+    | TK_LIT_FLOAT
+    {
+        $$ = node_create_leaf($1);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_FLOAT, SYMBOL_DATATYPE_FLOAT, NULL);
+    }
     | varname                                       { $$ = $1; }
     | funccall                                      { $$ = $1; }
     | '(' arithmeticexpression ')'                  { $$ = $2; }

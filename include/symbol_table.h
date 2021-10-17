@@ -25,6 +25,12 @@ typedef enum _symbol_datatype_t {
     SYMBOL_DATATYPE_STRING
 } symbol_datatype_t;
 
+static const char datatype_string_int[] = "int";
+static const char datatype_string_float[] = "float";
+static const char datatype_string_bool[] = "bool";
+static const char datatype_string_char[] = "char";
+static const char datatype_string_string[] = "string";
+
 typedef enum _symbol_type_t {
     SYMBOL_TYPE_LITERAL_INT,
     SYMBOL_TYPE_LITERAL_FLOAT,

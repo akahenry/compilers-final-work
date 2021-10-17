@@ -163,6 +163,30 @@ symbol_item_t* get_symbol(char* key)
     }
 }
 
+const char* datatype_string(symbol_datatype_t datatype)
+{
+    if (datatype == SYMBOL_DATATYPE_INT)
+    {
+        return datatype_string_int;
+    }
+    if (datatype == SYMBOL_DATATYPE_FLOAT)
+    {
+        return datatype_string_float;
+    }
+    if (datatype == SYMBOL_DATATYPE_BOOL)
+    {
+        return datatype_string_bool;
+    }
+    if (datatype == SYMBOL_DATATYPE_CHAR)
+    {
+        return datatype_string_char;
+    }
+    if (datatype == SYMBOL_DATATYPE_STRING)
+    {
+        return datatype_string_string;
+    }
+}
+
 void push_token_queue(void* token)
 {
     queue_push(q_alloc_token, token);

@@ -28,6 +28,7 @@ void close_scope();
 void add_symbol_from_node(char* key, node_t* node);
 void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t datatype, token_t* vector_size_token);
 symbol_item_t* get_symbol(char* key);
+const char* datatype_string(symbol_datatype_t datatype);
 
 void exporta (void *arvore);
 void libera (void *arvore);
