@@ -117,3 +117,28 @@ node_type_t infer_type_nodes(node_t *node1, node_t *node2, int line)
 
     return infer_type(node1->type, node2->type);
 }
+
+// checks if type2 can be implicitly converted to type1
+// if not, prints error and exit
+void check_implicit_conversion(node_type_t type1, node_type_t type2, int line)
+{
+    if (type1 != type2)
+    {
+        if (type2 == NODE_TYPE_STRING)
+        {
+            fprintf(stderr, "Semantic Error: cannot convert datatype `string` to another type in line %d\n", line);
+            exit(ERR_STRING_TO_X);
+        }
+        else if (type2 == NODE_TYPE_CHAR)
+        {
+            fprintf(stderr, "Semantic Error: cannot convert datatype `char` to another type in line %d\n", line);
+            exit(ERR_CHAR_TO_X);
+        }
+        else if (!((type1 == NODE_TYPE_INT || type1 == NODE_TYPE_FLOAT || type1 == NODE_TYPE_BOOL) &&
+                   (type2 == NODE_TYPE_INT || type2 == NODE_TYPE_FLOAT || type2 == NODE_TYPE_BOOL)))
+        {
+            fprintf(stderr, "Semantic Error: cannot attribute datatype `%s` to variable of type `%s` in line %d\n", datatype_string(type2), datatype_string(type1), line);
+            exit(ERR_WRONG_TYPE);
+        }
+    }
+}

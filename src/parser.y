@@ -81,6 +81,8 @@ queue_t* args_types = NULL;
 %token <valor_lexico> '/'
 %token <valor_lexico> '%'
 %token <valor_lexico> '|'
+%token <valor_lexico> ':'
+%token <valor_lexico> '='
 %token TOKEN_ERRO
 
 %left '?' ':'
@@ -153,12 +155,12 @@ queue_t* args_types = NULL;
 //      (deve ser usado sem nada)
 // [ ] tipo do token é herdado pelo nó (conversão implicita e inferencia)
 // erro na conversão implicita (coerção) de string e char:
-//      [ ] char para algo                                                      ERR_CHAR_TO_X
+//      [x] char para algo                                                      ERR_CHAR_TO_X
 //          [x] inicialização de variável
-//          [ ] atribuições
-//      [ ] string para algo                                                    ERR_STRING_TO_X
+//          [x] atribuições
+//      [x] string para algo                                                    ERR_STRING_TO_X
 //          [x] inicialização de variável
-//          [ ] atribuições
+//          [x] atribuições
 // argumentos compativeis com declaração de função:
 //      [x] erro no uso com menos argumentos                                    ERR_MISSING_ARGS
 //      [x] erro no uso com mais argumentos                                     ERR_EXCESS_ARGS
@@ -166,7 +168,7 @@ queue_t* args_types = NULL;
 // [x] erro quando argumentos, retorno e parametros de funções são string       ERR_FUNCTION_STRING
 // erro na atribuição de um valor de um tipo para variavel de outro:            ERR_WRONG_TYPE
 //      [x] inicialização de variável
-//      [ ] atribuições
+//      [x] atribuições
 // input e output só aceitam int e float:
 //      [ ] erro se tipo no input não é int ou float                            ERR_WRONG_PAR_INPUT
 //      [ ] erro se tipo no output não é int ou float                           ERR_WRONG_PAR_OUTPUT
@@ -407,22 +409,7 @@ localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR
             }
             else
             {
-                if (second->datatype == SYMBOL_DATATYPE_STRING)
-                {
-                    fprintf(stderr, "Semantic Error: cannot convert datatype `string` to another type in line %d\n", $1->line);
-                    exit(ERR_STRING_TO_X);
-                }
-                else if (second->datatype == SYMBOL_DATATYPE_CHAR)
-                {
-                    fprintf(stderr, "Semantic Error: cannot convert datatype `char` to another type in line %d\n", $1->line);
-                    exit(ERR_CHAR_TO_X);
-                }
-                // TODO: implementar a inferência de tipos
-                else
-                {
-                    fprintf(stderr, "Semantic Error: cannot attribute datatype `%s` to variable of type `%s` in line %d\n", datatype_string(current_type), datatype_string(second->datatype), $1->line);
-                    exit(ERR_WRONG_TYPE);
-                }
+                check_implicit_conversion(current_type, second->datatype, $2->line);
             }
         }
         else
@@ -448,22 +435,7 @@ localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR
             }
             else
             {
-                if (second->datatype == SYMBOL_DATATYPE_STRING)
-                {
-                    fprintf(stderr, "Semantic Error: cannot convert datatype `string` to another type in line %d\n", $1->line);
-                    exit(ERR_STRING_TO_X);
-                }
-                else if (second->datatype == SYMBOL_DATATYPE_CHAR)
-                {
-                    fprintf(stderr, "Semantic Error: cannot convert datatype `char` to another type in line %d\n", $1->line);
-                    exit(ERR_CHAR_TO_X);
-                }
-                // TODO: implementar a inferência de tipos
-                else
-                {
-                    fprintf(stderr, "Semantic Error: cannot attribute datatype `%s` to variable of type `%s` in line %d\n", datatype_string(current_type), datatype_string(second->datatype), $1->line);
-                    exit(ERR_WRONG_TYPE);
-                }
+                check_implicit_conversion(current_type, second->datatype, $2->line);
             }
         }
         else
@@ -524,11 +496,7 @@ varassignment: varname '=' expression
         $$ = node_create("=", $1, $3, NULL, NULL, NULL);
         $$->type = $1->type;
 
-        if ($1->type != $3->type)
-        {
-            fprintf(stderr, "Semantic Error: cannot attribute datatype `%s` to variable of type `%s` in line %d\n", datatype_string($3->type), datatype_string($1->type), $1->token->line);
-            exit(ERR_WRONG_TYPE);
-        }
+        check_implicit_conversion($1->type, $3->type, $2->line);
     }
     ;
 
@@ -585,6 +553,7 @@ funccall: TK_IDENTIFICADOR '(' ')'
                         // Iterate over params_queue without removing items but removing items from args_types to clean it
                         symbol_datatype_t* expected = (symbol_datatype_t*)queue_at(identifier->params_queue, i);
                         symbol_datatype_t* got = (symbol_datatype_t*)queue_pop(args_types);
+                        printf("expected %d and got %d\n", *expected, *got);
                         if (*expected != *got)
                         {
                             matched = 0;
@@ -641,6 +610,7 @@ argslist: expression ',' argslist
                 args_types = queue_create();
 
             symbol_datatype_t* datatype = calloc(1, sizeof(symbol_datatype_t));
+            printf("alloc 1: %p\n", datatype);
             *datatype = (symbol_datatype_t)$1->type;
             queue_push(args_types, datatype);
         } 
@@ -657,7 +627,7 @@ argslist: expression ',' argslist
             args_types = queue_create();
 
         symbol_datatype_t* datatype = calloc(1, sizeof(symbol_datatype_t));
-        printf("alloc: %p", datatype);
+        printf("alloc 2: %p\n", datatype);
         *datatype = (symbol_datatype_t)$1->type;
         queue_push(args_types, datatype);
     }
@@ -766,37 +736,111 @@ arithmeticexpression: '+' arithmeticexpression
     | '(' arithmeticexpression ')'                  { $$ = $2; }
     ;
 
-logicexpression: '!' logicexpression { $$ = node_create("!", $2, NULL, NULL, NULL, NULL); }
-    | '!' varname { $$ = node_create("!", $2, NULL, NULL, NULL, NULL); }
-    | '?' logicexpression { $$ = node_create("?", $2, NULL, NULL, NULL, NULL); }
-    | '?' varname { $$ = node_create("?", $2, NULL, NULL, NULL, NULL); }
-    | arithmeticexpression TK_OC_EQ arithmeticexpression { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression TK_OC_NE arithmeticexpression { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression TK_OC_GE arithmeticexpression { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression TK_OC_LE arithmeticexpression { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression '>' arithmeticexpression { $$ = node_create(">", $1, $3, NULL, NULL, NULL); }
-    | arithmeticexpression '<' arithmeticexpression { $$ = node_create("<", $1, $3, NULL, NULL, NULL); }
-    | logicexpression TK_OC_AND logicexpression { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
-    | varname TK_OC_AND logicexpression { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
-    | logicexpression TK_OC_AND varname { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
-    | varname TK_OC_AND varname { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
+logicexpression: '!' logicexpression
+    {
+        $$ = node_create("!", $2, NULL, NULL, NULL, NULL);
+        $$->type = NODE_TYPE_BOOL;
+    }
+    | '!' varname
+    {
+        $$ = node_create("!", $2, NULL, NULL, NULL, NULL);
+        $$->type = NODE_TYPE_BOOL;
+    }
+    | '?' logicexpression
+    {
+        $$ = node_create("?", $2, NULL, NULL, NULL, NULL);
+        $$->type = NODE_TYPE_BOOL;
+    }
+    | '?' varname
+    {
+        $$ = node_create("?", $2, NULL, NULL, NULL, NULL);
+        $$->type = NODE_TYPE_BOOL;
+    }
+    | arithmeticexpression TK_OC_EQ arithmeticexpression
+    {
+        $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
+        $$->type = NODE_TYPE_BOOL;
+    }
+    | arithmeticexpression TK_OC_NE arithmeticexpression
+    {
+        $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
+        $$->type = NODE_TYPE_BOOL;
+    }
+    | arithmeticexpression TK_OC_GE arithmeticexpression
+    {
+        $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
+        $$->type = NODE_TYPE_BOOL;
+    }
+    | arithmeticexpression TK_OC_LE arithmeticexpression
+    {
+        $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
+        $$->type = NODE_TYPE_BOOL;
+    }
+    | arithmeticexpression '>' arithmeticexpression
+    {
+        $$ = node_create(">", $1, $3, NULL, NULL, NULL);
+        $$->type = NODE_TYPE_BOOL;
+    }
+    | arithmeticexpression '<' arithmeticexpression
+    {
+        $$ = node_create("<", $1, $3, NULL, NULL, NULL);
+        $$->type = NODE_TYPE_BOOL;
+    }
+    | logicexpression TK_OC_AND logicexpression
+    {
+        $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
+        $$->type = NODE_TYPE_BOOL;
+    }
+    | varname TK_OC_AND logicexpression
+    {
+        $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
+        $$->type = NODE_TYPE_BOOL;
+    }
+    | logicexpression TK_OC_AND varname
+    {
+        $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
+        $$->type = NODE_TYPE_BOOL;
+    }
+    | varname TK_OC_AND varname
+    {
+        $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
+        $$->type = NODE_TYPE_BOOL;
+    }
     | logicexpression TK_OC_OR logicexpression { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
-    | varname TK_OC_OR logicexpression { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
-    | logicexpression TK_OC_OR varname { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
-    | varname TK_OC_OR varname { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
+    | varname TK_OC_OR logicexpression
+    {
+        $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
+        $$->type = NODE_TYPE_BOOL;
+    }
+    | logicexpression TK_OC_OR varname
+    {
+        $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
+        $$->type = NODE_TYPE_BOOL;
+    }
+    | varname TK_OC_OR varname
+    {
+        $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
+        $$->type = NODE_TYPE_BOOL;
+    }
     | TK_LIT_TRUE
     {
         $$ = node_create_leaf($1);
         add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_BOOL, SYMBOL_DATATYPE_BOOL, NULL);
+        $$->type = NODE_TYPE_BOOL;
     }
     | TK_LIT_FALSE
     {
         $$ = node_create_leaf($1);
         add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_BOOL, SYMBOL_DATATYPE_BOOL, NULL);
+        $$->type = NODE_TYPE_BOOL;
     }
     ;
 
-thernaryoperator: expression '?' expression ':' expression { $$ = node_create("?:", $1, $3, $5, NULL, NULL); }
+thernaryoperator: expression '?' expression ':' expression
+    {
+        $$ = node_create("?:", $1, $3, $5, NULL, NULL);
+        $$->type = infer_type_nodes($3, $5, $4->line);
+    }
     ;
 
 varname: TK_IDENTIFICADOR
