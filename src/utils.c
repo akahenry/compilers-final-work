@@ -141,7 +141,7 @@ void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t
             }
         }
 
-        if (symbol_table_add_symbol(symbol_table, key, token->line, type, datatype, size, token) == SYMBOL_ERROR_KEY_ALREADY_EXISTS &&
+        if (symbol_table_add_symbol(symbol_table, key, token->line, type, datatype, size, token, NULL) == SYMBOL_ERROR_KEY_ALREADY_EXISTS &&
             (type == SYMBOL_TYPE_IDENTIFIER_VARIABLE || type == SYMBOL_TYPE_IDENTIFIER_FUNCTION))
         {
             symbol_item_t* declared_symbol = get_symbol(key);
@@ -205,7 +205,7 @@ void exporta(void* tree)
     }
     
     node_t* node_ptr = (node_t*) tree;
-    // printf("%p [label=\"%s\"];\n", node_ptr, node_ptr->label);
+    // printf("%p [label=\"%s\"];\n", node_ptr, node_ptr->label); // TODO: descomentar essa linha
     printf("%p [label=\"%s\"] [type=%d];\n", node_ptr, node_ptr->label, node_ptr->type);
 
 

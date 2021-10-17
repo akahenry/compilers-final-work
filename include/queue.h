@@ -16,6 +16,7 @@ typedef struct _queue_item_t {
 typedef struct _queue_t {
 	queue_item_t* begin;
 	queue_item_t* end;
+	size_t size;
 } queue_t;
 
 queue_item_t* queue_new_item(void* value);
@@ -23,6 +24,7 @@ queue_item_t* queue_new_item(void* value);
 queue_t* queue_create();
 void queue_push(queue_t* q, void* value);
 void* queue_pop(queue_t* q);
+void* queue_at(queue_t* q, int index);
 int queue_empty(queue_t* q);
 void queue_destroy(queue_t* q);
 

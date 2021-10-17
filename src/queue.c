@@ -11,6 +11,7 @@ queue_t* queue_create()
 
 	q->begin = NULL;
 	q->end = NULL;
+	q->size = 0;
 	return q;
 }
 
@@ -26,6 +27,7 @@ queue_item_t* queue_new_item(void* value)
 void queue_push(queue_t* q, void* value) 
 {
 	queue_item_t* new_item = queue_new_item(value);
+	q->size++;
 
 	if(q->end == NULL) 
 	{
@@ -51,6 +53,27 @@ void* queue_pop(queue_t* q)
 		q->end = NULL;
 
 	free(i);
+	q->size--;
+	return response;
+}
+
+void* queue_at(queue_t* q, int index)
+{
+	queue_item_t* item = NULL;
+	void* response = NULL;
+	if (q != NULL)
+	{
+		if (index >= 0 && index < q->size)
+		{
+			item = q->begin;
+			for (size_t i = 1; i < index; i++)
+			{
+				item = item->next;
+			}
+			response = item->value;
+		}
+	}
+
 	return response;
 }
 

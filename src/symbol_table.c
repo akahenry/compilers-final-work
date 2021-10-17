@@ -10,7 +10,7 @@ symbol_table_t* symbol_table_create()
     return table;
 }
 
-symbol_error_t symbol_table_add_symbol(symbol_table_t* table, char* key, int line_number, symbol_type_t type, symbol_datatype_t datatype, size_t size, token_t* token)
+symbol_error_t symbol_table_add_symbol(symbol_table_t* table, char* key, int line_number, symbol_type_t type, symbol_datatype_t datatype, size_t size, token_t* token, queue_t* params_queue)
 {
     symbol_error_t response = SYMBOL_NO_ERROR;
     if (table != NULL)
@@ -24,6 +24,7 @@ symbol_error_t symbol_table_add_symbol(symbol_table_t* table, char* key, int lin
             item->datatype = datatype;
             item->size = size;
             item->token = token;
+            item->params_queue = params_queue;
             
             if (hash_add(scope, key, (void*)item) == HASH_ERROR_KEY_ALREADY_EXISTS)
             {
@@ -84,7 +85,18 @@ void symbol_table_close_scope(symbol_table_t* table)
             for (size_t i = 0; i < scope->size; i++)
             {
                 if (scope->items[i] != NULL)
-                    free(scope->items[i]);
+                {
+                    symbol_item_t* item = (symbol_item_t*)scope->items[i];
+                    if (item->params_queue != NULL)
+                    {
+                        while(!queue_empty(item->params_queue))
+                        {
+                            free(queue_pop(item->params_queue));
+                        }
+                        queue_destroy(item->params_queue);
+                    }
+                    free(item);
+                }
             }
             hash_destroy(scope);
             table->size--;
@@ -129,7 +141,18 @@ void symbol_table_destroy(symbol_table_t* table)
                 for (size_t i = 0; i < scope->size; i++)
                 {
                     if (scope->items[i] != NULL)
-                        free(scope->items[i]);
+                    {
+                        symbol_item_t* item = (symbol_item_t*)scope->items[i];
+                        if (item->params_queue != NULL)
+                        {
+                            while(!queue_empty(item->params_queue))
+                            {
+                                free(queue_pop(item->params_queue));
+                            }
+                            queue_destroy(item->params_queue);
+                        }
+                        free(item);
+                    }
                 }
                 hash_destroy(scope);
                 table->size--;

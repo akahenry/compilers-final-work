@@ -11,6 +11,7 @@ stack_t* stack_create()
 
 	s->begin = NULL;
 	s->end = NULL;
+	s->size = 0;
 	return s;
 }
 
@@ -26,6 +27,7 @@ stack_item_t* stack_new_item(void* value)
 void stack_push(stack_t* s, void* value) 
 {
 	stack_item_t* new_item = stack_new_item(value);
+	s->size++;
 
 	if(s->begin == NULL) 
 	{
@@ -51,6 +53,7 @@ void* stack_pop(stack_t* s)
 		s->end = NULL;
 
 	free(i);
+	s->size--;
 	return response;
 }
 
@@ -60,6 +63,26 @@ void* stack_get(stack_t* s)
 		return NULL;
 
 	return s->begin->value;
+}
+
+void* stack_at(stack_t* q, int index)
+{
+	stack_item_t* item = NULL;
+	void* response = NULL;
+	if (q != NULL)
+	{
+		if (index >= 0 && index < q->size)
+		{
+			item = q->begin;
+			for (size_t i = 1; i < index; i++)
+			{
+				item = item->next;
+			}
+			response = item->value;
+		}
+	}
+
+	return response;
 }
 
 int stack_empty(stack_t* s) 

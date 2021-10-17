@@ -18,6 +18,9 @@ int yylex(void);
 int yyerror (char const *s);
 
 symbol_datatype_t current_type;
+int opening_function = 0;
+queue_t* params_types = NULL;
+queue_t* args_types = NULL;
 %}
 
 %define parse.error verbose
@@ -93,6 +96,7 @@ symbol_datatype_t current_type;
 %right '#' '!'
 
 %type <valor_lexico> funcheader 
+%type <valor_lexico> funcidentifier 
 
 %type <node> initial
 %type <node> program
@@ -156,10 +160,10 @@ symbol_datatype_t current_type;
 //          [x] inicialização de variável
 //          [ ] atribuições
 // argumentos compativeis com declaração de função:
-//      [ ] erro no uso com menos argumentos                                    ERR_MISSING_ARGS
-//      [ ] erro no uso com mais argumentos                                     ERR_EXCESS_ARGS
-//      [ ] erro no uso com argumentos de tipos errados                         ERR_WRONG_TYPE_ARGS
-// [ ] erro quando argumentos, retorno e parametros de funções são string       ERR_FUNCTION_STRING
+//      [x] erro no uso com menos argumentos                                    ERR_MISSING_ARGS
+//      [x] erro no uso com mais argumentos                                     ERR_EXCESS_ARGS
+//      [ ] erro no uso com argumentos de tipos errados                         ERR_WRONG_TYPE_ARGS (implementado mas não testado)
+// [x] erro quando argumentos, retorno e parametros de funções são string       ERR_FUNCTION_STRING
 // erro na atribuição de um valor de um tipo para variavel de outro:            ERR_WRONG_TYPE
 //      [x] inicialização de variável
 //      [ ] atribuições
@@ -223,17 +227,18 @@ globalidentifierslist: globalidentifierslist ',' globalidentifier
 globalidentifier: TK_IDENTIFICADOR
     {
         add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL);
-        symbol_item_t* identifier = get_symbol($1->text);
-        printf("Identificador %s, Tipo do símbolo: %d, Tipo do dado: %d, Tamanho do dado: %ld\n", identifier->token->text, identifier->type, identifier->datatype, identifier->size);
+        // symbol_item_t* identifier = get_symbol($1->text);
+        // printf("Identificador %s, Tipo do símbolo: %d, Tipo do dado: %d, Tamanho do dado: %ld\n", identifier->token->text, identifier->type, identifier->datatype, identifier->size);
     }
     | TK_IDENTIFICADOR '[' TK_LIT_INT ']' 
     {
         add_symbol($3->text, $3, SYMBOL_TYPE_LITERAL_INT, SYMBOL_DATATYPE_INT, NULL);
-        add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, $3);
-        symbol_item_t* identifier = get_symbol($1->text);
-        symbol_item_t* literal = get_symbol($3->text);
-        printf("Identificador %s, Tipo do símbolo: %d, Tipo do dado: %d, Tamanho do dado: %ld\n", identifier->token->text, identifier->type, identifier->datatype, identifier->size);
-        printf("Literal: %s, Tipo do símbolo: %d, Tipo do dado: %d, Tamanho do dado: %ld\n", literal->token->text, literal->type, literal->datatype, literal->size);
+        add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VECTOR, current_type, $3);
+        
+        // symbol_item_t* identifier = get_symbol($1->text);
+        // symbol_item_t* literal = get_symbol($3->text);
+        // printf("Identificador %s, Tipo do símbolo: %d, Tipo do dado: %d, Tamanho do dado: %ld\n", identifier->token->text, identifier->type, identifier->datatype, identifier->size);
+        // printf("Literal: %s, Tipo do símbolo: %d, Tipo do dado: %d, Tamanho do dado: %ld\n", literal->token->text, literal->type, literal->datatype, literal->size);
     }
     ;
 
@@ -244,25 +249,49 @@ funcdec: funcheader commandblock
     }
     ;
 
-funcheader: type TK_IDENTIFICADOR '(' ')'
+funcheader: type funcidentifier '(' ')'
     { 
-        $$ = $2; 
-        add_symbol($2->text, $2, SYMBOL_TYPE_IDENTIFIER_FUNCTION, current_type, NULL);
+        $$ = $2;
+        symbol_item_t* identifier = get_symbol($2->text);
+        identifier->params_queue = params_types;
+        params_types = NULL;
     }
-    | TK_PR_STATIC type TK_IDENTIFICADOR '(' ')'
+    | TK_PR_STATIC type funcidentifier '(' ')'
     { 
         $$ = $3;
-        add_symbol($3->text, $3, SYMBOL_TYPE_IDENTIFIER_FUNCTION, current_type, NULL);
+        symbol_item_t* identifier = get_symbol($3->text);
+        identifier->params_queue = params_types;
+        params_types = NULL;
     }
-    | type TK_IDENTIFICADOR '(' parameterslist ')'
+    | type funcidentifier '(' parameterslist ')'
     { 
-        $$ = $2; 
-        add_symbol($2->text, $2, SYMBOL_TYPE_IDENTIFIER_FUNCTION, current_type, NULL);
+        $$ = $2;
+        symbol_item_t* identifier = get_symbol($2->text);
+        identifier->params_queue = params_types;
+        params_types = NULL;
     }
-    | TK_PR_STATIC type TK_IDENTIFICADOR '(' parameterslist ')'
+    | TK_PR_STATIC type funcidentifier '(' parameterslist ')'
     { 
         $$ = $3;
-        add_symbol($3->text, $3, SYMBOL_TYPE_IDENTIFIER_FUNCTION, current_type, NULL);
+        symbol_item_t* identifier = get_symbol($3->text);
+        identifier->params_queue = params_types;
+        params_types = NULL;
+    }
+    ;
+
+funcidentifier: TK_IDENTIFICADOR
+    {
+        $$ = $1;
+
+        if (current_type != SYMBOL_DATATYPE_STRING)
+        {
+            add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_FUNCTION, current_type, NULL);
+        }
+        else
+        {
+            fprintf(stderr, "Semantic Error: cannot return datatype `string` in functions (line %d)\n", $1->line);
+            exit(ERR_FUNCTION_STRING);
+        }
     }
     ;
 
@@ -271,17 +300,62 @@ parameterslist: parameterslist ',' parameter
     ;
 
 parameter: type TK_IDENTIFICADOR
+    {
+        if (current_type != SYMBOL_DATATYPE_STRING)
+        {
+            if (!opening_function)
+            {
+                opening_function = 1;
+                open_scope();
+                params_types = queue_create();
+            }
+            add_symbol($2->text, $2, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL);
+            symbol_datatype_t* datatype = calloc(1, sizeof(symbol_datatype_t));
+            *datatype = current_type;
+            queue_push(params_types, (void*)datatype);
+        }
+        else
+        {
+            fprintf(stderr, "Semantic Error: cannot have parameters of type `string` in functions (line %d)\n", $2->line);
+            exit(ERR_FUNCTION_STRING);
+        }
+    }
     | TK_PR_CONST type TK_IDENTIFICADOR
+    {
+        if (current_type != SYMBOL_DATATYPE_STRING)
+        {
+            if (!opening_function)
+            {
+                opening_function = 1;
+                open_scope();
+            }
+            add_symbol($3->text, $3, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL);
+            symbol_datatype_t* datatype = calloc(1, sizeof(symbol_datatype_t));
+            *datatype = current_type;
+            queue_push(params_types, (void*)datatype);
+        }
+        else
+        {
+            fprintf(stderr, "Semantic Error: cannot have parameters of type `string` in functions (line %d)\n", $3->line);
+            exit(ERR_FUNCTION_STRING);
+        }
+    }
     ;
 
 commandblock: openscope closescope           { $$ = NULL; }
     | openscope commandssequence closescope
-        {
-            $$ = $2;
-        }
+    {
+        $$ = $2;
+    }
     ;
 
-openscope: '{' { open_scope(); }
+openscope: '{' 
+    {
+        if (!opening_function)
+            open_scope();
+        else
+            opening_function = 0;
+    }
     ;
 
 closescope: '}' { printf("\nBLOCO DE COMANDO: \n"); print_symbol_table(); close_scope(); }
@@ -466,34 +540,127 @@ output: TK_PR_OUTPUT TK_IDENTIFICADOR { $$ = node_create("output", node_create_l
     ;
 
 funccall: TK_IDENTIFICADOR '(' ')' 
-{ 
-    char* label = calloc(strlen($1->text) + strlen("call ") + 1, sizeof(char));
-    sprintf(label, "call %s", $1->text);
-    $$ = node_create(label, NULL, NULL, NULL, NULL, NULL);
-    free(label);
+    { 
+        char* label = calloc(strlen($1->text) + strlen("call ") + 1, sizeof(char));
+        sprintf(label, "call %s", $1->text);
+        $$ = node_create(label, NULL, NULL, NULL, NULL, NULL);
+        free(label);
 
-    symbol_item_t* identifier = get_symbol($1->text);
-    if (identifier != NULL)
-    {
-        $$->type = identifier->datatype;
+        symbol_item_t* identifier = get_symbol($1->text);
+        if (identifier != NULL)
+        {
+            if (identifier->params_queue == NULL)
+            {
+                $$->type = identifier->datatype;
+            }
+            else
+            {
+                fprintf(stderr, "Semantic Error: function `%s` needs %ld arguments but didn't receive any in line %d\n", identifier->token->text, identifier->params_queue->size, $1->line);
+                exit(ERR_MISSING_ARGS);
+            }
+        }
+        else
+        {
+            fprintf(stderr, "Semantic Error: undefined function identifier `%s` in line %d\n", $1->text, $1->line);
+            exit(ERR_UNDECLARED);
+        }
     }
-    else
-    {
-        fprintf(stderr, "Semantic Error: undefined function identifier `%s` in line %d\n", $1->text, $1->line);
-        exit(ERR_UNDECLARED);
-    }
-}
     | TK_IDENTIFICADOR '(' argslist ')' 
-{ 
-    char* label = calloc(strlen($1->text) + strlen("call ") + 1, sizeof(char));
-    sprintf(label, "call %s", $1->text);
-    $$ = node_create(label, $3, NULL, NULL, NULL, NULL); 
-    free(label);
-}
+    { 
+        char* label = calloc(strlen($1->text) + strlen("call ") + 1, sizeof(char));
+        sprintf(label, "call %s", $1->text);
+        $$ = node_create(label, $3, NULL, NULL, NULL, NULL); 
+        free(label);
+
+        symbol_item_t* identifier = get_symbol($1->text);
+        if (identifier != NULL)
+        {
+            if (identifier->params_queue != NULL)
+            {
+                if (identifier->params_queue->size == args_types->size)
+                {
+                    int matched = 1;
+                    for (size_t i = 0; i < args_types->size; i++)
+                    {
+                        // Iterate over params_queue without removing items but removing items from args_types to clean it
+                        symbol_datatype_t* expected = (symbol_datatype_t*)queue_at(identifier->params_queue, i);
+                        symbol_datatype_t* got = (symbol_datatype_t*)queue_pop(args_types);
+                        if (*expected != *got)
+                        {
+                            matched = 0;
+                            free(got);
+                            break;
+                        }
+                        free(got);
+                    }
+                    queue_destroy(args_types);
+
+                    if (matched)
+                    {
+                        $$->type = identifier->datatype;
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Semantic Error: function `%s` was called with wrong types arguments in line %d\n", identifier->token->text, $1->line);
+                        exit(ERR_WRONG_TYPE_ARGS);
+                    }
+                }
+                else
+                {
+                    fprintf(stderr, "Semantic Error: function `%s` needs %ld arguments but received %ld in line %d\n", identifier->token->text, identifier->params_queue->size, args_types->size, $1->line);
+                    if (identifier->params_queue->size < args_types->size)
+                    {
+                        exit(ERR_EXCESS_ARGS);
+                    }
+                    else
+                    {
+                        exit(ERR_MISSING_ARGS);
+                    }
+                }
+            }
+            else
+            {
+                fprintf(stderr, "Semantic Error: function `%s` needs %ld arguments but received %ld in line %d\n", identifier->token->text, identifier->params_queue->size, args_types->size, $1->line);
+                exit(ERR_EXCESS_ARGS);
+            }
+        }
+        else
+        {
+            fprintf(stderr, "Semantic Error: undefined function identifier `%s` in line %d\n", $1->text, $1->line);
+            exit(ERR_UNDECLARED);
+        }
+    }
     ;
 
-argslist: expression ',' argslist {  if ($1 != NULL) { $$ = node_link($1, $3); } else { $$ = $3; };  }
-    | expression { $$ = $1; }
+argslist: expression ',' argslist 
+    { 
+        if ($1 != NULL) 
+        { 
+            $$ = node_link($1, $3);
+            if (args_types == NULL)
+                args_types = queue_create();
+
+            symbol_datatype_t* datatype = calloc(1, sizeof(symbol_datatype_t));
+            *datatype = (symbol_datatype_t)$1->type;
+            queue_push(args_types, datatype);
+        } 
+        else 
+        { 
+            $$ = $3; 
+        }; 
+    }
+    | expression 
+    { 
+        $$ = $1;
+
+        if (args_types == NULL)
+            args_types = queue_create();
+
+        symbol_datatype_t* datatype = calloc(1, sizeof(symbol_datatype_t));
+        printf("alloc: %p", datatype);
+        *datatype = (symbol_datatype_t)$1->type;
+        queue_push(args_types, datatype);
+    }
     ;
 
 shiftcommand: varname TK_OC_SL TK_LIT_INT { $$ = node_create($2->text, $1, node_create_leaf($3), NULL, NULL, NULL); }
@@ -585,11 +752,13 @@ arithmeticexpression: '+' arithmeticexpression
     | TK_LIT_INT
     {
         $$ = node_create_leaf($1);
+        $$->type = NODE_TYPE_INT;
         add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_INT, SYMBOL_DATATYPE_INT, NULL);
     }
     | TK_LIT_FLOAT
     {
         $$ = node_create_leaf($1);
+        $$->type = NODE_TYPE_FLOAT;
         add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_FLOAT, SYMBOL_DATATYPE_FLOAT, NULL);
     }
     | varname                                       { $$ = $1; }
