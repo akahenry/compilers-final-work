@@ -526,6 +526,7 @@ varassignment: varname '=' expression
         check_implicit_conversion($1->type, $3->type, $2->line, 0);
 
         symbol_item_t* first = NULL;
+        symbol_item_t* second = NULL;
         if($1->token != NULL)
         {
             first = get_symbol($1->token->text);
@@ -537,7 +538,10 @@ varassignment: varname '=' expression
             first = get_symbol($1->child1->token->text);
         }
 
-        symbol_item_t* second = get_symbol($3->token->text);
+        if ($3->type == NODE_TYPE_STRING)
+        {
+            second = get_symbol($3->token->text);
+        }
         if (first != NULL && second != NULL)
         {
             if (first->datatype == SYMBOL_DATATYPE_STRING && first->size < second->size)
@@ -727,7 +731,7 @@ funccall: TK_IDENTIFICADOR '(' ')'
             }
             else
             {
-                fprintf(stderr, "Semantic Error: function `%s` needs %ld arguments but received %ld in line %d\n", identifier->token->text, identifier->params_queue->size, args_types->size, $1->line);
+                fprintf(stderr, "Semantic Error: function `%s` needs 0 arguments but received %ld in line %d\n", identifier->token->text, args_types->size, $1->line);
                 exit(ERR_EXCESS_ARGS);
             }
         }

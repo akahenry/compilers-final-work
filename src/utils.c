@@ -142,7 +142,7 @@ void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t
         }
 
         if (symbol_table_add_symbol(symbol_table, key, token->line, type, datatype, size, token, NULL) == SYMBOL_ERROR_KEY_ALREADY_EXISTS &&
-            (type == SYMBOL_TYPE_IDENTIFIER_VARIABLE || type == SYMBOL_TYPE_IDENTIFIER_FUNCTION))
+            (type == SYMBOL_TYPE_IDENTIFIER_VARIABLE || type == SYMBOL_TYPE_IDENTIFIER_FUNCTION || type == SYMBOL_TYPE_IDENTIFIER_VECTOR))
         {
             symbol_item_t* declared_symbol = get_symbol(key);
             fprintf(stderr, "Semantic Error: duplicated identifier `%s` declaration on line %d and %d", key, declared_symbol->line_number, token->line);

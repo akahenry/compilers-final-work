@@ -28,7 +28,10 @@ failed = []
 errors_code = [10, 11, 20, 21, 22, 30, 31, 32, 33, 34, 40, 41, 42, 43, 50, 51, 52, ]
 
 def execute(fileName):
-    f = open(fileName, "r")
+    try:
+        f = open(fileName, "r")
+    except:
+        return
     line = f.readline().strip()
     shouldReturnError = line.startswith("//")
     errorName = line[2:]
