@@ -1,6 +1,0 @@
-string a;
-int f() 
-{
-    a = "";
-    return 0;
-}

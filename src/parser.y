@@ -204,8 +204,6 @@ initial: program
 {
     $$ = $1;
     arvore = (void*)$$;
-    printf("PROGRAMA: \n");
-    print_symbol_table();
 };
 
 program: %empty             { $$ = NULL; }
@@ -231,18 +229,11 @@ globalidentifierslist: globalidentifierslist ',' globalidentifier
 globalidentifier: TK_IDENTIFICADOR
     {
         add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL);
-        // symbol_item_t* identifier = get_symbol($1->text);
-        // printf("Identificador %s, Tipo do símbolo: %d, Tipo do dado: %d, Tamanho do dado: %ld\n", identifier->token->text, identifier->type, identifier->datatype, identifier->size);
     }
     | TK_IDENTIFICADOR '[' TK_LIT_INT ']' 
     {
         add_symbol($3->text, $3, SYMBOL_TYPE_LITERAL_INT, SYMBOL_DATATYPE_INT, NULL);
         add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VECTOR, current_type, $3);
-        
-        // symbol_item_t* identifier = get_symbol($1->text);
-        // symbol_item_t* literal = get_symbol($3->text);
-        // printf("Identificador %s, Tipo do símbolo: %d, Tipo do dado: %d, Tamanho do dado: %ld\n", identifier->token->text, identifier->type, identifier->datatype, identifier->size);
-        // printf("Literal: %s, Tipo do símbolo: %d, Tipo do dado: %d, Tamanho do dado: %ld\n", literal->token->text, literal->type, literal->datatype, literal->size);
     }
     ;
 
@@ -363,7 +354,7 @@ openscope: '{'
     }
     ;
 
-closescope: '}' { printf("\nBLOCO DE COMANDO: \n"); print_symbol_table(); close_scope(); }
+closescope: '}' { close_scope(); }
     ;
 
 commandssequence: command ';' commandssequence { if ($1 != NULL) { $$ = node_link($1, $3); } else { $$ = $3; }; }
@@ -441,7 +432,21 @@ localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR
     | TK_IDENTIFICADOR TK_OC_LE literal 
     { 
         $$ = node_create($2->text, node_create_leaf($1), $3, NULL, NULL, NULL);
-        symbol_item_t* second = get_symbol($3->token->text);
+        symbol_item_t* second = NULL;
+
+        if ($3->type == NODE_TYPE_CHAR)
+        {
+            second = get_symbol_lit_char($3->token->text);
+        }
+        else if ($3->type == NODE_TYPE_STRING)
+        {
+            second = get_symbol_lit_string($3->token->text);
+        }
+        else
+        {
+            second = get_symbol($3->token->text);
+        }
+
         if (second != NULL)
         {
             if (current_type == second->datatype)
@@ -634,7 +639,21 @@ output: TK_PR_OUTPUT TK_IDENTIFICADOR
     | TK_PR_OUTPUT literal 
     { 
         $$ = node_create("output", $2, NULL, NULL, NULL, NULL);
-        symbol_item_t* literal = get_symbol($2->token->text);
+        symbol_item_t* literal = NULL;
+
+        if ($2->type == NODE_TYPE_CHAR)
+        {
+            literal = get_symbol_lit_char($2->token->text);
+        }
+        else if ($2->type == NODE_TYPE_STRING)
+        {
+            literal = get_symbol_lit_string($2->token->text);
+        }
+        else
+        {
+            literal = get_symbol($2->token->text);
+        }
+
         if (literal->datatype == SYMBOL_DATATYPE_INT || literal->datatype == SYMBOL_DATATYPE_FLOAT)
         {
             $$->type = (node_type_t)literal->datatype;
@@ -708,7 +727,6 @@ funccall: TK_IDENTIFICADOR '(' ')'
                         // Iterate over params_queue without removing items but removing items from args_types to clean it
                         symbol_datatype_t* expected = (symbol_datatype_t*)queue_at(identifier->params_queue, i);
                         symbol_datatype_t* got = (symbol_datatype_t*)stack_pop(args_types);
-                        printf("expected(%p) %d and got(%p) %d\n", expected, *expected, got, *got);
                         check_implicit_conversion((node_type_t)*expected, (node_type_t)*got, $1->line, 1);
                         free(got);
                     }

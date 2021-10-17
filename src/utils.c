@@ -64,31 +64,6 @@ void close_scope()
     symbol_table_close_scope(symbol_table);
 }
 
-void add_symbol_from_node(char* key, node_t* node)
-{
-    if (node != NULL && node->token != NULL)
-    {
-        symbol_type_t s_type;
-        switch (node->token->type)
-        {
-        case TOKEN_TYPE_IDENTIFIER:
-            if (strncmp("call ", node->label, strlen("call ")) == 0)
-            {
-                s_type = SYMBOL_TYPE_IDENTIFIER_FUNCTION;
-            }
-            else
-            {
-                s_type = SYMBOL_TYPE_IDENTIFIER_VARIABLE;
-            }
-            break;
-        default:
-            s_type = (symbol_type_t)node->token->type;
-            break;
-        }
-        add_symbol(key, node->token, s_type, (symbol_datatype_t)node->type, NULL); // TODO: Verificar se pode ser vetor e setar o ultimo parametro adequadamente nesse caso
-    }
-}
-
 void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t datatype, token_t* vector_size_token)
 {
     if (token != NULL)
@@ -99,6 +74,7 @@ void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t
         }
 
         size_t size = 0;
+        char* label = key;
 
         switch (datatype)
         {
@@ -127,6 +103,12 @@ void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t
             default:
                 break;
         }
+        
+        if (type == SYMBOL_TYPE_LITERAL_CHAR || type == SYMBOL_TYPE_LITERAL_STRING)
+        {
+            label = calloc(strlen(key) + 2, sizeof(char));
+            sprintf(label, "%d%s", type, key);
+        }
 
         if (vector_size_token != NULL)
         {
@@ -141,12 +123,16 @@ void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t
             }
         }
 
-        if (symbol_table_add_symbol(symbol_table, key, token->line, type, datatype, size, token, NULL) == SYMBOL_ERROR_KEY_ALREADY_EXISTS &&
+        if (symbol_table_add_symbol(symbol_table, label, token->line, type, datatype, size, token, NULL) == SYMBOL_ERROR_KEY_ALREADY_EXISTS &&
             (type == SYMBOL_TYPE_IDENTIFIER_VARIABLE || type == SYMBOL_TYPE_IDENTIFIER_FUNCTION || type == SYMBOL_TYPE_IDENTIFIER_VECTOR))
         {
             symbol_item_t* declared_symbol = get_symbol(key);
             fprintf(stderr, "Semantic Error: duplicated identifier `%s` declaration on line %d and %d", key, declared_symbol->line_number, token->line);
             exit(ERR_DECLARED);
+        }
+        if (label != key)
+        {
+            free(label);
         }
     }
 }
@@ -161,6 +147,24 @@ symbol_item_t* get_symbol(char* key)
     {
         return NULL;
     }
+}
+
+symbol_item_t* get_symbol_lit_char(char* key)
+{
+    char* label = calloc(strlen(key) + 2, sizeof(char));
+    sprintf(label, "%d%s", SYMBOL_TYPE_LITERAL_CHAR, key);
+    symbol_item_t* response = get_symbol(label);
+    free(label);
+    return response;
+}
+
+symbol_item_t* get_symbol_lit_string(char* key)
+{
+    char* label = calloc(strlen(key) + 2, sizeof(char));
+    sprintf(label, "%d%s", SYMBOL_TYPE_LITERAL_STRING, key);
+    symbol_item_t* response = get_symbol(label);
+    free(label);
+    return response;
 }
 
 const char* datatype_string(symbol_datatype_t datatype)
@@ -205,8 +209,7 @@ void exporta(void* tree)
     }
     
     node_t* node_ptr = (node_t*) tree;
-    // printf("%p [label=\"%s\"];\n", node_ptr, node_ptr->label); // TODO: descomentar essa linha
-    printf("%p [label=\"%s\"] [type=%d];\n", node_ptr, node_ptr->label, node_ptr->type);
+    printf("%p [label=\"%s\"];\n", node_ptr, node_ptr->label);
 
 
     if (node_ptr->child1 != NULL)

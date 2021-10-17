@@ -1,6 +1,0 @@
-//ERR_STRING_MAX
-int f() {
-    string a <= "universo";
-    a = "o" + "universo";
-    return 0;
-}

@@ -39,9 +39,9 @@ def execute(fileName):
     exitCode = subprocess.call(command, shell=True, stderr=subprocess.DEVNULL)
     
     if shouldReturnError and errorDic[errorName] == exitCode:
-        print("")
+        print("", end="")
     elif exitCode == 0 and not shouldReturnError:
-        print("")
+        print("", end="")
     else:
         failed.append(fileName)
         print("FileName = ", fileName)

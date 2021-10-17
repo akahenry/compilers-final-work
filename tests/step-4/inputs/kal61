@@ -1,5 +1,0 @@
-int f() {
-    string a <= "universo";
-    a = "o" + "univ.";
-    return 0;
-}

@@ -1,6 +1,0 @@
-//ERR_WRONG_TYPE
-float v[30];
-int f() {
-    v[2] = "universo";
-    return 0;
-}
