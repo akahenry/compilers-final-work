@@ -66,7 +66,7 @@ void* queue_at(queue_t* q, int index)
 		if (index >= 0 && index < q->size)
 		{
 			item = q->begin;
-			for (size_t i = 1; i < index; i++)
+			for (size_t i = 1; i <= index; i++)
 			{
 				item = item->next;
 			}

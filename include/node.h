@@ -40,6 +40,7 @@ void node_destroy(node_t* _node);
 node_t* node_link(node_t *_node_parent, node_t *_node_child);
 node_type_t infer_type(node_type_t type1, node_type_t type2);
 node_type_t infer_type_nodes(node_t *node1, node_t *node2, int line);
-void check_implicit_conversion(node_type_t type1, node_type_t type2, int line);
+node_type_t check_implicit_conversion(node_type_t type1, node_type_t type2, int line, int is_function);
+node_type_t type_coercion(node_type_t type1, node_type_t type2, int line);
 
 #endif

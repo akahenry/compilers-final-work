@@ -120,7 +120,7 @@ node_type_t infer_type_nodes(node_t *node1, node_t *node2, int line)
 
 // checks if type2 can be implicitly converted to type1
 // if not, prints error and exit
-void check_implicit_conversion(node_type_t type1, node_type_t type2, int line)
+node_type_t check_implicit_conversion(node_type_t type1, node_type_t type2, int line, int is_function)
 {
     if (type1 != type2)
     {
@@ -137,8 +137,41 @@ void check_implicit_conversion(node_type_t type1, node_type_t type2, int line)
         else if (!((type1 == NODE_TYPE_INT || type1 == NODE_TYPE_FLOAT || type1 == NODE_TYPE_BOOL) &&
                    (type2 == NODE_TYPE_INT || type2 == NODE_TYPE_FLOAT || type2 == NODE_TYPE_BOOL)))
         {
-            fprintf(stderr, "Semantic Error: cannot attribute datatype `%s` to variable of type `%s` in line %d\n", datatype_string(type2), datatype_string(type1), line);
-            exit(ERR_WRONG_TYPE);
+            if (is_function)
+            {
+                fprintf(stderr, "Semantic Error: function was called with wrong types arguments in line %d\n", line);
+                exit(ERR_WRONG_TYPE_ARGS);
+            }
+            else
+            {
+                fprintf(stderr, "Semantic Error: cannot attribute datatype `%s` to variable of type `%s` in line %d\n", datatype_string(type2), datatype_string(type1), line);
+                exit(ERR_WRONG_TYPE);
+            }
         }
     }
+
+    return type1;
+}
+
+// Return type2 if cannot be converted
+node_type_t type_coercion(node_type_t type1, node_type_t type2, int line)
+{
+    if (type1 != type2)
+    {
+        if (type2 == NODE_TYPE_STRING)
+        {
+            return type2;
+        }
+        else if (type2 == NODE_TYPE_CHAR)
+        {
+            return type2;
+        }
+        else if (!((type1 == NODE_TYPE_INT || type1 == NODE_TYPE_FLOAT || type1 == NODE_TYPE_BOOL) &&
+                   (type2 == NODE_TYPE_INT || type2 == NODE_TYPE_FLOAT || type2 == NODE_TYPE_BOOL)))
+        {
+            return type2;
+        }
+    }
+
+    return type1;
 }

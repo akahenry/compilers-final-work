@@ -1,7 +1,11 @@
 int v1;
+int v2[100];
 int f1 (float k, int l) 
 {
-  int a;
+  string a <= "123";
+  string b <= "1234";
+  string c <= "abc";
+  a = c;
+  a = b;
 }
-int v2[100];
 char v3;
