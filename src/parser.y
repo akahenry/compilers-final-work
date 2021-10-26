@@ -131,74 +131,23 @@ stack_t* args_types = NULL;
 
 %%
 
-// TODO de analise sintatica:
-// [x] criar e destruir escopo
-// [ ] adicionar simbolos na tabela de simbolos
-//      localização
-//      natureza
-//      tipo
-//      tamanho
-//      argumentos e tipos
-//      valor do token (yylval)
-// declaracoes:
-//      [x] erro na dupla declaração no mesmo escopo                            ERR_DECLARED
-//          [x] declaração global
-//          [x] declaração local
-//      [x] erro no uso sem declaração em escopos superiores                    ERR_UNDECLARED
-//      [x] erro na declaração de vetor de string                               ERR_STRING_VECTOR
-//          [x] declaração global
-// uso de identificadores:
-//      [x] erro vetor sendo usado como função ou variavel                      ERR_VECTOR
-//      (deve ser usado com indexação)
-//      [x] erro função sendo usada como vetor ou variavel                      ERR_FUNCTION
-//      (deve ser usada com parentesis e args)
-//      [x] erro variavel sendo usada como vetor ou função                      ERR_VARIABLE
-//      (deve ser usado sem nada)
-// [ ] tipo do token é herdado pelo nó (conversão implicita e inferencia)
-// erro na conversão implicita (coerção) de string e char:
-//      [x] char para algo                                                      ERR_CHAR_TO_X
-//          [x] inicialização de variável
-//          [x] atribuições
-//      [x] string para algo                                                    ERR_STRING_TO_X
-//          [x] inicialização de variável
-//          [x] atribuições
-// argumentos compativeis com declaração de função:
-//      [x] erro no uso com menos argumentos                                    ERR_MISSING_ARGS
-//      [x] erro no uso com mais argumentos                                     ERR_EXCESS_ARGS
-//      [x] erro no uso com argumentos de tipos errados                         ERR_WRONG_TYPE_ARGS
-// [x] erro quando argumentos, retorno e parametros de funções são string       ERR_FUNCTION_STRING
-// erro na atribuição de um valor de um tipo para variavel de outro:            ERR_WRONG_TYPE
-//      [x] inicialização de variável
-//      [x] atribuições
-// input e output só aceitam int e float:
-//      [x] erro se tipo no input não é int ou float                            ERR_WRONG_PAR_INPUT
-//      [x] erro se tipo no output não é int ou float                           ERR_WRONG_PAR_OUTPUT
-// [x] erro se a expression do return for incompativel com tipo da função       ERR_WRONG_PAR_RETURN
-// [x] erro se o numero de shift for maior que 16                               ERR_WRONG_PAR_SHIFT
-// [x] erro se a atribuição de string for maior que o tamanho max declarado     ERR_STRING_MAX
+// TODO etapa 5
 
-// conversões implícitas
-//      int -> float | bool
-//      bool -> float | int
-//      float -> int | bool
-// inferência
-//      dois (float | int | bool) -> mesmo tipo dos dois
-//      float e int -> float
-//      bool e int -> int
-//      bool e float -> float
+// [ ] estrutura de dados para instruções ILOC com argumentos (nome de registradores, valores constantes ou nomes de rótulos)
+// [ ] lista de comandos ILOC que será o programa traduzido para ILOC
 
-// tamanhos
-//      char    1 byte
-//      bool    1 byte
-//      int     4 bytes
-//      float   8 bytes
-//      string  tamanho definido na declaração (em bytes)
-//      vetor   tamanho do vetor na declaração * tamanho do tipo
+// [ ] função que fornece nomes de rótulos
+// [ ] função que gera nomes de registradores
 
-// mensagens de erro em linguagem natural:
-//      linha
-//      identificador
-//      natureza
+// [ ] Cálculo de endereço na declaração de variáveis
+// [ ] Expressões aritméticas com operações unárias, binária e ternária
+// [ ] Expressões lógicas (com curto-circuito)
+// [ ] Comando de atribuição
+// [ ] Comandos de fluxo de controle
+//      [ ] if com else opcional
+//      [ ] while
+//      [ ] for
+// [ ] chamada de função
 
 initial: program
 {
