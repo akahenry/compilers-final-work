@@ -136,8 +136,8 @@ stack_t* args_types = NULL;
 // [ ] estrutura de dados para instruções ILOC com argumentos (nome de registradores, valores constantes ou nomes de rótulos)
 // [ ] lista de comandos ILOC que será o programa traduzido para ILOC
 
-// [ ] função que fornece nomes de rótulos
-// [ ] função que gera nomes de registradores
+// [ ] função que fornece nomes de rótulos (convenção: L e numero inteiro positivo)
+// [ ] função que gera nomes de registradores (convenção: r e numero inteiro positivo)
 
 // [ ] Cálculo de endereço na declaração de variáveis
 // [ ] Expressões aritméticas com operações unárias, binária e ternária
