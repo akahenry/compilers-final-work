@@ -5,16 +5,18 @@ Grupo D
 */
 #include "iloc_instruction.h"
 
-void sprint_iloc_instruction(char *str, iloc_instruction_t *ins)
+char* iloc_instruction_string(iloc_instruction_t *ins)
 {
-    const char* opcode = opcode_string(ins);
-    char* arg1 = argument_string(ins->arg1);
-    char* arg2 = argument_string(ins->arg2);
-    char* arg3 = argument_string(ins->arg3);
+    const char* opcode = iloc_opcode_string(ins);
+    char* arg1 = iloc_arg_string(ins->arg1);
+    char* arg2 = iloc_arg_string(ins->arg2);
+    char* arg3 = iloc_arg_string(ins->arg3);
+    char* str = NULL;
 
     switch (ins->opcode)
     {
         case ILOC_INS_NOP:
+            str = calloc(strlen(opcode) + 1, sizeof(char));
             sprintf(str, "%s", opcode);
             break;
         
@@ -27,6 +29,7 @@ void sprint_iloc_instruction(char *str, iloc_instruction_t *ins)
         case ILOC_INS_C2C:
         case ILOC_INS_C2I:
         case ILOC_INS_I2C:
+            str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + 5 + 1, sizeof(char));
             sprintf(str, "%s %s => %s",
                     opcode,
                     arg1,
@@ -57,6 +60,7 @@ void sprint_iloc_instruction(char *str, iloc_instruction_t *ins)
         case ILOC_INS_LOADA0:
         case ILOC_INS_CLOADAI:
         case ILOC_INS_CLOADA0:
+            str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + strlen(arg3) + 6 + 1, sizeof(char));
             sprintf(str, "%s %s %s => %s",
                     opcode,
                     arg1,
@@ -68,6 +72,7 @@ void sprint_iloc_instruction(char *str, iloc_instruction_t *ins)
         case ILOC_INS_STOREAO:
         case ILOC_INS_CSTOREAI:
         case ILOC_INS_CSTOREAO:
+            str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + strlen(arg3) + 6 + 1, sizeof(char));
             sprintf(str, "%s %s => %s %s",
                     opcode,
                     arg1,
@@ -77,12 +82,14 @@ void sprint_iloc_instruction(char *str, iloc_instruction_t *ins)
         
         case ILOC_INS_JUMPI:
         case ILOC_INS_JUMP:
+            str = calloc(strlen(opcode) + strlen(arg1) + 4 + 1, sizeof(char));
             sprintf(str, "%s -> %s",
                     opcode,
                     arg1);
             break;
         
         case ILOC_INS_CBR:
+            str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + strlen(arg3) + 6 + 1, sizeof(char));
             sprintf(str, "%s %s -> %s %s",
                     opcode,
                     arg1,
@@ -96,6 +103,7 @@ void sprint_iloc_instruction(char *str, iloc_instruction_t *ins)
         case ILOC_INS_CMP_GE:
         case ILOC_INS_CMP_GT:
         case ILOC_INS_CMP_NE:
+            str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + strlen(arg3) + 6 + 1, sizeof(char));
             sprintf(str, "%s %s %s -> %s",
                     opcode,
                     arg1,
@@ -104,12 +112,16 @@ void sprint_iloc_instruction(char *str, iloc_instruction_t *ins)
             break;
         
         default:
-            sprintf(str, "UNRECOGNIZED OPCODE");
             break;
     }
+
+    free(arg1);
+    free(arg2);
+    free(arg3);
+    return str;
 }
 
-const char* prefix_for_argument_type(iloc_arg_type_t type)
+const char* iloc_prefix_for_argument_type(iloc_arg_type_t type)
 {
     switch (type)
     {
@@ -129,7 +141,7 @@ const char* prefix_for_argument_type(iloc_arg_type_t type)
     }
 }
 
-const char* opcode_string(iloc_instruction_t *ins)
+const char* iloc_opcode_string(iloc_instruction_t *ins)
 {
     switch (ins->opcode)
     {
@@ -234,7 +246,7 @@ const char* opcode_string(iloc_instruction_t *ins)
     return "panik";
 }
 
-char* argument_string(iloc_argument_t arg)
+char* iloc_arg_string(iloc_argument_t arg)
 {
     char* string = NULL;
     int n = arg.number;
@@ -261,10 +273,52 @@ char* argument_string(iloc_argument_t arg)
             n /= 10;
             ++count;
         } while (n != 0);
-        string = calloc(strlen(prefix_for_argument_type(arg.type)) + count + 1, sizeof(char));
-        sprintf(string, "%s%d", prefix_for_argument_type(arg.type), arg.number);
+        string = calloc(strlen(iloc_prefix_for_argument_type(arg.type)) + count + 1, sizeof(char));
+        sprintf(string, "%s%d", iloc_prefix_for_argument_type(arg.type), arg.number);
         break;
     }
 
     return string;
+}
+
+iloc_instruction_t* iloc_create(iloc_opcode_t opcode, iloc_argument_t arg1, iloc_argument_t arg2, iloc_argument_t arg3)
+{
+    iloc_instruction_t* ins = calloc(1, sizeof(iloc_instruction_t));
+    ins->opcode = opcode;
+    ins->arg1 = arg1;
+    ins->arg2 = arg2;
+    ins->arg3 = arg3;
+    ins->previous = NULL;
+
+    return ins;
+}
+
+iloc_instruction_t* iloc_join(iloc_instruction_t* ins1, iloc_instruction_t* ins2)
+{
+    if (!ins1)
+        return ins2;
+    if (!ins2)
+        return ins1;
+
+    iloc_instruction_t* ins = ins2;
+    while (ins->previous)
+        ins = ins->previous;
+
+    ins->previous = ins1;
+
+    return ins2;
+}
+
+void iloc_recursive_print(iloc_instruction_t* ins)
+{
+    if (ins == NULL)
+    {
+        return;
+    }
+
+    iloc_recursive_print(ins->previous);
+    char* str = iloc_instruction_string(ins);
+
+    printf("%s\n", str);
+    free(str);
 }

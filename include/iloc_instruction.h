@@ -85,13 +85,15 @@ typedef struct _iloc_instruction_t
     iloc_argument_t arg1;
     iloc_argument_t arg2;
     iloc_argument_t arg3;
-
+    struct _iloc_instruction_t* previous;
 } iloc_instruction_t;
 
-
-void sprint_iloc_instruction(char* str, iloc_instruction_t* ins);
-const char* opcode_string(iloc_instruction_t* ins);
-const char* prefix_for_argument_type(iloc_arg_type_t type);
-char* argument_string(iloc_argument_t arg);
+iloc_instruction_t* iloc_create(iloc_opcode_t opcode, iloc_argument_t arg1, iloc_argument_t arg2, iloc_argument_t arg3);
+iloc_instruction_t* iloc_join(iloc_instruction_t* ins1, iloc_instruction_t* ins2);
+char* iloc_instruction_string(iloc_instruction_t *ins);
+const char* iloc_opcode_string(iloc_instruction_t* ins);
+const char* iloc_prefix_for_argument_type(iloc_arg_type_t type);
+char* iloc_arg_string(iloc_argument_t arg);
+void iloc_recursive_print(iloc_instruction_t* ins);
 
 #endif
