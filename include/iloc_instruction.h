@@ -7,6 +7,8 @@ Grupo D
 #define ILOC_INSTRUCTION_H
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 typedef enum _iloc_opcode_t
 {
@@ -63,8 +65,11 @@ typedef enum _iloc_arg_type_t
 {
     ILOC_ARG_TYPE_REGISTER,
     ILOC_ARG_TYPE_LABEL,
-    ILOC_ARG_TYPE_NUMBER
-    // ILOC_ARG_TYPE_SPECIALREGISTER, // for rfp, rsp, rbss and rpc
+    ILOC_ARG_TYPE_NUMBER,
+    ILOC_ARG_TYPE_RFP,
+    ILOC_ARG_TYPE_RSP,
+    ILOC_ARG_TYPE_RBSS,
+    ILOC_ARG_TYPE_RPC
 } iloc_arg_type_t;
 
 typedef struct _iloc_argument_t
@@ -87,5 +92,6 @@ typedef struct _iloc_instruction_t
 void sprint_iloc_instruction(char* str, iloc_instruction_t* ins);
 const char* opcode_string(iloc_instruction_t* ins);
 const char* prefix_for_argument_type(iloc_arg_type_t type);
+char* argument_string(iloc_argument_t arg);
 
 #endif

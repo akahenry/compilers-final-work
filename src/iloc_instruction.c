@@ -8,9 +8,9 @@ Grupo D
 void sprint_iloc_instruction(char *str, iloc_instruction_t *ins)
 {
     const char* opcode = opcode_string(ins);
-    const char* arg1_prefix = prefix_for_argument_type(ins->arg1.type);
-    const char* arg2_prefix = prefix_for_argument_type(ins->arg2.type);
-    const char* arg3_prefix = prefix_for_argument_type(ins->arg3.type);
+    char* arg1 = argument_string(ins->arg1);
+    char* arg2 = argument_string(ins->arg2);
+    char* arg3 = argument_string(ins->arg3);
 
     switch (ins->opcode)
     {
@@ -27,10 +27,10 @@ void sprint_iloc_instruction(char *str, iloc_instruction_t *ins)
         case ILOC_INS_C2C:
         case ILOC_INS_C2I:
         case ILOC_INS_I2C:
-            sprintf(str, "%s %s%d => %s%d",
+            sprintf(str, "%s %s => %s",
                     opcode,
-                    arg1_prefix, ins->arg1.number,
-                    arg2_prefix, ins->arg2.number);
+                    arg1,
+                    arg2);
             break;
         
         case ILOC_INS_ADD:
@@ -57,37 +57,37 @@ void sprint_iloc_instruction(char *str, iloc_instruction_t *ins)
         case ILOC_INS_LOADA0:
         case ILOC_INS_CLOADAI:
         case ILOC_INS_CLOADA0:
-            sprintf(str, "%s %s%d %s%d => %s%d",
+            sprintf(str, "%s %s %s => %s",
                     opcode,
-                    arg1_prefix, ins->arg1.number,
-                    arg2_prefix, ins->arg2.number,
-                    arg3_prefix, ins->arg3.number);
+                    arg1,
+                    arg2,
+                    arg3);
             break;
         
         case ILOC_INS_STOREAI:
         case ILOC_INS_STOREAO:
         case ILOC_INS_CSTOREAI:
         case ILOC_INS_CSTOREAO:
-            sprintf(str, "%s %s%d => %s%d %s%d",
+            sprintf(str, "%s %s => %s %s",
                     opcode,
-                    arg1_prefix, ins->arg1.number,
-                    arg2_prefix, ins->arg2.number,
-                    arg3_prefix, ins->arg3.number);
+                    arg1,
+                    arg2,
+                    arg3);
             break;
         
         case ILOC_INS_JUMPI:
         case ILOC_INS_JUMP:
-            sprintf(str, "%s -> %s%d",
+            sprintf(str, "%s -> %s",
                     opcode,
-                    arg1_prefix, ins->arg1.number);
+                    arg1);
             break;
         
         case ILOC_INS_CBR:
-            sprintf(str, "%s %s%d -> %s%d %s%d",
+            sprintf(str, "%s %s -> %s %s",
                     opcode,
-                    arg1_prefix, ins->arg1.number,
-                    arg2_prefix, ins->arg2.number,
-                    arg3_prefix, ins->arg3.number);
+                    arg1,
+                    arg2,
+                    arg3);
             break;
         
         case ILOC_INS_CMP_LT:
@@ -96,11 +96,11 @@ void sprint_iloc_instruction(char *str, iloc_instruction_t *ins)
         case ILOC_INS_CMP_GE:
         case ILOC_INS_CMP_GT:
         case ILOC_INS_CMP_NE:
-            sprintf(str, "%s %s%d %s%d -> %s%d",
+            sprintf(str, "%s %s %s -> %s",
                     opcode,
-                    arg1_prefix, ins->arg1.number,
-                    arg2_prefix, ins->arg2.number,
-                    arg3_prefix, ins->arg3.number);
+                    arg1,
+                    arg2,
+                    arg3);
             break;
         
         default:
@@ -232,4 +232,39 @@ const char* opcode_string(iloc_instruction_t *ins)
     }
 
     return "panik";
+}
+
+char* argument_string(iloc_argument_t arg)
+{
+    char* string = NULL;
+    int n = arg.number;
+    int count = 0;
+
+    switch (arg.type)
+    {
+    case ILOC_ARG_TYPE_RFP:
+        string = strdup("rfp");        
+        break;
+    case ILOC_ARG_TYPE_RSP:
+        string = strdup("rsp");
+        break;
+    case ILOC_ARG_TYPE_RBSS:
+        string = strdup("rbss");
+        break;
+    case ILOC_ARG_TYPE_RPC:
+        string = strdup("rpc");
+        break;
+    
+    default:
+        // Counting digits of arg number
+        do {
+            n /= 10;
+            ++count;
+        } while (n != 0);
+        string = calloc(strlen(prefix_for_argument_type(arg.type)) + count + 1, sizeof(char));
+        sprintf(string, "%s%d", prefix_for_argument_type(arg.type), arg.number);
+        break;
+    }
+
+    return string;
 }
