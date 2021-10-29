@@ -1,11 +1,11 @@
 int f(){
+  {
     {
-	{
-	   int a;
-	   {
-	      a = 3;
- 	   };
-	};
+      int a;
+      {
+	a = 3;
+      };
     };
-    return 0;
+  };
+  return 0;
 }

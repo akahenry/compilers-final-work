@@ -1,4 +1,4 @@
-//ERR_WRONG_PAR_RETURN
+//ERR_FUNCTION_STRING
 int f(){
     string a <= "universo";
     return a;

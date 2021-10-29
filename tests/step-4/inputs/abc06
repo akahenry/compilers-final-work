@@ -1,8 +1,8 @@
-int a;
-int f(){
-  int a;
+//ERR_VARIABLE
+int f() {
   {
     int a;
+    a();
   };
   return 0;
 }

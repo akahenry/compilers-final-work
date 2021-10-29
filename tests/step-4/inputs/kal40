@@ -1,12 +1,12 @@
 int a;
 int f(){
-    int a;
+  int a;
+  {
     {
-	{
-	   {
-	      a = 54;
- 	   };
-	};
+      {
+	a = 54;
+      };
     };
-    return 0;
+  };
+  return 0;
 }

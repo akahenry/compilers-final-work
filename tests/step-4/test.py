@@ -48,6 +48,13 @@ def execute(fileName):
         print("ExitCode", str(exitCode))
         print("FALHOU!")
 
+for i in range(0,15):
+    fileName = "./inputs/abc"
+    if i < 10:
+        fileName += "0"
+    fileName += str(i)
+    execute(fileName)
+
 for i in range(0,100):
     fileName = "./inputs/kal"
     if i < 10:
@@ -55,7 +62,7 @@ for i in range(0,100):
     fileName += str(i)
     execute(fileName)
     
-for i in range(1,10):
+for i in range(1,9):
     fileName = "./inputs/mao0"
     fileName += str(i)
     execute(fileName)
