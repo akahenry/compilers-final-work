@@ -40,7 +40,7 @@ para cada parametro i in range(numero de parametros):
 
 para cada parametro i in range(numero de parametros):
     "obtém o parâmetro"
-    `r<i> <= 12 + i*4`
+    `r<i> <= rfp + 12 + i*4`
 
 `<executa as coisa de dentro da função>`
 
