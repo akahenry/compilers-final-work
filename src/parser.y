@@ -21,6 +21,7 @@ int yyerror (char const *s);
 
 symbol_datatype_t current_type;
 int opening_function = 0;
+int is_argless_function = 0;
 symbol_datatype_t current_function_type;
 queue_t* params_types = NULL;
 stack_t* args_types = NULL;
@@ -206,6 +207,8 @@ funcheader: type funcidentifier '(' ')'
         symbol_item_t* identifier = get_symbol($2->text);
         identifier->params_queue = params_types;
         params_types = NULL;
+        opening_function = 1;
+        is_argless_function = 1;
     }
     | TK_PR_STATIC type funcidentifier '(' ')'
     { 
@@ -213,6 +216,8 @@ funcheader: type funcidentifier '(' ')'
         symbol_item_t* identifier = get_symbol($3->text);
         identifier->params_queue = params_types;
         params_types = NULL;
+        opening_function = 1;
+        is_argless_function = 1;
     }
     | type funcidentifier '(' parameterslist ')'
     { 
@@ -249,6 +254,10 @@ funcidentifier: TK_IDENTIFICADOR
 
 parameterslist: parameterslist ',' parameter
     | parameter
+    {
+        // allocate for return value
+        add_disp_symbol_table(4);
+    }
     ;
 
 parameter: type TK_IDENTIFICADOR
@@ -260,6 +269,9 @@ parameter: type TK_IDENTIFICADOR
                 opening_function = 1;
                 open_scope();
                 params_types = queue_create();
+
+                // allocate for return addr, rsp and rfp
+                add_disp_symbol_table(12);
             }
             add_symbol($2->text, $2, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL, ADD_DISP);
             symbol_datatype_t* datatype = calloc(1, sizeof(symbol_datatype_t));
@@ -280,6 +292,9 @@ parameter: type TK_IDENTIFICADOR
             {
                 opening_function = 1;
                 open_scope();
+
+                // allocate for return addr, rsp and rfp
+                add_disp_symbol_table(12);
             }
             add_symbol($3->text, $3, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL, ADD_DISP);
             symbol_datatype_t* datatype = calloc(1, sizeof(symbol_datatype_t));
@@ -303,10 +318,17 @@ commandblock: openscope closescope           { $$ = NULL; }
 
 openscope: '{' 
     {
-        if (!opening_function)
+        if (!opening_function || is_argless_function)
+        {
             open_scope();
-        else
-            opening_function = 0;
+            if (is_argless_function)
+            {
+                // allocate for return addr, rsp, rfp and return value
+                add_disp_symbol_table(16);
+            }
+        }
+        opening_function = 0;
+        is_argless_function = 0;
     }
     ;
 
@@ -849,7 +871,7 @@ arithmeticexpression: '+' arithmeticexpression
         $$->code = iloc_join(iloc_join($1->code, $3->code), generate_arithmetic_binary_expression(ILOC_INS_ADD, $1->temp, $3->temp, temp));
         $$->temp = temp;
 
-        iloc_recursive_print($$->code);
+        // iloc_recursive_print($$->code);
     }
     | arithmeticexpression '-' arithmeticexpression
     {
