@@ -269,6 +269,9 @@ char* iloc_arg_string(iloc_argument_t arg)
     case ILOC_ARG_TYPE_RPC:
         string = strdup("rpc");
         break;
+    case ILOC_ARG_TYPE_NONE:
+        string = NULL;
+        break;
     
     default:
         // Counting digits of arg number

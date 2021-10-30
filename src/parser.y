@@ -142,7 +142,8 @@ stack_t* args_types = NULL;
 // [x] função que gera nomes de registradores (convenção: r e numero inteiro positivo)
 
 // [x] Cálculo de endereço na declaração de variáveis
-// [ ] Expressões aritméticas com operações unárias, binária e ternária
+// [x] Expressões aritméticas com operações unárias e binárias
+// [ ] Expressões ternárias (OPCIONAL?)
 // [ ] Expressões lógicas (com curto-circuito)
 // Comando de atribuição
 //      Atribuição na declaração local
@@ -808,11 +809,21 @@ arithmeticexpression: '+' arithmeticexpression
     {
         $$ = node_create("+", $2, NULL, NULL, NULL, NULL);
         $$->type = $2->type;
+
+        iloc_argument_t temp = make_temp();
+        $$->code = iloc_join($2->code, generate_arithmetic_unary_expression($1, $2->temp, temp));
+        $$->temp = temp;
+
+        // iloc_recursive_print($$->code);
     }
     | '-' arithmeticexpression
     {
         $$ = node_create("-", $2, NULL, NULL, NULL, NULL);
         $$->type = $2->type;
+
+        iloc_argument_t temp = make_temp();
+        $$->code = iloc_join($2->code, generate_arithmetic_unary_expression($1, $2->temp, temp));
+        $$->temp = temp;
     }
     | '*' arithmeticexpression
     {
@@ -833,21 +844,39 @@ arithmeticexpression: '+' arithmeticexpression
     {
         $$ = node_create("+", $1, $3, NULL, NULL, NULL);
         $$->type = infer_type_nodes($1, $3, $2->line);
+
+        iloc_argument_t temp = make_temp();
+        $$->code = iloc_join(iloc_join($1->code, $3->code), generate_arithmetic_binary_expression(ILOC_INS_ADD, $1->temp, $3->temp, temp));
+        $$->temp = temp;
+
+        iloc_recursive_print($$->code);
     }
     | arithmeticexpression '-' arithmeticexpression
     {
         $$ = node_create("-", $1, $3, NULL, NULL, NULL);
         $$->type = infer_type_nodes($1, $3, $2->line);
+
+        iloc_argument_t temp = make_temp();
+        $$->code = iloc_join(iloc_join($1->code, $3->code), generate_arithmetic_binary_expression(ILOC_INS_SUB, $1->temp, $3->temp, temp));
+        $$->temp = temp;
     }
     | arithmeticexpression '*' arithmeticexpression
     {
         $$ = node_create("*", $1, $3, NULL, NULL, NULL);
         $$->type = infer_type_nodes($1, $3, $2->line);
+
+        iloc_argument_t temp = make_temp();
+        $$->code = iloc_join(iloc_join($1->code, $3->code), generate_arithmetic_binary_expression(ILOC_INS_MULT, $1->temp, $3->temp, temp));
+        $$->temp = temp;
     }
     | arithmeticexpression '/' arithmeticexpression
     {
         $$ = node_create("/", $1, $3, NULL, NULL, NULL);
         $$->type = infer_type_nodes($1, $3, $2->line);
+
+        iloc_argument_t temp = make_temp();
+        $$->code = iloc_join(iloc_join($1->code, $3->code), generate_arithmetic_binary_expression(ILOC_INS_DIV, $1->temp, $3->temp, temp));
+        $$->temp = temp;
     }
     | arithmeticexpression '%' arithmeticexpression
     {
@@ -874,6 +903,11 @@ arithmeticexpression: '+' arithmeticexpression
         $$ = node_create_leaf($1);
         $$->type = NODE_TYPE_INT;
         add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_INT, SYMBOL_DATATYPE_INT, NULL, IGNORE_DISP);
+
+        iloc_argument_t temp = make_temp();
+        iloc_argument_t number = {ILOC_ARG_TYPE_NUMBER, $1->value.v_integer};
+        $$->code = generate_load_constant(temp, number);
+        $$->temp = temp;
     }
     | TK_LIT_FLOAT
     {
@@ -1002,6 +1036,11 @@ varname: TK_IDENTIFICADOR
             {
                 $$ = node_create_leaf($1);
                 $$->type = identifier->datatype;
+
+                iloc_argument_t rfp = {ILOC_ARG_TYPE_RFP, 0};
+                iloc_argument_t address = {ILOC_ARG_TYPE_NUMBER, identifier->address};
+                $$->temp = make_temp();
+                $$->code = generate_load(rfp, address, $$->temp);
             }
             else
             {

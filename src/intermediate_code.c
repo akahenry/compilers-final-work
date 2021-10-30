@@ -34,3 +34,36 @@ iloc_instruction_t* generate_attribution_vector(iloc_argument_t reference_addres
 
     return iloc_join(address_instruction, instruction);
 }
+
+iloc_instruction_t* generate_arithmetic_binary_expression(iloc_opcode_t opcode, iloc_argument_t register1, iloc_argument_t register2, iloc_argument_t result)
+{
+    return iloc_create(opcode, register1, register2, result);
+}
+
+iloc_instruction_t* generate_load_constant(iloc_argument_t reg, iloc_argument_t constant)
+{
+    iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
+    return iloc_create(ILOC_INS_LOADI, constant, reg, none);
+}
+
+iloc_instruction_t* generate_arithmetic_unary_expression(token_t *token, iloc_argument_t operand, iloc_argument_t result)
+{
+    iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
+    iloc_argument_t zero = { ILOC_ARG_TYPE_NUMBER, 0 };
+
+    if (strcmp(token->text, "-") == 0)
+    {
+        // result = 0 - operand
+        return iloc_create(ILOC_INS_RSUBI, operand, zero, result);
+    }
+    else if (strcmp(token->text, "+") == 0)
+    {
+        // copy from operand register to result
+        return iloc_create(ILOC_INS_I2I, operand, result, none);
+    }
+}
+
+iloc_instruction_t* generate_load(iloc_argument_t reference_address_register, iloc_argument_t address, iloc_argument_t reg)
+{
+    return iloc_create(ILOC_INS_LOADAI, reference_address_register, address, reg);
+}

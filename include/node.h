@@ -29,6 +29,7 @@ typedef struct _node_t{
     node_type_t type;
     token_t* token;
     iloc_instruction_t* code;
+    iloc_argument_t temp;
     struct _node_t* child1;
     struct _node_t* child2;
     struct _node_t* child3;

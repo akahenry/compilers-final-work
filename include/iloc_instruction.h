@@ -69,7 +69,8 @@ typedef enum _iloc_arg_type_t
     ILOC_ARG_TYPE_RFP,
     ILOC_ARG_TYPE_RSP,
     ILOC_ARG_TYPE_RBSS,
-    ILOC_ARG_TYPE_RPC
+    ILOC_ARG_TYPE_RPC,
+    ILOC_ARG_TYPE_NONE
 } iloc_arg_type_t;
 
 typedef struct _iloc_argument_t
