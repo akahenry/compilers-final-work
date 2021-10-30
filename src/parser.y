@@ -418,7 +418,7 @@ localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR
             iloc_argument_t rfp = {ILOC_ARG_TYPE_RFP, 0};
             iloc_argument_t address = {ILOC_ARG_TYPE_NUMBER, get_symbol($1->text)->address};
             iloc_argument_t value = {ILOC_ARG_TYPE_NUMBER, second->token->value.v_integer};
-            iloc_recursive_print(generate_attribution(rfp, address, value));
+            $$->code = generate_attribution(rfp, address, value);
         }
         else
         {

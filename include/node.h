@@ -12,6 +12,7 @@ Grupo D
 #include <string.h>
 
 #include "utils.h"
+#include "iloc_instruction.h"
 
 typedef struct _token_t token_t;
 
@@ -27,6 +28,7 @@ typedef struct _node_t{
     char* label;
     node_type_t type;
     token_t* token;
+    iloc_instruction_t* code;
     struct _node_t* child1;
     struct _node_t* child2;
     struct _node_t* child3;

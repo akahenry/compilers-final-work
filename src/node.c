@@ -32,6 +32,8 @@ node_t *node_create(char *_label, node_t *_child1, node_t *_child2, node_t *_chi
     else
         result->label = NULL;
 
+    result->code = NULL;
+
     result->child1 = _child1;
     result->child2 = _child2;
     result->child3 = _child3;
@@ -67,6 +69,7 @@ void node_destroy(node_t* _node)
         }
 
         free(_node->label);
+        free(_node->code);
         free(_node);
     }
 }
