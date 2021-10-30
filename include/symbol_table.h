@@ -12,6 +12,8 @@ Grupo D
 #include "queue.h"
 
 #define SCOPE_TABLE_SIZE 1024
+#define ADD_DISP 1
+#define IGNORE_DISP 0
 
 typedef enum _symbol_error_t {
     SYMBOL_NO_ERROR,
@@ -50,6 +52,7 @@ typedef struct _symbol_item_t {
     queue_t* params_queue;
     token_t* token;
     size_t size;
+    int address;
 } symbol_item_t;
 
 typedef struct _symbol_table_t {
@@ -58,7 +61,7 @@ typedef struct _symbol_table_t {
 } symbol_table_t;
 
 symbol_table_t* symbol_table_create();
-symbol_error_t symbol_table_add_symbol(symbol_table_t* table, char* key, int line_number, symbol_type_t type, symbol_datatype_t datatype, size_t size, token_t* token, queue_t* params_queue);
+symbol_error_t symbol_table_add_symbol(symbol_table_t* table, char* key, int line_number, symbol_type_t type, symbol_datatype_t datatype, size_t size, token_t* token, queue_t* params_queue, int disp);
 symbol_item_t* symbol_table_get_symbol(symbol_table_t* table, char* key);
 void symbol_table_open_scope(symbol_table_t* table);
 void symbol_table_close_scope(symbol_table_t* table);

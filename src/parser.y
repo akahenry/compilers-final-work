@@ -9,6 +9,8 @@ Grupo D
 #include <stdlib.h>
 #include "utils.h"
 
+#include "intermediate_code.h"
+
 #define YYERROR_VERBOSE 1
 
 extern int num_lines;
@@ -177,12 +179,12 @@ globalidentifierslist: globalidentifierslist ',' globalidentifier
 
 globalidentifier: TK_IDENTIFICADOR
     {
-        add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL);
+        add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL, ADD_DISP);
     }
     | TK_IDENTIFICADOR '[' TK_LIT_INT ']' 
     {
-        add_symbol($3->text, $3, SYMBOL_TYPE_LITERAL_INT, SYMBOL_DATATYPE_INT, NULL);
-        add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VECTOR, current_type, $3);
+        add_symbol($3->text, $3, SYMBOL_TYPE_LITERAL_INT, SYMBOL_DATATYPE_INT, NULL, IGNORE_DISP);
+        add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VECTOR, current_type, $3, ADD_DISP);
     }
     ;
 
@@ -229,7 +231,7 @@ funcidentifier: TK_IDENTIFICADOR
 
         if (current_type != SYMBOL_DATATYPE_STRING)
         {
-            add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_FUNCTION, current_type, NULL);
+            add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_FUNCTION, current_type, NULL, IGNORE_DISP);
             current_function_type = current_type;
         }
         else
@@ -254,7 +256,7 @@ parameter: type TK_IDENTIFICADOR
                 open_scope();
                 params_types = queue_create();
             }
-            add_symbol($2->text, $2, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL);
+            add_symbol($2->text, $2, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL, ADD_DISP);
             symbol_datatype_t* datatype = calloc(1, sizeof(symbol_datatype_t));
             *datatype = current_type;
             queue_push(params_types, (void*)datatype);
@@ -274,7 +276,7 @@ parameter: type TK_IDENTIFICADOR
                 opening_function = 1;
                 open_scope();
             }
-            add_symbol($3->text, $3, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL);
+            add_symbol($3->text, $3, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL, ADD_DISP);
             symbol_datatype_t* datatype = calloc(1, sizeof(symbol_datatype_t));
             *datatype = current_type;
             queue_push(params_types, (void*)datatype);
@@ -345,7 +347,7 @@ localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR
             {
                 if (current_type == second->datatype)
                 {
-                    add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL);
+                    add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL, ADD_DISP);
                     if (current_type == SYMBOL_DATATYPE_STRING)
                     {
                         symbol_item_t* first = get_symbol($1->text);
@@ -400,7 +402,7 @@ localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR
         {
             if (current_type == second->datatype)
             {
-                add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL);
+                add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL, ADD_DISP);
                 if (current_type == SYMBOL_DATATYPE_STRING)
                 {
                     symbol_item_t* first = get_symbol($1->text);
@@ -412,6 +414,11 @@ localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR
                 check_implicit_conversion(current_type, second->datatype, $2->line, 0);
             }
             $$->type = current_type;
+
+            iloc_argument_t rfp = {ILOC_ARG_TYPE_RFP, 0};
+            iloc_argument_t address = {ILOC_ARG_TYPE_NUMBER, get_symbol($1->text)->address};
+            iloc_argument_t value = {ILOC_ARG_TYPE_NUMBER, second->token->value.v_integer};
+            iloc_recursive_print(generate_attribution(rfp, address, value));
         }
         else
         {
@@ -424,7 +431,7 @@ localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR
 localidentifierdeclaration: TK_IDENTIFICADOR 
     { 
         $$ = NULL;
-        add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL);
+        add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL, ADD_DISP);
     }
     ;
 
@@ -432,13 +439,13 @@ literal: TK_LIT_CHAR
     { 
         $$ = node_create_leaf($1);
         $$->type = NODE_TYPE_CHAR;
-        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_CHAR, SYMBOL_DATATYPE_CHAR, NULL);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_CHAR, SYMBOL_DATATYPE_CHAR, NULL, IGNORE_DISP);
     }
     | TK_LIT_STRING
     { 
         $$ = node_create_leaf($1);
         $$->type = NODE_TYPE_STRING;
-        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_STRING, SYMBOL_DATATYPE_STRING, NULL);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_STRING, SYMBOL_DATATYPE_STRING, NULL, IGNORE_DISP);
     }
     | literalboolean { $$ = $1; }
     | literalnumber { $$ = $1; }
@@ -448,13 +455,13 @@ literalnumber: TK_LIT_FLOAT
     { 
         $$ = node_create_leaf($1);
         $$->type = NODE_TYPE_FLOAT;
-        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_FLOAT, SYMBOL_DATATYPE_FLOAT, NULL);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_FLOAT, SYMBOL_DATATYPE_FLOAT, NULL, IGNORE_DISP);
     }
     | TK_LIT_INT
     { 
         $$ = node_create_leaf($1);
         $$->type = NODE_TYPE_INT;
-        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_INT, SYMBOL_DATATYPE_INT, NULL);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_INT, SYMBOL_DATATYPE_INT, NULL, IGNORE_DISP);
     }
     ;
 
@@ -462,13 +469,13 @@ literalboolean: TK_LIT_FALSE
     { 
         $$ = node_create_leaf($1);
         $$->type = NODE_TYPE_BOOL;
-        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_BOOL, SYMBOL_DATATYPE_BOOL, NULL);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_BOOL, SYMBOL_DATATYPE_BOOL, NULL, IGNORE_DISP);
     }
     | TK_LIT_TRUE
     { 
         $$ = node_create_leaf($1);
         $$->type = NODE_TYPE_BOOL;
-        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_BOOL, SYMBOL_DATATYPE_BOOL, NULL);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_BOOL, SYMBOL_DATATYPE_BOOL, NULL, IGNORE_DISP);
     }
     ;
 
@@ -862,13 +869,13 @@ arithmeticexpression: '+' arithmeticexpression
     {
         $$ = node_create_leaf($1);
         $$->type = NODE_TYPE_INT;
-        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_INT, SYMBOL_DATATYPE_INT, NULL);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_INT, SYMBOL_DATATYPE_INT, NULL, IGNORE_DISP);
     }
     | TK_LIT_FLOAT
     {
         $$ = node_create_leaf($1);
         $$->type = NODE_TYPE_FLOAT;
-        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_FLOAT, SYMBOL_DATATYPE_FLOAT, NULL);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_FLOAT, SYMBOL_DATATYPE_FLOAT, NULL, IGNORE_DISP);
     }
     | varname                                       { $$ = $1; }
     | funccall                                      { $$ = $1; }
@@ -964,13 +971,13 @@ logicexpression: '!' logicexpression
     | TK_LIT_TRUE
     {
         $$ = node_create_leaf($1);
-        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_BOOL, SYMBOL_DATATYPE_BOOL, NULL);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_BOOL, SYMBOL_DATATYPE_BOOL, NULL, IGNORE_DISP);
         $$->type = NODE_TYPE_BOOL;
     }
     | TK_LIT_FALSE
     {
         $$ = node_create_leaf($1);
-        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_BOOL, SYMBOL_DATATYPE_BOOL, NULL);
+        add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_BOOL, SYMBOL_DATATYPE_BOOL, NULL, IGNORE_DISP);
         $$->type = NODE_TYPE_BOOL;
     }
     ;

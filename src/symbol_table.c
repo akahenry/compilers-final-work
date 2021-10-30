@@ -10,7 +10,7 @@ symbol_table_t* symbol_table_create()
     return table;
 }
 
-symbol_error_t symbol_table_add_symbol(symbol_table_t* table, char* key, int line_number, symbol_type_t type, symbol_datatype_t datatype, size_t size, token_t* token, queue_t* params_queue)
+symbol_error_t symbol_table_add_symbol(symbol_table_t* table, char* key, int line_number, symbol_type_t type, symbol_datatype_t datatype, size_t size, token_t* token, queue_t* params_queue, int address)
 {
     symbol_error_t response = SYMBOL_NO_ERROR;
     if (table != NULL)
@@ -25,6 +25,7 @@ symbol_error_t symbol_table_add_symbol(symbol_table_t* table, char* key, int lin
             item->size = size;
             item->token = token;
             item->params_queue = params_queue;
+            item->address = address;
             
             if (hash_add(scope, key, (void*)item) == HASH_ERROR_KEY_ALREADY_EXISTS)
             {

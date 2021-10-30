@@ -25,11 +25,13 @@ void create_symbol_table();
 void print_symbol_table();
 void open_scope();
 void close_scope();
-void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t datatype, token_t* vector_size_token);
+void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t datatype, token_t* vector_size_token, int disp);
 symbol_item_t* get_symbol(char* key);
 symbol_item_t* get_symbol_lit_char(char* key);
 symbol_item_t* get_symbol_lit_string(char* key);
 const char* datatype_string(symbol_datatype_t datatype);
+void add_disp_symbol_table(int disp);
+int get_disp_symbol_table();
 
 void exporta (void *arvore);
 void libera (void *arvore);

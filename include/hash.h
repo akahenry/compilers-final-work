@@ -20,6 +20,7 @@ typedef struct _hash_table_t
 {
     void** items;
     int size;
+    uint disp;
 } hash_table_t;
 
 hash_table_t* hash_create(int size);

@@ -52,9 +52,19 @@ void print_symbol_table()
 
 void open_scope()
 {
+    int disp = 0;
+
     create_symbol_table();
 
+    if (symbol_table->size > 1)
+    {
+        hash_table_t* function_scope = (hash_table_t*)stack_at(symbol_table->scopes, 0);
+        disp = function_scope->disp;
+    }
+
     symbol_table_open_scope(symbol_table);
+
+    ((hash_table_t*)stack_at(symbol_table->scopes, 0))->disp = disp;
 }
 
 void close_scope()
@@ -64,7 +74,7 @@ void close_scope()
     symbol_table_close_scope(symbol_table);
 }
 
-void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t datatype, token_t* vector_size_token)
+void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t datatype, token_t* vector_size_token, int disp)
 {
     if (token != NULL)
     {
@@ -75,6 +85,7 @@ void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t
 
         size_t size = 0;
         char* label = key;
+        int symbol_address = -1;
 
         switch (datatype)
         {
@@ -123,13 +134,21 @@ void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t
             }
         }
 
-        if (symbol_table_add_symbol(symbol_table, label, token->line, type, datatype, size, token, NULL) == SYMBOL_ERROR_KEY_ALREADY_EXISTS &&
+        // If disp is true, it must set the address for this variable/literal and increment the disp attribute in the respective hash table
+        if (disp)
+        {
+            symbol_address = get_disp_symbol_table();
+            add_disp_symbol_table(size);
+        }
+
+        if (symbol_table_add_symbol(symbol_table, label, token->line, type, datatype, size, token, NULL, symbol_address) == SYMBOL_ERROR_KEY_ALREADY_EXISTS &&
             (type == SYMBOL_TYPE_IDENTIFIER_VARIABLE || type == SYMBOL_TYPE_IDENTIFIER_FUNCTION || type == SYMBOL_TYPE_IDENTIFIER_VECTOR))
         {
             symbol_item_t* declared_symbol = get_symbol(key);
             fprintf(stderr, "Semantic Error: duplicated identifier `%s` declaration on line %d and %d", key, declared_symbol->line_number, token->line);
             exit(ERR_DECLARED);
         }
+
         if (label != key)
         {
             free(label);
@@ -257,4 +276,42 @@ void libera(void *tree)
     {
         symbol_table_destroy(symbol_table);
     }
+}
+
+void add_disp_symbol_table(int disp)
+{
+    if (symbol_table == NULL)
+    {
+        return;
+    }
+
+    if (symbol_table->size == 1) // Global scope
+    {
+        hash_table_t* hash = (hash_table_t*)stack_at(symbol_table->scopes, 0);
+        hash->disp += disp;
+    }
+    else if (symbol_table->size > 1) // Function scope
+    {
+        // Update all the scopes inside the function
+        int count = symbol_table->size;
+        do
+        {
+            hash_table_t* hash = (hash_table_t*)stack_at(symbol_table->scopes, --count);
+            hash->disp += disp;
+        } while (count > 1);
+    }
+}
+
+int get_disp_symbol_table()
+{
+    int response = -1;
+
+    if (symbol_table != NULL && symbol_table->size > 0)
+    {
+        hash_table_t* hash = (hash_table_t*)stack_pop(symbol_table->scopes);
+        response = hash->disp;
+        stack_push(symbol_table->scopes, (void*)hash);
+    }
+
+    return response;
 }

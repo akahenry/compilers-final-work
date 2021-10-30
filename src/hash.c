@@ -22,6 +22,7 @@ hash_table_t* hash_create(int size)
     hash_table_t* table = calloc(1, sizeof(hash_table_t));
     table->items = items;
     table->size = size;
+    table->disp = 0;
 
     return table;
 }
