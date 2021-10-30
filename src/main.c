@@ -8,6 +8,10 @@ Grupo D
   Não modifique este arquivo.
 */
 #include <stdio.h>
+
+#include "node.h"
+#include "iloc_instruction.h"
+
 extern int yyparse(void);
 extern int yylex_destroy(void);
 
@@ -19,6 +23,9 @@ int main (int argc, char **argv)
 {
   int ret = yyparse();
   // exporta (arvore);
+
+  iloc_recursive_print(((node_t*)arvore)->code);
+
   libera(arvore);
   arvore = NULL;
   yylex_destroy();

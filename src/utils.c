@@ -276,6 +276,8 @@ void libera(void *tree)
     {
         symbol_table_destroy(symbol_table);
     }
+
+    iloc_clean();
 }
 
 void add_disp_symbol_table(int disp)

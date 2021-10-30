@@ -69,7 +69,6 @@ void node_destroy(node_t* _node)
         }
 
         free(_node->label);
-        free(_node->code);
         free(_node);
     }
 }

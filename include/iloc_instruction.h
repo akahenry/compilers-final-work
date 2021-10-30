@@ -95,5 +95,6 @@ const char* iloc_opcode_string(iloc_instruction_t* ins);
 const char* iloc_prefix_for_argument_type(iloc_arg_type_t type);
 char* iloc_arg_string(iloc_argument_t arg);
 void iloc_recursive_print(iloc_instruction_t* ins);
+void iloc_clean();
 
 #endif

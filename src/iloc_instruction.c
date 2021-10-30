@@ -4,6 +4,9 @@ Grupo D
   Marcos Samuel Winkel Landi
 */
 #include "iloc_instruction.h"
+#include "queue.h"
+
+queue_t* q_alloc_instructions = NULL;
 
 char* iloc_instruction_string(iloc_instruction_t *ins)
 {
@@ -290,6 +293,11 @@ iloc_instruction_t* iloc_create(iloc_opcode_t opcode, iloc_argument_t arg1, iloc
     ins->arg3 = arg3;
     ins->previous = NULL;
 
+    if (q_alloc_instructions == NULL)
+        q_alloc_instructions = queue_create();
+
+    queue_push(q_alloc_instructions, ins);
+
     return ins;
 }
 
@@ -321,4 +329,16 @@ void iloc_recursive_print(iloc_instruction_t* ins)
 
     printf("%s\n", str);
     free(str);
+}
+
+void iloc_clean()
+{
+    if (q_alloc_instructions != NULL)
+    {
+        while (!queue_empty(q_alloc_instructions))
+        {
+            free(queue_pop(q_alloc_instructions));
+        }
+        queue_destroy(q_alloc_instructions);
+    }
 }

@@ -138,13 +138,17 @@ stack_t* args_types = NULL;
 // [ ] estrutura de dados para instruções ILOC com argumentos (nome de registradores, valores constantes ou nomes de rótulos)
 // [ ] lista de comandos ILOC que será o programa traduzido para ILOC
 
-// [ ] função que fornece nomes de rótulos (convenção: L e numero inteiro positivo)
-// [ ] função que gera nomes de registradores (convenção: r e numero inteiro positivo)
+// [x] função que fornece nomes de rótulos (convenção: L e numero inteiro positivo)
+// [x] função que gera nomes de registradores (convenção: r e numero inteiro positivo)
 
-// [ ] Cálculo de endereço na declaração de variáveis
+// [x] Cálculo de endereço na declaração de variáveis
 // [ ] Expressões aritméticas com operações unárias, binária e ternária
 // [ ] Expressões lógicas (com curto-circuito)
-// [ ] Comando de atribuição
+// Comando de atribuição
+//      Atribuição na declaração local
+//          [x] Variável recebe literal
+//          [ ] Variável recebe variável
+//      [ ] Atribuição como comando
 // [ ] Comandos de fluxo de controle
 //      [ ] if com else opcional
 //      [ ] while
@@ -308,7 +312,7 @@ openscope: '{'
 closescope: '}' { close_scope(); }
     ;
 
-commandssequence: command ';' commandssequence { if ($1 != NULL) { $$ = node_link($1, $3); } else { $$ = $3; }; }
+commandssequence: command ';' commandssequence { if ($1 != NULL) { $$ = node_link($1, $3); $$->code = iloc_join($1->code, $3->code); } else { $$ = $3; }; }
     | command ';' { $$ = $1; }
     ;
 
@@ -331,7 +335,7 @@ localvardec: type localidentifierslist { $$ = $2; }
     | TK_PR_CONST type localidentifierslist { $$ = $3; }
     ;
 
-localidentifierslist: localidentifier ',' localidentifierslist { if ($1 != NULL) { $$ = node_link($1, $3); } else { $$ = $3; }; }
+localidentifierslist: localidentifier ',' localidentifierslist { if ($1 != NULL) { $$ = node_link($1, $3); $$->code = iloc_join($1->code, $3->code); } else { $$ = $3; }; }
     | localidentifier { $$ = $1; }
     | localidentifierdeclaration { $$ = $1; }
     | localidentifierdeclaration ',' localidentifierslist { $$ = $3; }
