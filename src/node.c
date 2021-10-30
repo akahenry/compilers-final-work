@@ -33,6 +33,7 @@ node_t *node_create(char *_label, node_t *_child1, node_t *_child2, node_t *_chi
         result->label = NULL;
 
     result->code = NULL;
+    result->disp = 0; 
 
     result->child1 = _child1;
     result->child2 = _child2;

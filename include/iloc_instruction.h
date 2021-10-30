@@ -58,7 +58,8 @@ typedef enum _iloc_opcode_t
     ILOC_INS_CMP_EQ,
     ILOC_INS_CMP_GE,
     ILOC_INS_CMP_GT,
-    ILOC_INS_CMP_NE
+    ILOC_INS_CMP_NE,
+    ILOC_LABEL
 } iloc_opcode_t;
 
 typedef enum _iloc_arg_type_t
@@ -86,10 +87,12 @@ typedef struct _iloc_instruction_t
     iloc_argument_t arg1;
     iloc_argument_t arg2;
     iloc_argument_t arg3;
+    int number;
     struct _iloc_instruction_t* previous;
 } iloc_instruction_t;
 
 iloc_instruction_t* iloc_create(iloc_opcode_t opcode, iloc_argument_t arg1, iloc_argument_t arg2, iloc_argument_t arg3);
+iloc_instruction_t* iloc_create_label(int number);
 iloc_instruction_t* iloc_join(iloc_instruction_t* ins1, iloc_instruction_t* ins2);
 char* iloc_instruction_string(iloc_instruction_t *ins);
 const char* iloc_opcode_string(iloc_instruction_t* ins);

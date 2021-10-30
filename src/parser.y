@@ -22,6 +22,7 @@ int yyerror (char const *s);
 symbol_datatype_t current_type;
 int opening_function = 0;
 int is_argless_function = 0;
+int disp = 0;
 symbol_datatype_t current_function_type;
 queue_t* params_types = NULL;
 stack_t* args_types = NULL;
@@ -149,13 +150,16 @@ stack_t* args_types = NULL;
 // Comando de atribuição
 //      Atribuição na declaração local
 //          [x] Variável recebe literal
-//          [ ] Variável recebe variável
+//          [x] Variável recebe variável
 //      [ ] Atribuição como comando
 // [ ] Comandos de fluxo de controle
 //      [ ] if com else opcional
 //      [ ] while
 //      [ ] for
-// [ ] chamada de função
+// Função
+//      [X] Construção da função
+//      [ ] Retorno da função
+//      [ ] Chamada da função
 
 initial: program
 {
@@ -165,7 +169,7 @@ initial: program
 
 program: %empty             { $$ = NULL; }
     | globalvardec program  { $$ = $2; }
-    | funcdec program       { if ($1 != NULL) { $$ = node_link($1, $2); } else { $$ = $2; }; }
+    | funcdec program       { if ($1 != NULL) { $$ = node_link($1, $2); if ($2 != NULL) { $$->code = iloc_join($1->code, $2->code); } else { $$->code = $1->code; } } else { $$ = $2; }; }
     ;
 
 globalvardec: type globalidentifierslist ';'
@@ -198,6 +202,11 @@ funcdec: funcheader commandblock
     {
         $$ = node_create($1->text, $2, NULL, NULL, NULL, NULL);
         $$->type = current_function_type;
+        $$->disp = disp;
+
+        $$->temp = make_label();
+        iloc_argument_t arg_disp = {ILOC_ARG_TYPE_NUMBER, disp};
+        $$->code = iloc_join(generate_funcdec($$->temp, arg_disp), $2->code);
     }
     ;
 
@@ -272,6 +281,8 @@ parameter: type TK_IDENTIFICADOR
 
                 // allocate for return addr, rsp and rfp
                 add_disp_symbol_table(12);
+
+
             }
             add_symbol($2->text, $2, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL, ADD_DISP);
             symbol_datatype_t* datatype = calloc(1, sizeof(symbol_datatype_t));
@@ -332,7 +343,7 @@ openscope: '{'
     }
     ;
 
-closescope: '}' { close_scope(); }
+closescope: '}' { disp = get_disp_symbol_table(); close_scope(); }
     ;
 
 commandssequence: command ';' commandssequence { if ($1 != NULL) { $$ = node_link($1, $3); $$->code = iloc_join($1->code, $3->code); } else { $$ = $3; }; }
@@ -386,6 +397,11 @@ localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR
                     check_implicit_conversion(current_type, second->datatype, $2->line, 0);
                 }
                 $$->type = current_type;
+
+                iloc_argument_t reference_register = {second->is_global ? ILOC_ARG_TYPE_RBSS : ILOC_ARG_TYPE_RFP, 0};
+                iloc_argument_t address1 = {ILOC_ARG_TYPE_NUMBER, get_symbol($1->text)->address};
+                iloc_argument_t address2 = {ILOC_ARG_TYPE_NUMBER, second->address};
+                $$->code = generate_attribution_from_address(reference_register, address1, address2);
             }
             else
             {

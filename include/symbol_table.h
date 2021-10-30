@@ -53,6 +53,7 @@ typedef struct _symbol_item_t {
     token_t* token;
     size_t size;
     int address;
+    int is_global;
 } symbol_item_t;
 
 typedef struct _symbol_table_t {

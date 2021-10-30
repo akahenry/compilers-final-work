@@ -67,3 +67,18 @@ iloc_instruction_t* generate_load(iloc_argument_t reference_address_register, il
 {
     return iloc_create(ILOC_INS_LOADAI, reference_address_register, address, reg);
 }
+
+iloc_instruction_t* generate_funcdec(iloc_argument_t label, iloc_argument_t disp)
+{
+    iloc_argument_t rfp = {ILOC_ARG_TYPE_RFP, 0};
+    iloc_argument_t rsp = {ILOC_ARG_TYPE_RSP, 0};
+    iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
+
+    return iloc_join(iloc_join(iloc_create_label(label.number), iloc_create(ILOC_INS_I2I, rsp, rfp, none)), iloc_create(ILOC_INS_ADDI, rsp, disp, rsp));
+}
+
+iloc_instruction_t* generate_attribution_from_address(iloc_argument_t reference_address_register, iloc_argument_t address1, iloc_argument_t address2)
+{
+    iloc_argument_t temp = make_temp();
+    return iloc_join(iloc_create(ILOC_INS_LOADAI, reference_address_register, address2, temp), generate_attribution(reference_address_register, address1, temp));
+}

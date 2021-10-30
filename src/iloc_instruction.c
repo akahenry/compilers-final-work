@@ -8,6 +8,17 @@ Grupo D
 
 queue_t* q_alloc_instructions = NULL;
 
+int count_digits(int number)
+{
+    int count = 0;
+    do {
+        number /= 10;
+        ++count;
+    } while (number != 0);
+
+    return count;
+}
+
 char* iloc_instruction_string(iloc_instruction_t *ins)
 {
     const char* opcode = iloc_opcode_string(ins);
@@ -112,6 +123,10 @@ char* iloc_instruction_string(iloc_instruction_t *ins)
                     arg1,
                     arg2,
                     arg3);
+            break;
+        case ILOC_LABEL:
+            str = calloc(count_digits(ins->number) + 4, sizeof(char));
+            sprintf(str, "L%d: ", ins->number);
             break;
         
         default:
@@ -252,8 +267,6 @@ const char* iloc_opcode_string(iloc_instruction_t *ins)
 char* iloc_arg_string(iloc_argument_t arg)
 {
     char* string = NULL;
-    int n = arg.number;
-    int count = 0;
 
     switch (arg.type)
     {
@@ -274,12 +287,8 @@ char* iloc_arg_string(iloc_argument_t arg)
         break;
     
     default:
-        // Counting digits of arg number
-        do {
-            n /= 10;
-            ++count;
-        } while (n != 0);
-        string = calloc(strlen(iloc_prefix_for_argument_type(arg.type)) + count + 1, sizeof(char));
+        
+        string = calloc(strlen(iloc_prefix_for_argument_type(arg.type)) + count_digits(arg.number) + 1, sizeof(char));
         sprintf(string, "%s%d", iloc_prefix_for_argument_type(arg.type), arg.number);
         break;
     }
@@ -344,4 +353,13 @@ void iloc_clean()
         }
         queue_destroy(q_alloc_instructions);
     }
+}
+
+iloc_instruction_t* iloc_create_label(int number)
+{
+    iloc_instruction_t* result = calloc(1, sizeof(iloc_instruction_t));
+    result->opcode = ILOC_LABEL;
+    result->number = number;
+
+    return result;
 }
