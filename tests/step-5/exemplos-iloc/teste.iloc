@@ -1,28 +1,23 @@
-int g1;
-int g2;
+int global;
 
-int f(int a, int b)
+int f()
 {
-  int c <= 3;
-  int d <= 4;
-  return a / b;
+  global = 17;
+  return 1;
 }
 
 int main()
 {
-  g1 = 11;
-  g2 = 12;
-  int g;
-  g = f(10,2);
-  return g;
+  int a;
+  global = 13;
+  if (1>2 && 2<f())
+  {
+    a = 10;
+  }
+  else
+  {
+    a = 20;
+  };
+
+  return 0;
 }
-
-// int f()
-// {
-//   return f();
-// }
-
-// int main()
-// {
-//   return main();
-// }
