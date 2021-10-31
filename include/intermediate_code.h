@@ -33,5 +33,7 @@ iloc_instruction_t* generate_if(iloc_argument_t boolean_expression, iloc_instruc
 iloc_instruction_t* generate_while(iloc_argument_t boolean_expression, iloc_instruction_t* boolean_code, iloc_instruction_t* code);
 iloc_instruction_t* generate_for(iloc_argument_t var_init, iloc_argument_t boolean_expression, iloc_instruction_t* boolean_code, iloc_argument_t var_assignment, iloc_instruction_t* var_assignment_code, iloc_instruction_t* code);
 iloc_instruction_t* generate_not_operator(iloc_argument_t reg);
+iloc_instruction_t* generate_logic_and_expression(iloc_argument_t register1, iloc_instruction_t* code1, iloc_argument_t register2, iloc_instruction_t* code2, iloc_argument_t result);
+iloc_instruction_t* generate_logic_or_expression(iloc_argument_t register1, iloc_instruction_t* code1, iloc_argument_t register2, iloc_instruction_t* code2, iloc_argument_t result);
 
 #endif

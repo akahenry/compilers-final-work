@@ -149,7 +149,7 @@ stack_t* args_types = NULL;
 // [x] Cálculo de endereço na declaração de variáveis
 // [x] Expressões aritméticas com operações unárias e binárias
 // [ ] Expressões ternárias (OPCIONAL?)
-// [ ] Expressões lógicas (com curto-circuito)
+// [x] Expressões lógicas (com curto-circuito)
 // Comando de atribuição
 //      Atribuição na declaração local
 //          [x] Variável recebe literal
@@ -1081,37 +1081,51 @@ logicexpression: '!' logicexpression
     {
         $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
         $$->type = NODE_TYPE_BOOL;
+        $$->temp = make_temp();
+        $$->code = generate_logic_and_expression($1->temp, $1->code, $3->temp, $3->code, $$->temp);
     }
     | varname TK_OC_AND logicexpression
     {
         $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
         $$->type = NODE_TYPE_BOOL;
+        $$->temp = make_temp();
+        $$->code = generate_logic_and_expression($1->temp, $1->code, $3->temp, $3->code, $$->temp);
     }
     | logicexpression TK_OC_AND varname
     {
         $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
         $$->type = NODE_TYPE_BOOL;
+        $$->temp = make_temp();
+        $$->code = generate_logic_and_expression($1->temp, $1->code, $3->temp, $3->code, $$->temp);
     }
     | varname TK_OC_AND varname
     {
         $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
         $$->type = NODE_TYPE_BOOL;
+        $$->temp = make_temp();
+        $$->code = generate_logic_and_expression($1->temp, $1->code, $3->temp, $3->code, $$->temp);
     }
     | logicexpression TK_OC_OR logicexpression { $$ = node_create($2->text, $1, $3, NULL, NULL, NULL); }
     | varname TK_OC_OR logicexpression
     {
         $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
         $$->type = NODE_TYPE_BOOL;
+        $$->temp = make_temp();
+        $$->code = generate_logic_or_expression($1->temp, $1->code, $3->temp, $3->code, $$->temp);
     }
     | logicexpression TK_OC_OR varname
     {
         $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
         $$->type = NODE_TYPE_BOOL;
+        $$->temp = make_temp();
+        $$->code = generate_logic_or_expression($1->temp, $1->code, $3->temp, $3->code, $$->temp);
     }
     | varname TK_OC_OR varname
     {
         $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
         $$->type = NODE_TYPE_BOOL;
+        $$->temp = make_temp();
+        $$->code = generate_logic_or_expression($1->temp, $1->code, $3->temp, $3->code, $$->temp);
     }
     | TK_LIT_TRUE
     {

@@ -219,3 +219,19 @@ iloc_instruction_t* generate_not_operator(iloc_argument_t reg)
     // xorI r1, c2 => r3 // r3 = r1 xor c2
     return iloc_create(ILOC_INS_XORI, reg, one, reg);
 }
+
+iloc_instruction_t* generate_logic_and_expression(iloc_argument_t register1, iloc_instruction_t* code1, iloc_argument_t register2, iloc_instruction_t* code2, iloc_argument_t result)
+{
+    iloc_argument_t false_constant = {ILOC_ARG_TYPE_NUMBER, 0};
+    iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
+    
+    return iloc_join(code1, generate_if(register1, iloc_join(code2, iloc_create(ILOC_INS_I2I, register2, result, none)), iloc_create(ILOC_INS_LOADI, false_constant, result, none)));
+}
+
+iloc_instruction_t* generate_logic_or_expression(iloc_argument_t register1, iloc_instruction_t* code1, iloc_argument_t register2, iloc_instruction_t* code2, iloc_argument_t result)
+{
+    iloc_argument_t true_constant = {ILOC_ARG_TYPE_NUMBER, 1};
+    iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
+    
+    return iloc_join(code1, generate_if(register1, iloc_create(ILOC_INS_LOADI, true_constant, result, none), iloc_join(code2, iloc_create(ILOC_INS_I2I, register2, result, none))));
+}
