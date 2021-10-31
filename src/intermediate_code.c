@@ -49,7 +49,7 @@ iloc_instruction_t* generate_load_constant(iloc_argument_t reg, iloc_argument_t 
 iloc_instruction_t* generate_arithmetic_unary_expression(token_t *token, iloc_argument_t operand, iloc_argument_t result)
 {
     iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
-    iloc_argument_t zero = { ILOC_ARG_TYPE_NUMBER, 0 };
+    iloc_argument_t zero = {ILOC_ARG_TYPE_NUMBER, 0 };
 
     if (strcmp(token->text, "-") == 0)
     {
@@ -68,6 +68,16 @@ iloc_instruction_t* generate_load(iloc_argument_t reference_address_register, il
     return iloc_create(ILOC_INS_LOADAI, reference_address_register, address, reg);
 }
 
+iloc_instruction_t* generate_load_vector(iloc_argument_t reference_address_register, iloc_argument_t address, iloc_argument_t offset, iloc_argument_t reg)
+{
+    iloc_argument_t temp = make_temp();
+    iloc_argument_t address_temp = make_temp();
+    iloc_instruction_t* address_instruction = iloc_create(ILOC_INS_ADD, address, offset, address_temp);
+    iloc_instruction_t* instruction = iloc_create(ILOC_INS_LOADAI, reference_address_register, address_temp, temp);
+
+    return iloc_join(address_instruction, instruction);
+}
+
 iloc_instruction_t* generate_funcdec(iloc_argument_t label, iloc_argument_t disp)
 {
     iloc_argument_t rfp = {ILOC_ARG_TYPE_RFP, 0};
@@ -81,4 +91,10 @@ iloc_instruction_t* generate_attribution_from_address(iloc_argument_t reference_
 {
     iloc_argument_t temp = make_temp();
     return iloc_join(iloc_create(ILOC_INS_LOADAI, reference_address_register, address2, temp), generate_attribution(reference_address_register, address1, temp));
+}
+
+iloc_instruction_t* generate_attribution_vector_from_address(iloc_argument_t reference_address_register, iloc_argument_t address1, iloc_argument_t offset, iloc_argument_t address2)
+{
+    iloc_argument_t temp = make_temp();
+    return iloc_join(iloc_create(ILOC_INS_LOADAI, reference_address_register, address2, temp), generate_attribution_vector(reference_address_register, address1, offset, temp));
 }

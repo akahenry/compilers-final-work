@@ -143,6 +143,8 @@ stack_t* args_types = NULL;
 // [x] função que fornece nomes de rótulos (convenção: L e numero inteiro positivo)
 // [x] função que gera nomes de registradores (convenção: r e numero inteiro positivo)
 
+// [x] Início na main;
+
 // [x] Cálculo de endereço na declaração de variáveis
 // [x] Expressões aritméticas com operações unárias e binárias
 // [ ] Expressões ternárias (OPCIONAL?)
@@ -165,6 +167,9 @@ initial: program
 {
     $$ = $1;
     arvore = (void*)$$;
+
+    iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
+    $$->code = iloc_join(iloc_create(ILOC_INS_JUMPI, get_symbol("main")->label, none, none), $1->code);
 };
 
 program: %empty             { $$ = NULL; }
@@ -205,6 +210,7 @@ funcdec: funcheader commandblock
         $$->disp = disp;
 
         $$->temp = make_label();
+        get_symbol($1->text)->label = $$->temp;
         iloc_argument_t arg_disp = {ILOC_ARG_TYPE_NUMBER, disp};
         $$->code = iloc_join(generate_funcdec($$->temp, arg_disp), $2->code);
     }
@@ -554,6 +560,12 @@ varassignment: varname '=' expression
                 exit(ERR_STRING_MAX);
             }
         }
+
+        // Only implementing non-vector variable attribution for testing purposes
+        $$->temp = $1->temp;
+        iloc_argument_t reference_register = {first->is_global ? ILOC_ARG_TYPE_RBSS : ILOC_ARG_TYPE_RFP, 0};
+        iloc_argument_t address = {ILOC_ARG_TYPE_NUMBER, first->address};
+        $$->code = iloc_join($1->code, iloc_join($3->code, generate_attribution(reference_register, address, $3->temp)));
     }
     ;
 
@@ -1109,6 +1121,11 @@ varname: TK_IDENTIFICADOR
             {
                 $$ = node_create("[]", node_create_leaf($1), $3, NULL, NULL, NULL);
                 $$->type = identifier->datatype;
+
+                iloc_argument_t rbss = {ILOC_ARG_TYPE_RBSS, 0}; // Vectors are always global
+                iloc_argument_t address = {ILOC_ARG_TYPE_NUMBER, identifier->address};
+                $$->temp = make_temp();
+                $$->code = iloc_join($3->code, generate_load_vector(rbss, address, $3->temp, $$->temp));
             }
             else
             {

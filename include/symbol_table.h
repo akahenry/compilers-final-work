@@ -10,6 +10,7 @@ Grupo D
 #include "stack.h"
 #include "token.h"
 #include "queue.h"
+#include "iloc_instruction.h"
 
 #define SCOPE_TABLE_SIZE 1024
 #define ADD_DISP 1
@@ -54,6 +55,7 @@ typedef struct _symbol_item_t {
     size_t size;
     int address;
     int is_global;
+    iloc_argument_t label;
 } symbol_item_t;
 
 typedef struct _symbol_table_t {
