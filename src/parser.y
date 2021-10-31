@@ -138,8 +138,8 @@ stack_t* args_types = NULL;
 
 // TODO etapa 5
 
-// [ ] estrutura de dados para instruções ILOC com argumentos (nome de registradores, valores constantes ou nomes de rótulos)
-// [ ] lista de comandos ILOC que será o programa traduzido para ILOC
+// [x] estrutura de dados para instruções ILOC com argumentos (nome de registradores, valores constantes ou nomes de rótulos)
+// [x] lista de comandos ILOC que será o programa traduzido para ILOC
 
 // [x] função que fornece nomes de rótulos (convenção: L e numero inteiro positivo)
 // [x] função que gera nomes de registradores (convenção: r e numero inteiro positivo)
@@ -154,15 +154,15 @@ stack_t* args_types = NULL;
 //      Atribuição na declaração local
 //          [x] Variável recebe literal
 //          [x] Variável recebe variável
-//      [ ] Atribuição como comando
+//      [x] Atribuição como comando (SÓ VARIÁVEL SIMPLES PARA TESTES APENAS)
 // [ ] Comandos de fluxo de controle
 //      [ ] if com else opcional
 //      [ ] while
 //      [ ] for
 // Função
-//      [X] Construção da função
-//      [ ] Retorno da função
-//      [ ] Chamada da função
+//      [x] Construção da função
+//      [x] Retorno da função
+//      [x] Chamada da função
 
 initial: program
 {
@@ -210,8 +210,7 @@ funcdec: funcheader commandblock
         $$->type = current_function_type;
         $$->disp = disp;
 
-        $$->temp = make_label();
-        get_symbol($1->text)->label = $$->temp;
+        $$->temp = get_symbol($1->text)->label;
         iloc_argument_t arg_disp = {ILOC_ARG_TYPE_NUMBER, disp};
         $$->code = iloc_join(generate_funcdec($$->temp, arg_disp), $2->code);
     }
@@ -221,24 +220,29 @@ funcheader: type funcidentifier '(' ')'
     { 
         $$ = $2;
         symbol_item_t* identifier = get_symbol($2->text);
+        identifier->label = make_label();
         identifier->params_queue = params_types;
         params_types = NULL;
         opening_function = 1;
         is_argless_function = 1;
+        add_disp_symbol_table(4);
     }
     | TK_PR_STATIC type funcidentifier '(' ')'
     { 
         $$ = $3;
         symbol_item_t* identifier = get_symbol($3->text);
+        identifier->label = make_label();
         identifier->params_queue = params_types;
         params_types = NULL;
         opening_function = 1;
         is_argless_function = 1;
+        add_disp_symbol_table(4);
     }
     | type funcidentifier '(' parameterslist ')'
     { 
         $$ = $2;
         symbol_item_t* identifier = get_symbol($2->text);
+        identifier->label = make_label();
         identifier->params_queue = params_types;
         params_types = NULL;
     }
@@ -246,6 +250,7 @@ funcheader: type funcidentifier '(' ')'
     { 
         $$ = $3;
         symbol_item_t* identifier = get_symbol($3->text);
+        identifier->label = make_label();
         identifier->params_queue = params_types;
         params_types = NULL;
     }
@@ -271,10 +276,6 @@ funcidentifier: TK_IDENTIFICADOR
 
 parameterslist: parameterslist ',' parameter
     | parameter
-    {
-        // allocate for return value
-        add_disp_symbol_table(4);
-    }
     ;
 
 parameter: type TK_IDENTIFICADOR
@@ -342,8 +343,8 @@ openscope: '{'
             open_scope();
             if (is_argless_function)
             {
-                // allocate for return addr, rsp, rfp and return value
-                add_disp_symbol_table(16);
+                // allocate for return addr, rsp, rfp
+                add_disp_symbol_table(12);
             }
         }
         opening_function = 0;
@@ -568,7 +569,7 @@ varassignment: varname '=' expression
         }
 
         // Only implementing non-vector variable attribution for testing purposes
-        $$->temp = $1->temp;
+        $$->temp = $3->temp;
         iloc_argument_t reference_register = {first->is_global ? ILOC_ARG_TYPE_RBSS : ILOC_ARG_TYPE_RFP, 0};
         iloc_argument_t address = {ILOC_ARG_TYPE_NUMBER, first->address};
         $$->code = iloc_join($1->code, iloc_join($3->code, generate_attribution(reference_register, address, $3->temp)));
@@ -697,8 +698,9 @@ funccall: TK_IDENTIFICADOR '(' ')'
             {
                 if (identifier->params_queue == NULL)
                 {
+                    $$->temp = make_temp();
                     $$->type = identifier->datatype;
-                    $$->code = generate_funccall($1, NULL);
+                    $$->code = generate_funccall($1, NULL, $$->temp);
                 }
                 else
                 {
@@ -750,8 +752,9 @@ funccall: TK_IDENTIFICADOR '(' ')'
                     }
                     stack_destroy(args_types);
 
+                    $$->temp = make_temp();
                     $$->type = identifier->datatype;
-                    $$->code = generate_funccall($1, $3);
+                    $$->code = generate_funccall($1, $3, $$->temp);
                 }
                 else
                 {
@@ -918,6 +921,8 @@ arithmeticexpression: '+' arithmeticexpression
         iloc_argument_t temp = make_temp();
         $$->code = iloc_join(iloc_join($1->code, $3->code), generate_arithmetic_binary_expression(ILOC_INS_ADD, $1->temp, $3->temp, temp));
         $$->temp = temp;
+
+        // printf("r%d\n", temp.number);
 
         // iloc_recursive_print($$->code);
     }

@@ -1,0 +1,18 @@
+int l;
+int v[3];
+
+int f()
+{
+  return -9;
+}
+
+int main()
+{
+  int a <= 2;
+  int b <= 3;
+  int c;
+
+  v[1] = a / b;
+
+  return c;
+}

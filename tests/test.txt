@@ -1,0 +1,26 @@
+int a;
+int aa;
+
+int f(int v)
+{
+  int d <= aa;
+
+  {
+    int e <= 20;
+  };
+
+  int f <= 30;
+
+  a = v;
+  return a;
+}
+
+int main()
+{
+    int b <= 3;
+    int c <= 5;
+
+    b = f(4);
+
+    return b;
+}

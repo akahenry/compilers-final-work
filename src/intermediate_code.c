@@ -83,6 +83,7 @@ iloc_instruction_t* generate_funcdec(iloc_argument_t label, iloc_argument_t disp
     iloc_argument_t rfp = {ILOC_ARG_TYPE_RFP, 0};
     iloc_argument_t rsp = {ILOC_ARG_TYPE_RSP, 0};
     iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
+    disp.number += 4;
 
     return iloc_join(iloc_join(iloc_create_label(label.number), iloc_create(ILOC_INS_I2I, rsp, rfp, none)), iloc_create(ILOC_INS_ADDI, rsp, disp, rsp));
 }
@@ -117,7 +118,7 @@ iloc_instruction_t* generate_jump_halt()
     return iloc_join(iloc_create_label(0), iloc_create(ILOC_INS_HALT, none, none, none));
 }
 
-iloc_instruction_t* generate_funccall(token_t* funcname_token, node_t* arguments_node)
+iloc_instruction_t* generate_funccall(token_t* funcname_token, node_t* arguments_node, iloc_argument_t reg)
 {
     iloc_argument_t rfp = {ILOC_ARG_TYPE_RFP, 0};
     iloc_argument_t rsp = {ILOC_ARG_TYPE_RSP, 0};
@@ -162,6 +163,10 @@ iloc_instruction_t* generate_funccall(token_t* funcname_token, node_t* arguments
     // salta para o inicio da função
     iloc_argument_t func_label = symbol->label;
     code = iloc_join(code, iloc_create(ILOC_INS_JUMPI, func_label, none, none));
+
+    // carrega retorno
+    iloc_argument_t minus_four = {ILOC_ARG_TYPE_NUMBER, -4};
+    code = iloc_join(code, iloc_create(ILOC_INS_LOADAI, rsp, minus_four, reg));
 
     // Obtém rsp (SP) salvo
     code = iloc_join(code, iloc_create(ILOC_INS_LOADAI, rfp, four, rsp));

@@ -300,7 +300,7 @@ void add_disp_symbol_table(int disp)
         {
             hash_table_t* hash = (hash_table_t*)stack_at(symbol_table->scopes, count++);
             hash->disp += disp;
-        } while (count < symbol_table->size);
+        } while (count < symbol_table->size - 1);
     }
 }
 
