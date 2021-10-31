@@ -72,8 +72,8 @@ iloc_instruction_t* generate_load_vector(iloc_argument_t reference_address_regis
 {
     iloc_argument_t temp = make_temp();
     iloc_argument_t address_temp = make_temp();
-    iloc_instruction_t* address_instruction = iloc_create(ILOC_INS_ADD, address, offset, address_temp);
-    iloc_instruction_t* instruction = iloc_create(ILOC_INS_LOADAI, reference_address_register, address_temp, temp);
+    iloc_instruction_t* address_instruction = iloc_create(address.type == ILOC_ARG_TYPE_NUMBER ? ILOC_INS_ADDI : ILOC_INS_ADD, offset, address, address_temp);
+    iloc_instruction_t* instruction = iloc_create(ILOC_INS_LOAD, reference_address_register, address_temp, temp);
 
     return iloc_join(address_instruction, instruction);
 }
@@ -97,4 +97,16 @@ iloc_instruction_t* generate_attribution_vector_from_address(iloc_argument_t ref
 {
     iloc_argument_t temp = make_temp();
     return iloc_join(iloc_create(ILOC_INS_LOADAI, reference_address_register, address2, temp), generate_attribution_vector(reference_address_register, address1, offset, temp));
+}
+
+iloc_instruction_t* generate_return(iloc_argument_t expression)
+{
+    iloc_argument_t rfp = {ILOC_ARG_TYPE_RFP, 0};
+    iloc_argument_t rsp = {ILOC_ARG_TYPE_RSP, 0};
+    iloc_argument_t address_response = {ILOC_ARG_TYPE_NUMBER, -4};
+    iloc_argument_t address_return = make_temp();
+    iloc_argument_t zero = {ILOC_ARG_TYPE_NUMBER, 0 };
+    iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
+
+    return iloc_join(iloc_join(iloc_create(ILOC_INS_STOREAI, expression, rsp, address_response), iloc_create(ILOC_INS_LOADAI, rfp, zero, address_return)), iloc_create(ILOC_INS_JUMP, address_return, none, none));
 }

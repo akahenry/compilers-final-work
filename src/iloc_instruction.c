@@ -74,8 +74,8 @@ char* iloc_instruction_string(iloc_instruction_t *ins)
         case ILOC_INS_LOADA0:
         case ILOC_INS_CLOADAI:
         case ILOC_INS_CLOADA0:
-            str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + strlen(arg3) + 6 + 1, sizeof(char));
-            sprintf(str, "%s %s %s => %s",
+            str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + strlen(arg3) + 7 + 1, sizeof(char));
+            sprintf(str, "%s %s, %s => %s",
                     opcode,
                     arg1,
                     arg2,
@@ -86,8 +86,8 @@ char* iloc_instruction_string(iloc_instruction_t *ins)
         case ILOC_INS_STOREAO:
         case ILOC_INS_CSTOREAI:
         case ILOC_INS_CSTOREAO:
-            str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + strlen(arg3) + 6 + 1, sizeof(char));
-            sprintf(str, "%s %s => %s %s",
+            str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + strlen(arg3) + 7 + 1, sizeof(char));
+            sprintf(str, "%s %s => %s, %s",
                     opcode,
                     arg1,
                     arg2,
@@ -103,8 +103,8 @@ char* iloc_instruction_string(iloc_instruction_t *ins)
             break;
         
         case ILOC_INS_CBR:
-            str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + strlen(arg3) + 6 + 1, sizeof(char));
-            sprintf(str, "%s %s -> %s %s",
+            str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + strlen(arg3) + 7 + 1, sizeof(char));
+            sprintf(str, "%s %s -> %s, %s",
                     opcode,
                     arg1,
                     arg2,
@@ -117,8 +117,8 @@ char* iloc_instruction_string(iloc_instruction_t *ins)
         case ILOC_INS_CMP_GE:
         case ILOC_INS_CMP_GT:
         case ILOC_INS_CMP_NE:
-            str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + strlen(arg3) + 6 + 1, sizeof(char));
-            sprintf(str, "%s %s %s -> %s",
+            str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + strlen(arg3) + 7 + 1, sizeof(char));
+            sprintf(str, "%s %s, %s -> %s",
                     opcode,
                     arg1,
                     arg2,

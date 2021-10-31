@@ -157,7 +157,7 @@ node_type_t check_implicit_conversion(node_type_t type1, node_type_t type2, int 
 }
 
 // Return type2 if cannot be converted
-node_type_t type_coercion(node_type_t type1, node_type_t type2, int line)
+node_type_t type_coercion(node_type_t type1, node_type_t type2)
 {
     if (type1 != type2)
     {

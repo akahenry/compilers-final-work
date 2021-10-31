@@ -466,8 +466,7 @@ localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR
 
             iloc_argument_t rfp = {ILOC_ARG_TYPE_RFP, 0};
             iloc_argument_t address = {ILOC_ARG_TYPE_NUMBER, get_symbol($1->text)->address};
-            iloc_argument_t value = {ILOC_ARG_TYPE_NUMBER, second->token->value.v_integer};
-            $$->code = generate_attribution(rfp, address, value);
+            $$->code = iloc_join($3->code, generate_attribution(rfp, address, $3->temp));
         }
         else
         {
@@ -511,6 +510,11 @@ literalnumber: TK_LIT_FLOAT
         $$ = node_create_leaf($1);
         $$->type = NODE_TYPE_INT;
         add_symbol($1->text, $1, SYMBOL_TYPE_LITERAL_INT, SYMBOL_DATATYPE_INT, NULL, IGNORE_DISP);
+
+        iloc_argument_t temp = make_temp();
+        iloc_argument_t number = {ILOC_ARG_TYPE_NUMBER, $1->value.v_integer};
+        $$->code = generate_load_constant(temp, number);
+        $$->temp = temp;
     }
     ;
 
@@ -828,10 +832,13 @@ shiftcommand: varname TK_OC_SL TK_LIT_INT
 
 return: TK_PR_RETURN expression 
     { 
-        if (type_coercion(current_function_type, $2->type, $2->token->line) == current_function_type)
+        if (type_coercion(current_function_type, $2->type) == current_function_type)
         {
             $$ = node_create("return", $2, NULL, NULL, NULL, NULL);
             $$->type = current_function_type;
+
+            $$->temp = $2->temp;
+            $$->code = iloc_join($2->code, generate_return($2->temp));
         }
         else
         {
