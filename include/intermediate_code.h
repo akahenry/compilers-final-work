@@ -28,6 +28,6 @@ iloc_instruction_t* generate_attribution_vector_from_address(iloc_argument_t ref
 iloc_instruction_t* generate_return(iloc_argument_t expression);
 iloc_instruction_t* generate_jump_halt();
 iloc_instruction_t* generate_funccall(token_t* funcname_token, node_t* arguments_node, iloc_argument_t reg);
-
+iloc_instruction_t* generate_relational_comparison(iloc_opcode_t opcode, iloc_argument_t register1, iloc_argument_t register2, iloc_argument_t result);
 
 #endif

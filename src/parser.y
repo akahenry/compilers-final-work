@@ -1019,31 +1019,55 @@ logicexpression: '!' logicexpression
     {
         $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
         $$->type = NODE_TYPE_BOOL;
+
+        iloc_argument_t temp = make_temp();
+        $$->code = iloc_join(iloc_join($1->code, $3->code), generate_relational_comparison(ILOC_INS_CMP_EQ, $1->temp, $3->temp, temp));
+        $$->temp = temp;
     }
     | arithmeticexpression TK_OC_NE arithmeticexpression
     {
         $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
         $$->type = NODE_TYPE_BOOL;
+
+        iloc_argument_t temp = make_temp();
+        $$->code = iloc_join(iloc_join($1->code, $3->code), generate_relational_comparison(ILOC_INS_CMP_NE, $1->temp, $3->temp, temp));
+        $$->temp = temp;
     }
     | arithmeticexpression TK_OC_GE arithmeticexpression
     {
         $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
         $$->type = NODE_TYPE_BOOL;
+
+        iloc_argument_t temp = make_temp();
+        $$->code = iloc_join(iloc_join($1->code, $3->code), generate_relational_comparison(ILOC_INS_CMP_GE, $1->temp, $3->temp, temp));
+        $$->temp = temp;
     }
     | arithmeticexpression TK_OC_LE arithmeticexpression
     {
         $$ = node_create($2->text, $1, $3, NULL, NULL, NULL);
         $$->type = NODE_TYPE_BOOL;
+
+        iloc_argument_t temp = make_temp();
+        $$->code = iloc_join(iloc_join($1->code, $3->code), generate_relational_comparison(ILOC_INS_CMP_LE, $1->temp, $3->temp, temp));
+        $$->temp = temp;
     }
     | arithmeticexpression '>' arithmeticexpression
     {
         $$ = node_create(">", $1, $3, NULL, NULL, NULL);
         $$->type = NODE_TYPE_BOOL;
+
+        iloc_argument_t temp = make_temp();
+        $$->code = iloc_join(iloc_join($1->code, $3->code), generate_relational_comparison(ILOC_INS_CMP_GT, $1->temp, $3->temp, temp));
+        $$->temp = temp;
     }
     | arithmeticexpression '<' arithmeticexpression
     {
         $$ = node_create("<", $1, $3, NULL, NULL, NULL);
         $$->type = NODE_TYPE_BOOL;
+
+        iloc_argument_t temp = make_temp();
+        $$->code = iloc_join(iloc_join($1->code, $3->code), generate_relational_comparison(ILOC_INS_CMP_LT, $1->temp, $3->temp, temp));
+        $$->temp = temp;
     }
     | logicexpression TK_OC_AND logicexpression
     {

@@ -175,3 +175,8 @@ iloc_instruction_t* generate_funccall(token_t* funcname_token, node_t* arguments
 
     return code;
 }
+
+iloc_instruction_t* generate_relational_comparison(iloc_opcode_t opcode, iloc_argument_t register1, iloc_argument_t register2, iloc_argument_t result)
+{
+    return iloc_create(opcode, register1, register2, result);
+}
