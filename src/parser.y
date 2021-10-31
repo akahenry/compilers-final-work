@@ -155,10 +155,10 @@ stack_t* args_types = NULL;
 //          [x] Variável recebe literal
 //          [x] Variável recebe variável
 //      [x] Atribuição como comando (SÓ VARIÁVEL SIMPLES)
-// [ ] Comandos de fluxo de controle
+// [x] Comandos de fluxo de controle
 //      [x] if com else opcional
 //      [x] while
-//      [ ] for
+//      [x] for
 // Função
 //      [x] Construção da função
 //      [x] Retorno da função
@@ -865,12 +865,12 @@ return: TK_PR_RETURN expression
     ;
 
 controlflowcommand: if { $$ = $1; }
-    | TK_PR_FOR '(' varassignment ':' expression ':' varassignment ')' commandblock { $$ = node_create("for", $3, $5, $7, $9, NULL); }
-    | TK_PR_WHILE '(' expression ')' TK_PR_DO commandblock { $$ = node_create("while", $3, $6, NULL, NULL, NULL); $$->code = generate_while($3->temp, $3->code, $6->code); }
+    | TK_PR_FOR '(' varassignment ':' expression ':' varassignment ')' commandblock { $$ = node_create("for", $3, $5, $7, $9, NULL); $$->code = generate_for($3->temp, $5->temp, $5->code, $7->temp, $7->code, $9->code); $$->temp = make_temp(); }
+    | TK_PR_WHILE '(' expression ')' TK_PR_DO commandblock { $$ = node_create("while", $3, $6, NULL, NULL, NULL); $$->code = generate_while($3->temp, $3->code, $6->code); $$->temp = make_temp(); }
     ;
 
-if: TK_PR_IF '(' expression ')' commandblock { $$ = node_create("if", $3, $5, NULL, NULL, NULL); $$->code = iloc_join($3->code, generate_if($3->temp, $5->code, NULL)); $$->temp = $3->temp; }
-    | TK_PR_IF '(' expression ')' commandblock TK_PR_ELSE commandblock { $$ = node_create("if", $3, $5, $7, NULL, NULL); $$->code = iloc_join($3->code, generate_if($3->temp, $5->code, $7->code)); $$->temp = $3->temp; }
+if: TK_PR_IF '(' expression ')' commandblock { $$ = node_create("if", $3, $5, NULL, NULL, NULL); $$->code = iloc_join($3->code, generate_if($3->temp, $5->code, NULL)); $$->temp = make_temp(); }
+    | TK_PR_IF '(' expression ')' commandblock TK_PR_ELSE commandblock { $$ = node_create("if", $3, $5, $7, NULL, NULL); $$->code = iloc_join($3->code, generate_if($3->temp, $5->code, $7->code)); $$->temp = make_temp(); }
     ;
 
 expression: arithmeticexpression    { $$ = $1; }

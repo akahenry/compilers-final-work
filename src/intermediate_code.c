@@ -205,3 +205,10 @@ iloc_instruction_t* generate_while(iloc_argument_t boolean_expression, iloc_inst
 
     return iloc_join(iloc_create_label(in_label.number), iloc_join(boolean_code, generate_if(boolean_expression, iloc_join(code, iloc_create(ILOC_INS_JUMPI, in_label, none, none)), NULL)));
 }
+
+iloc_instruction_t* generate_for(iloc_argument_t var_init, iloc_argument_t boolean_expression, iloc_instruction_t* boolean_code, iloc_argument_t var_assignment, iloc_instruction_t* var_assignment_code, iloc_instruction_t* code)
+{
+    iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
+
+    return iloc_join(iloc_create(ILOC_INS_I2I, var_init, boolean_expression, none), generate_while(boolean_expression, iloc_join(iloc_create(ILOC_INS_I2I, var_assignment, boolean_expression, none), boolean_code), iloc_join(code, var_assignment_code)));
+}
