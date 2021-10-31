@@ -180,3 +180,28 @@ iloc_instruction_t* generate_relational_comparison(iloc_opcode_t opcode, iloc_ar
 {
     return iloc_create(opcode, register1, register2, result);
 }
+
+iloc_instruction_t* generate_if(iloc_argument_t boolean_expression, iloc_instruction_t* true_code, iloc_instruction_t* false_code)
+{
+    iloc_argument_t true_label = make_label();
+    iloc_argument_t false_label = make_label();
+    iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
+
+    if (false_code == NULL)
+    {
+        return iloc_join(iloc_join(iloc_create(ILOC_INS_CBR, boolean_expression, true_label, false_label), iloc_join(iloc_create_label(true_label.number), true_code)), iloc_join(iloc_create_label(false_label.number), false_code));
+    }
+    else
+    {
+        iloc_argument_t out_label = make_label();
+        return iloc_join(iloc_join(iloc_join(iloc_create(ILOC_INS_CBR, boolean_expression, true_label, false_label), iloc_join(iloc_create_label(true_label.number), iloc_join(true_code, iloc_create(ILOC_INS_JUMPI, out_label, none, none)))), iloc_join(iloc_create_label(false_label.number), false_code)), iloc_join(iloc_create_label(out_label.number), iloc_create(ILOC_INS_NOP, none, none, none)));
+    }
+}
+
+iloc_instruction_t* generate_while(iloc_argument_t boolean_expression, iloc_instruction_t* boolean_code, iloc_instruction_t* code)
+{
+    iloc_argument_t in_label = make_label();
+    iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
+
+    return iloc_join(iloc_create_label(in_label.number), iloc_join(boolean_code, generate_if(boolean_expression, iloc_join(code, iloc_create(ILOC_INS_JUMPI, in_label, none, none)), NULL)));
+}

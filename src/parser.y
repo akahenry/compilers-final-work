@@ -154,10 +154,10 @@ stack_t* args_types = NULL;
 //      Atribuição na declaração local
 //          [x] Variável recebe literal
 //          [x] Variável recebe variável
-//      [x] Atribuição como comando (SÓ VARIÁVEL SIMPLES PARA TESTES APENAS)
+//      [x] Atribuição como comando (SÓ VARIÁVEL SIMPLES)
 // [ ] Comandos de fluxo de controle
-//      [ ] if com else opcional
-//      [ ] while
+//      [x] if com else opcional
+//      [x] while
 //      [ ] for
 // Função
 //      [x] Construção da função
@@ -866,11 +866,11 @@ return: TK_PR_RETURN expression
 
 controlflowcommand: if { $$ = $1; }
     | TK_PR_FOR '(' varassignment ':' expression ':' varassignment ')' commandblock { $$ = node_create("for", $3, $5, $7, $9, NULL); }
-    | TK_PR_WHILE '(' expression ')' TK_PR_DO commandblock { $$ = node_create("while", $3, $6, NULL, NULL, NULL); }
+    | TK_PR_WHILE '(' expression ')' TK_PR_DO commandblock { $$ = node_create("while", $3, $6, NULL, NULL, NULL); $$->code = generate_while($3->temp, $3->code, $6->code); }
     ;
 
-if: TK_PR_IF '(' expression ')' commandblock { $$ = node_create("if", $3, $5, NULL, NULL, NULL); }
-    | TK_PR_IF '(' expression ')' commandblock TK_PR_ELSE commandblock { $$ = node_create("if", $3, $5, $7, NULL, NULL); }
+if: TK_PR_IF '(' expression ')' commandblock { $$ = node_create("if", $3, $5, NULL, NULL, NULL); $$->code = iloc_join($3->code, generate_if($3->temp, $5->code, NULL)); $$->temp = $3->temp; }
+    | TK_PR_IF '(' expression ')' commandblock TK_PR_ELSE commandblock { $$ = node_create("if", $3, $5, $7, NULL, NULL); $$->code = iloc_join($3->code, generate_if($3->temp, $5->code, $7->code)); $$->temp = $3->temp; }
     ;
 
 expression: arithmeticexpression    { $$ = $1; }

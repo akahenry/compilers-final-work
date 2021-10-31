@@ -29,5 +29,7 @@ iloc_instruction_t* generate_return(iloc_argument_t expression);
 iloc_instruction_t* generate_jump_halt();
 iloc_instruction_t* generate_funccall(token_t* funcname_token, node_t* arguments_node, iloc_argument_t reg);
 iloc_instruction_t* generate_relational_comparison(iloc_opcode_t opcode, iloc_argument_t register1, iloc_argument_t register2, iloc_argument_t result);
+iloc_instruction_t* generate_if(iloc_argument_t boolean_expression, iloc_instruction_t* true_code, iloc_instruction_t* false_code);
+iloc_instruction_t* generate_while(iloc_argument_t boolean_expression, iloc_instruction_t* boolean_code, iloc_instruction_t* code);
 
 #endif
