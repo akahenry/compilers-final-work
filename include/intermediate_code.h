@@ -32,5 +32,6 @@ iloc_instruction_t* generate_relational_comparison(iloc_opcode_t opcode, iloc_ar
 iloc_instruction_t* generate_if(iloc_argument_t boolean_expression, iloc_instruction_t* true_code, iloc_instruction_t* false_code);
 iloc_instruction_t* generate_while(iloc_argument_t boolean_expression, iloc_instruction_t* boolean_code, iloc_instruction_t* code);
 iloc_instruction_t* generate_for(iloc_argument_t var_init, iloc_argument_t boolean_expression, iloc_instruction_t* boolean_code, iloc_argument_t var_assignment, iloc_instruction_t* var_assignment_code, iloc_instruction_t* code);
+iloc_instruction_t* generate_not_operator(iloc_argument_t reg);
 
 #endif

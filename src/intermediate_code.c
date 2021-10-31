@@ -212,3 +212,10 @@ iloc_instruction_t* generate_for(iloc_argument_t var_init, iloc_argument_t boole
 
     return iloc_join(iloc_create(ILOC_INS_I2I, var_init, boolean_expression, none), generate_while(boolean_expression, iloc_join(iloc_create(ILOC_INS_I2I, var_assignment, boolean_expression, none), boolean_code), iloc_join(code, var_assignment_code)));
 }
+
+iloc_instruction_t* generate_not_operator(iloc_argument_t reg)
+{
+    iloc_argument_t one = { ILOC_ARG_TYPE_NUMBER, 1 };
+    // xorI r1, c2 => r3 // r3 = r1 xor c2
+    return iloc_create(ILOC_INS_XORI, reg, one, reg);
+}

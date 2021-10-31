@@ -999,21 +999,29 @@ logicexpression: '!' logicexpression
     {
         $$ = node_create("!", $2, NULL, NULL, NULL, NULL);
         $$->type = NODE_TYPE_BOOL;
+        $$->code = iloc_join($2->code, generate_not_operator($2->temp));
+        $$->temp = $2->temp;
     }
     | '!' varname
     {
         $$ = node_create("!", $2, NULL, NULL, NULL, NULL);
         $$->type = NODE_TYPE_BOOL;
+        $$->code = iloc_join($2->code, generate_not_operator($2->temp));
+        $$->temp = $2->temp;
     }
     | '?' logicexpression
     {
         $$ = node_create("?", $2, NULL, NULL, NULL, NULL);
         $$->type = NODE_TYPE_BOOL;
+        $$->code = $2->code;
+        $$->temp = $2->temp;
     }
     | '?' varname
     {
         $$ = node_create("?", $2, NULL, NULL, NULL, NULL);
         $$->type = NODE_TYPE_BOOL;
+        $$->code = $2->code;
+        $$->temp = $2->temp;
     }
     | arithmeticexpression TK_OC_EQ arithmeticexpression
     {
