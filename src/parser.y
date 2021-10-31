@@ -23,6 +23,7 @@ symbol_datatype_t current_type;
 int opening_function = 0;
 int is_argless_function = 0;
 int disp = 0;
+int is_main_function = 0;
 symbol_datatype_t current_function_type;
 queue_t* params_types = NULL;
 stack_t* args_types = NULL;
@@ -169,7 +170,7 @@ initial: program
     arvore = (void*)$$;
 
     iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
-    $$->code = iloc_join(iloc_create(ILOC_INS_JUMPI, get_symbol("main")->label, none, none), $1->code);
+    $$->code = iloc_join(iloc_join(iloc_create(ILOC_INS_JUMPI, get_symbol("main")->label, none, none), generate_jump_halt()), $1->code);
 };
 
 program: %empty             { $$ = NULL; }
@@ -258,6 +259,7 @@ funcidentifier: TK_IDENTIFICADOR
         {
             add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_FUNCTION, current_type, NULL, IGNORE_DISP);
             current_function_type = current_type;
+            is_main_function = strcmp($1->text, "main") == 0;
         }
         else
         {
@@ -838,7 +840,16 @@ return: TK_PR_RETURN expression
             $$->type = current_function_type;
 
             $$->temp = $2->temp;
-            $$->code = iloc_join($2->code, generate_return($2->temp));
+            if (is_main_function)
+            {
+                iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
+                iloc_argument_t l0 = {ILOC_ARG_TYPE_LABEL, 0};
+                $$->code = iloc_join($2->code, iloc_create(ILOC_INS_JUMPI, l0, none, none));
+            }
+            else
+            {
+                $$->code = iloc_join($2->code, generate_return($2->temp));
+            }
         }
         else
         {

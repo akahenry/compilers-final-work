@@ -59,6 +59,7 @@ typedef enum _iloc_opcode_t
     ILOC_INS_CMP_GE,
     ILOC_INS_CMP_GT,
     ILOC_INS_CMP_NE,
+    ILOC_INS_HALT,
     ILOC_LABEL
 } iloc_opcode_t;
 

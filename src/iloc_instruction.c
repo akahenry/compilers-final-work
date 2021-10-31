@@ -29,6 +29,7 @@ char* iloc_instruction_string(iloc_instruction_t *ins)
 
     switch (ins->opcode)
     {
+        case ILOC_INS_HALT:
         case ILOC_INS_NOP:
             str = calloc(strlen(opcode) + 1, sizeof(char));
             sprintf(str, "%s", opcode);
@@ -257,6 +258,8 @@ const char* iloc_opcode_string(iloc_instruction_t *ins)
             return "cmp_GT";
         case ILOC_INS_CMP_NE:
             return "cmp_NE";
+        case ILOC_INS_HALT:
+            return "halt";
         default:
             break;
     }

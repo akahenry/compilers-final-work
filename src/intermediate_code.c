@@ -1,7 +1,7 @@
 #include "intermediate_code.h"
 
 int temp_count = 0;
-int label_count = 0;
+int label_count = 1;
 
 iloc_argument_t make_temp()
 {
@@ -109,4 +109,10 @@ iloc_instruction_t* generate_return(iloc_argument_t expression)
     iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
 
     return iloc_join(iloc_join(iloc_create(ILOC_INS_STOREAI, expression, rsp, address_response), iloc_create(ILOC_INS_LOADAI, rfp, zero, address_return)), iloc_create(ILOC_INS_JUMP, address_return, none, none));
+}
+
+iloc_instruction_t* generate_jump_halt()
+{
+    iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
+    return iloc_join(iloc_create_label(0), iloc_create(ILOC_INS_HALT, none, none, none));
 }
