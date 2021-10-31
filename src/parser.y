@@ -751,6 +751,7 @@ funccall: TK_IDENTIFICADOR '(' ')'
                         free(got);
                     }
                     stack_destroy(args_types);
+                    args_types = NULL;
 
                     $$->temp = make_temp();
                     $$->type = identifier->datatype;
