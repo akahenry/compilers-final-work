@@ -698,6 +698,7 @@ funccall: TK_IDENTIFICADOR '(' ')'
                 if (identifier->params_queue == NULL)
                 {
                     $$->type = identifier->datatype;
+                    $$->code = generate_funccall($1, NULL);
                 }
                 else
                 {
@@ -750,6 +751,7 @@ funccall: TK_IDENTIFICADOR '(' ')'
                     stack_destroy(args_types);
 
                     $$->type = identifier->datatype;
+                    $$->code = generate_funccall($1, $3);
                 }
                 else
                 {

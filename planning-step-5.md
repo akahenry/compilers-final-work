@@ -36,6 +36,7 @@ para cada parametro i in range(numero de parametros):
 `<label da função>:`
 
 "atualiza o RFP e o RSP"
+`rfp <= rsp`
 `rsp <= rsp + 12 + i*4 + 4` onde i é o numero de parametros
 
 para cada parametro i in range(numero de parametros):

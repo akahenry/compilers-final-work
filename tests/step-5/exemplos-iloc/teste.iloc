@@ -1,0 +1,11 @@
+int f(int a, int b)
+{
+  return 3 - 2;
+}
+
+int main()
+{
+  int g;
+  g = f(3,2);
+  return g;
+}
