@@ -3,10 +3,7 @@ Grupo D
   Henry Bernardo Kochenborger de Avila
   Marcos Samuel Winkel Landi
 */
-/*
-  Função principal para realização da E3.
-  Não modifique este arquivo.
-*/
+
 #include <stdio.h>
 
 #include "node.h"
@@ -21,9 +18,8 @@ void libera (void *arvore);
 
 int main (int argc, char **argv)
 {
-  int ret = yyparse();
-  // exporta (arvore);
-
+  int ret = yyparse(); // A geração de código intermediário foi realizada na mesma passagem em que feita a análise sintática/semântica
+  
   iloc_recursive_print(((node_t*)arvore)->code);
 
   libera(arvore);
