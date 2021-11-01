@@ -295,7 +295,7 @@ void add_disp_symbol_table(int disp)
     else if (symbol_table->size > 1) // Function scope
     {
         // Update all the scopes inside the function
-        int count = 1;
+        int count = 0;
         do
         {
             hash_table_t* hash = (hash_table_t*)stack_at(symbol_table->scopes, count++);

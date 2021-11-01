@@ -407,10 +407,12 @@ localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR
                 }
                 $$->type = current_type;
 
-                iloc_argument_t reference_register = {second->is_global ? ILOC_ARG_TYPE_RBSS : ILOC_ARG_TYPE_RFP, 0};
+                symbol_item_t* first = get_symbol($1->text);
+                iloc_argument_t reference_register1 = {first->is_global ? ILOC_ARG_TYPE_RBSS : ILOC_ARG_TYPE_RFP, 0};
+                iloc_argument_t reference_register2 = {second->is_global ? ILOC_ARG_TYPE_RBSS : ILOC_ARG_TYPE_RFP, 0};
                 iloc_argument_t address1 = {ILOC_ARG_TYPE_NUMBER, get_symbol($1->text)->address};
                 iloc_argument_t address2 = {ILOC_ARG_TYPE_NUMBER, second->address};
-                $$->code = generate_attribution_from_address(reference_register, address1, address2);
+                $$->code = generate_attribution_from_address(reference_register1, address1, reference_register2, address2);
             }
             else
             {

@@ -65,16 +65,16 @@ void* stack_get(stack_t* s)
 	return s->begin->value;
 }
 
-void* stack_at(stack_t* q, int index)
+void* stack_at(stack_t* s, int index)
 {
 	stack_item_t* item = NULL;
 	void* response = NULL;
-	if (q != NULL)
+	if (s != NULL)
 	{
-		if (index >= 0 && index < q->size)
+		if (index >= 0 && index < s->size)
 		{
-			item = q->begin;
-			for (size_t i = 1; i < index; i++)
+			item = s->begin;
+			for (size_t i = 1; i <= index; i++)
 			{
 				item = item->next;
 			}
