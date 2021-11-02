@@ -10,10 +10,15 @@ Grupo D
 #include "symbol_table.h"
 #include "node.h"
 
+#define ARGUMENT_SIZE 4
+#define REGISTER_SIZE 4
+#define CONSTANT_FRAME_SIZE 12 // return address, rfp and rsp
+
 hash_table_t* functions;
 
 iloc_argument_t make_temp();
 iloc_argument_t make_label();
+void allocate_funccall_registers(int register_count);
 
 iloc_instruction_t* generate_attribution(iloc_argument_t reference_address_register, iloc_argument_t address, iloc_argument_t expression);
 iloc_instruction_t* generate_attribution_vector(iloc_argument_t reference_address_register, iloc_argument_t address, iloc_argument_t offset, iloc_argument_t expression);

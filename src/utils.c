@@ -139,6 +139,8 @@ void add_symbol(char* key, token_t* token, symbol_type_t type, symbol_datatype_t
         {
             symbol_address = get_disp_symbol_table();
             add_disp_symbol_table(size);
+
+            // printf("%s, disp: %d\n", key, get_disp_symbol_table());
         }
 
         if (symbol_table_add_symbol(symbol_table, label, token->line, type, datatype, size, token, NULL, symbol_address) == SYMBOL_ERROR_KEY_ALREADY_EXISTS &&

@@ -2,6 +2,7 @@
 
 int temp_count = 0;
 int label_count = 1;
+int max_register_count = 0;
 
 iloc_argument_t make_temp()
 {
@@ -15,6 +16,18 @@ iloc_argument_t make_label()
     iloc_argument_t arg = {ILOC_ARG_TYPE_LABEL, label_count};
     label_count++;
     return arg;
+}
+
+void allocate_funccall_registers(int register_count)
+{
+    if (register_count > max_register_count)
+    {
+        int extra_registers = register_count - max_register_count;
+        max_register_count = register_count;
+
+        // only adds the extra registers since the last funccall
+        add_disp_symbol_table(REGISTER_SIZE * extra_registers);
+    }
 }
 
 iloc_instruction_t* generate_attribution(iloc_argument_t reference_address_register, iloc_argument_t address, iloc_argument_t expression)
@@ -137,7 +150,7 @@ iloc_instruction_t* generate_funccall(token_t* funcname_token, node_t* arguments
     // calcula e salva o endereço de retorno
     symbol_item_t* symbol = get_symbol(funcname_token->text);
     int num_parameters = symbol->params_queue == NULL ? 0 : symbol->params_queue->size;
-    iloc_argument_t return_address_arg = {ILOC_ARG_TYPE_NUMBER, 5 + num_parameters};
+    iloc_argument_t return_address_arg = {ILOC_ARG_TYPE_NUMBER, 6 + num_parameters + temp_count};
     iloc_argument_t return_address = make_temp();
     code = iloc_join(code, iloc_create(ILOC_INS_ADDI, rpc, return_address_arg, return_address));
     code = iloc_join(code, iloc_create(ILOC_INS_STOREAI, return_address, rsp, zero));
@@ -148,17 +161,29 @@ iloc_instruction_t* generate_funccall(token_t* funcname_token, node_t* arguments
     iloc_argument_t eight = {ILOC_ARG_TYPE_NUMBER, 8};
     code = iloc_join(code, iloc_create(ILOC_INS_STOREAI, rfp, rsp, eight));
 
-    // para cada parametro i in range(numero de parametros):
+    // empilha os parâmetros
     arg_node_iterator = arguments_node;
+    iloc_argument_t parameter_address_iter = {ILOC_ARG_TYPE_NUMBER, 0};
     int i = 0;
     while (arg_node_iterator != NULL)
     {
-        // empilha o parametro
-        return_address_arg.number = 12 + 4*i++;
-        code = iloc_join(code, iloc_create(ILOC_INS_STOREAI, arg_node_iterator->temp, rsp, return_address_arg));
+        parameter_address_iter.number = CONSTANT_FRAME_SIZE + ARGUMENT_SIZE * i++;
+        code = iloc_join(code, iloc_create(ILOC_INS_STOREAI, arg_node_iterator->temp, rsp, parameter_address_iter));
 
         arg_node_iterator = arg_node_iterator->child5;
     }
+
+    // empilha os registradores
+    iloc_argument_t register_iter = { ILOC_ARG_TYPE_NUMBER, 0 };
+    iloc_argument_t reg_iter = { ILOC_ARG_TYPE_REGISTER, 0 };
+    int arg_number = i;
+    for (int j = 0; j < temp_count; j++)
+    {
+        reg_iter.number = j;
+        register_iter.number = CONSTANT_FRAME_SIZE + ARGUMENT_SIZE * arg_number + REGISTER_SIZE * j;
+        code = iloc_join(code, iloc_create(ILOC_INS_STOREAI, reg_iter, rsp, register_iter));
+    }
+    allocate_funccall_registers(temp_count);
 
     // salta para o inicio da função
     iloc_argument_t func_label = symbol->label;
@@ -172,6 +197,17 @@ iloc_instruction_t* generate_funccall(token_t* funcname_token, node_t* arguments
     code = iloc_join(code, iloc_create(ILOC_INS_LOADAI, rfp, four, rsp));
     // Obtém rfp (RFP) salvo
     code = iloc_join(code, iloc_create(ILOC_INS_LOADAI, rfp, eight, rfp));
+
+    // desempilha os registradores
+    register_iter.number = 0;
+    reg_iter.number = 0;
+    for (int j = 0; j < temp_count; j++)
+    {
+        reg_iter.number = j;
+        register_iter.number = CONSTANT_FRAME_SIZE + ARGUMENT_SIZE * arg_number + REGISTER_SIZE * j;
+        code = iloc_join(code, iloc_create(ILOC_INS_LOADAI, rsp, register_iter, reg_iter));
+    }
+    allocate_funccall_registers(temp_count);
 
     return code;
 }
