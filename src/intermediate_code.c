@@ -83,9 +83,18 @@ iloc_instruction_t* generate_funcdec(iloc_argument_t label, iloc_argument_t disp
     iloc_argument_t rfp = {ILOC_ARG_TYPE_RFP, 0};
     iloc_argument_t rsp = {ILOC_ARG_TYPE_RSP, 0};
     iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
-    disp.number += 4;
+    iloc_instruction_t* register_backup_instruction = NULL;
+    iloc_argument_t newDisp = {disp.type, disp.number + 4 * (1 + temp_count)};
 
-    return iloc_join(iloc_join(iloc_create_label(label.number), iloc_create(ILOC_INS_I2I, rsp, rfp, none)), iloc_create(ILOC_INS_ADDI, rsp, disp, rsp));
+    // Backup all used registers
+    for (size_t i = 0; i < temp_count; i++)
+    {
+        iloc_argument_t address = {ILOC_ARG_TYPE_NUMBER, disp.number + 4*i};
+        iloc_argument_t reg = {ILOC_ARG_TYPE_REGISTER, i};
+        register_backup_instruction = iloc_join(iloc_create(ILOC_INS_STOREAI, reg, rfp, address), register_backup_instruction);
+    }
+
+    return iloc_join(iloc_join(iloc_join(iloc_create_label(label.number), iloc_create(ILOC_INS_I2I, rsp, rfp, none)), iloc_create(ILOC_INS_ADDI, rsp, newDisp, rsp)), register_backup_instruction);
 }
 
 iloc_instruction_t* generate_attribution_from_address(iloc_argument_t reference_address_register1, iloc_argument_t address1, iloc_argument_t reference_address_register2, iloc_argument_t address2)
@@ -100,7 +109,7 @@ iloc_instruction_t* generate_attribution_vector_from_address(iloc_argument_t ref
     return iloc_join(iloc_create(ILOC_INS_LOADAI, reference_address_register, address2, temp), generate_attribution_vector(reference_address_register, address1, offset, temp));
 }
 
-iloc_instruction_t* generate_return(iloc_argument_t expression)
+iloc_instruction_t* generate_return(iloc_argument_t expression, iloc_argument_t declared_variables_count)
 {
     iloc_argument_t rfp = {ILOC_ARG_TYPE_RFP, 0};
     iloc_argument_t rsp = {ILOC_ARG_TYPE_RSP, 0};
@@ -108,8 +117,17 @@ iloc_instruction_t* generate_return(iloc_argument_t expression)
     iloc_argument_t address_return = make_temp();
     iloc_argument_t zero = {ILOC_ARG_TYPE_NUMBER, 0 };
     iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
+    iloc_instruction_t* register_backup_instruction = NULL;
+    
+    // Rollback all used registers to before func call
+    for (size_t i = 0; i < temp_count - 1; i++)
+    {
+        iloc_argument_t address = {ILOC_ARG_TYPE_NUMBER, 12 + declared_variables_count.number*4 + 4*i};
+        iloc_argument_t reg = {ILOC_ARG_TYPE_REGISTER, i};
+        register_backup_instruction = iloc_join(iloc_create(ILOC_INS_LOADAI, rfp, address, reg), register_backup_instruction);
+    }
 
-    return iloc_join(iloc_join(iloc_create(ILOC_INS_STOREAI, expression, rsp, address_response), iloc_create(ILOC_INS_LOADAI, rfp, zero, address_return)), iloc_create(ILOC_INS_JUMP, address_return, none, none));
+    return iloc_join(iloc_join(iloc_join(iloc_create(ILOC_INS_STOREAI, expression, rsp, address_response), iloc_create(ILOC_INS_LOADAI, rfp, zero, address_return)), register_backup_instruction), iloc_create(ILOC_INS_JUMP, address_return, none, none));
 }
 
 iloc_instruction_t* generate_jump_halt()

@@ -25,7 +25,7 @@ iloc_instruction_t* generate_arithmetic_unary_expression(token_t* token, iloc_ar
 iloc_instruction_t* generate_funcdec(iloc_argument_t label, iloc_argument_t disp);
 iloc_instruction_t* generate_load_vector(iloc_argument_t reference_address_register, iloc_argument_t address, iloc_argument_t offset, iloc_argument_t reg);
 iloc_instruction_t* generate_attribution_vector_from_address(iloc_argument_t reference_address_register, iloc_argument_t address1, iloc_argument_t offset, iloc_argument_t address2);
-iloc_instruction_t* generate_return(iloc_argument_t expression);
+iloc_instruction_t* generate_return(iloc_argument_t expression, iloc_argument_t declared_variables_count);
 iloc_instruction_t* generate_jump_halt();
 iloc_instruction_t* generate_funccall(token_t* funcname_token, node_t* arguments_node, iloc_argument_t reg);
 iloc_instruction_t* generate_relational_comparison(iloc_opcode_t opcode, iloc_argument_t register1, iloc_argument_t register2, iloc_argument_t result);

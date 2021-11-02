@@ -24,6 +24,7 @@ int opening_function = 0;
 int is_argless_function = 0;
 int disp = 0;
 int is_main_function = 0;
+int declared_variables = 0;
 symbol_datatype_t current_function_type;
 queue_t* params_types = NULL;
 stack_t* args_types = NULL;
@@ -265,6 +266,7 @@ funcidentifier: TK_IDENTIFICADOR
             add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_FUNCTION, current_type, NULL, IGNORE_DISP);
             current_function_type = current_type;
             is_main_function = strcmp($1->text, "main") == 0;
+            declared_variables = 0;
         }
         else
         {
@@ -291,7 +293,7 @@ parameter: type TK_IDENTIFICADOR
                 // allocate for return addr, rsp and rfp
                 add_disp_symbol_table(12);
 
-
+                declared_variables++;
             }
             add_symbol($2->text, $2, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL, ADD_DISP);
             symbol_datatype_t* datatype = calloc(1, sizeof(symbol_datatype_t));
@@ -315,6 +317,8 @@ parameter: type TK_IDENTIFICADOR
 
                 // allocate for return addr, rsp and rfp
                 add_disp_symbol_table(12);
+
+                declared_variables++;
             }
             add_symbol($3->text, $3, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL, ADD_DISP);
             symbol_datatype_t* datatype = calloc(1, sizeof(symbol_datatype_t));
@@ -413,6 +417,8 @@ localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR
                 iloc_argument_t address1 = {ILOC_ARG_TYPE_NUMBER, get_symbol($1->text)->address};
                 iloc_argument_t address2 = {ILOC_ARG_TYPE_NUMBER, second->address};
                 $$->code = generate_attribution_from_address(reference_register1, address1, reference_register2, address2);
+
+                declared_variables++;
             }
             else
             {
@@ -472,6 +478,8 @@ localidentifier: TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR
             iloc_argument_t rfp = {ILOC_ARG_TYPE_RFP, 0};
             iloc_argument_t address = {ILOC_ARG_TYPE_NUMBER, get_symbol($1->text)->address};
             $$->code = iloc_join($3->code, generate_attribution(rfp, address, $3->temp));
+
+            declared_variables++;
         }
         else
         {
@@ -485,6 +493,7 @@ localidentifierdeclaration: TK_IDENTIFICADOR
     { 
         $$ = NULL;
         add_symbol($1->text, $1, SYMBOL_TYPE_IDENTIFIER_VARIABLE, current_type, NULL, ADD_DISP);
+        declared_variables++;
     }
     ;
 
@@ -856,7 +865,8 @@ return: TK_PR_RETURN expression
             }
             else
             {
-                $$->code = iloc_join($2->code, generate_return($2->temp));
+                iloc_argument_t declared_variables_count = {ILOC_ARG_TYPE_NUMBER, declared_variables};
+                $$->code = iloc_join($2->code, generate_return($2->temp, declared_variables_count));
             }
         }
         else
