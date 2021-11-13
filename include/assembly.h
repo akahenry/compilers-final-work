@@ -1,6 +1,10 @@
 #ifndef ASSEMBLY_H
 #define ASSEMBLY_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 typedef enum _asm_opcode_t
 {
     ASM_INS_NOP,
