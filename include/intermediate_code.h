@@ -10,8 +10,6 @@ Grupo D
 #include "symbol_table.h"
 #include "node.h"
 
-hash_table_t* functions;
-
 iloc_argument_t make_temp();
 iloc_argument_t make_label();
 

@@ -13,7 +13,7 @@ LIBRARIES   := -lfl
 EXECUTABLE  := main
 EXECUTABLE_DEBUG  := debug
 
-STEP_NUMBER := 5
+STEP_NUMBER := 6
 
 SCANNER := scanner.l
 PARSER := parser.y

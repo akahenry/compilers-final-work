@@ -33,7 +33,7 @@ ILOC_INS_LOAD
 
 ILOC_INS_LOADI
     loadi c1 => r2
-    `mov c1, r2`
+    `mov $1, r2`
 
 ILOC_INS_LOADAI
     loadAI r1, c2 => r3
