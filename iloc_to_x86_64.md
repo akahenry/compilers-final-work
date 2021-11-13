@@ -107,31 +107,80 @@ ILOC_INS_CBR
 
 ILOC_INS_XORI
     xorI r1, c2 => r3
+    `mov r1 %EAX`
+    `xor c2, %EAX`
+    `mov %EAX, r3`
 
-ILOC_INS_CMP_EQ
-    carregando as flags no AH, fazendo mask na AH e guardando AH em r3:
+ILOC_INS_CMP_EQ // Z = 1
+    cmp_EQ r1, r2 -> r3
+    `cmp r1, r2`
+    `jne LABELFALSE`
+    `mov $1, r3`
+    `jmp LABELEND`
+    `LABELFALSE:`
+    `mov $0, r3`
+    `END:`
+
+    alternativa carregando as flags no AH, fazendo mask na AH e guardando AH em r3:
     `cmp r1, r2`
     `lahf` (carrega flags no AH)
     `and $0x40 %AH` (faz mask no AH pra deixar só o bit de zero)
     `mov %AH, r3` (talvez r3 precise ser um registrador 8 bits)
 
-ILOC_INS_CMP_NE
+ILOC_INS_CMP_NE // Z = 0
     cmp_NE r1, r2 -> r3
+    `cmp r1, r2`
+    `je LABELFALSE`
+    `mov $1, r3`
+    `jmp LABELEND`
+    `LABELFALSE:`
+    `mov $0, r3`
+    `END:`
+
+    alternativa com sub:
     `mov r1, %EAX`
     `sub r2, %EAX`
     `mov %EAX, r3`
 
-ILOC_INS_CMP_GE
+ILOC_INS_CMP_GE // SF = OF
     cmp_GE r1, r2 -> r3
+    `cmp r1, r2`
+    `jl LABELFALSE`
+    `mov $1, r3`
+    `jmp LABELEND`
+    `LABELFALSE:`
+    `mov $0, r3`
+    `END:`
 
-ILOC_INS_CMP_LE
+ILOC_INS_CMP_LE // ZF = 1 or SF != OF
     cmp_LE r1, r2 -> r3
+    `cmp r1, r2`
+    `jg LABELFALSE`
+    `mov $1, r3`
+    `jmp LABELEND`
+    `LABELFALSE:`
+    `mov $0, r3`
+    `END:`
 
-ILOC_INS_CMP_GT
+ILOC_INS_CMP_GT // SF = OF and ZF = 0
     cmp_GT r1, r2 -> r3
+    `cmp r1, r2`
+    `jle LABELFALSE`
+    `mov $1, r3`
+    `jmp LABELEND`
+    `LABELFALSE:`
+    `mov $0, r3`
+    `END:`
 
-ILOC_INS_CMP_LT
+ILOC_INS_CMP_LT // SF != OF
     cmp_LT r1, r2 -> r3
+    `cmp r1, r2`
+    `jge LABELFALSE`
+    `mov $1, r3`
+    `jmp LABELEND`
+    `LABELFALSE:`
+    `mov $0, r3`
+    `END:`
 
 
 ### Sem parametros
