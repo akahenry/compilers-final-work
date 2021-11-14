@@ -29,6 +29,7 @@ typedef enum _asm_opcode_t
     ASM_INS_AND,
     ASM_INS_RET,
     ASM_INS_CALL,
+    ASM_INS_XOR,
     ASM_LABEL
 } asm_opcode_t;
 

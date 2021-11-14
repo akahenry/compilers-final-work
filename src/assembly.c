@@ -63,6 +63,7 @@ char* asm_instruction_string(asm_instruction_t *ins)
         case ASM_INS_SUB:
         case ASM_INS_CMP:
         case ASM_INS_AND:
+        case ASM_INS_XOR:
             if (arg3 == NULL)
             {
                 str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + 1, sizeof(char));
@@ -174,6 +175,8 @@ const char* asm_opcode_string(asm_instruction_t *ins)
             return "and";
         case ASM_INS_RET:
             return "ret";
+        case ASM_INS_XOR:
+            return "xor";
         default:
             break;
     }

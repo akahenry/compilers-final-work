@@ -115,6 +115,25 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
         case ILOC_INS_HALT:
             ret = asm_join(asm_create(ASM_INS_RET, NONE, NONE, NONE, NONE), asm_create(ASM_INS_HALT, NONE, NONE, NONE, NONE));
             break;
+
+        case ILOC_INS_XORI:
+            if (arg1.type == ASM_ARG_TYPE_REGISTER && arg3.type == ASM_ARG_TYPE_REGISTER)
+            {
+                ret = asm_join(asm_join(asm_create(ASM_INS_MOV, arg1, RIP, EAX, NONE), asm_create(ASM_INS_XOR, arg2, EAX, NONE, NONE)), asm_create(ASM_INS_MOV, EAX, arg3, RIP, NONE));
+            }
+            else if (arg1.type == ASM_ARG_TYPE_REGISTER)
+            {
+                ret = asm_join(asm_join(asm_create(ASM_INS_MOV, arg1, RIP, EAX, NONE), asm_create(ASM_INS_XOR, arg2, EAX, NONE, NONE)), asm_create(ASM_INS_MOV, EAX, arg3, NONE, NONE));
+            }
+            else if (arg2.type == ASM_ARG_TYPE_REGISTER)
+            {
+                ret = asm_join(asm_join(asm_create(ASM_INS_MOV, arg1, EAX, NONE, NONE), asm_create(ASM_INS_XOR, arg2, EAX, NONE, NONE)), asm_create(ASM_INS_MOV, EAX, arg3, RIP, NONE));
+            }
+            else if (arg1.type != ASM_ARG_TYPE_REGISTER && arg2.type != ASM_ARG_TYPE_REGISTER)
+            {
+                ret = asm_join(asm_join(asm_create(ASM_INS_MOV, arg1, EAX, NONE, NONE), asm_create(ASM_INS_XOR, arg2, EAX, NONE, NONE)), asm_create(ASM_INS_MOV, EAX, arg3, NONE, NONE));
+            }
+            break;
         
         default:
             break;
