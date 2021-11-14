@@ -6,9 +6,9 @@ Grupo D
 #include "assembly.h"
 #include "queue.h"
 
-queue_t* q_alloc_instructions = NULL;
+queue_t* q_alloc_ins_asm = NULL;
 
-int count_digits(int number)
+int asm_count_digits(int number)
 {
     int count = 0;
     do {
@@ -25,6 +25,7 @@ char* asm_instruction_string(asm_instruction_t *ins)
     char* arg1 = asm_arg_string(ins->arg1);
     char* arg2 = asm_arg_string(ins->arg2);
     char* arg3 = asm_arg_string(ins->arg3);
+    char* arg4 = asm_arg_string(ins->arg4);
     char* str = NULL;
 
     switch (ins->opcode)
@@ -42,8 +43,17 @@ char* asm_instruction_string(asm_instruction_t *ins)
         case ASM_INS_JNE:
         case ASM_INS_IMUL:
         case ASM_INS_IDIV:
-            str = calloc(strlen(opcode) + strlen(arg1) + 1, sizeof(char));
-            sprintf(str, "%s %s", opcode, arg1);
+            if (arg2 == NULL)
+            {
+                str = calloc(strlen(opcode) + strlen(arg1) + 1, sizeof(char));
+                sprintf(str, "%s %s", opcode, arg1);
+            }
+            else if (ins->arg1.type == ASM_ARG_TYPE_IMM && ins->arg2.isReference)
+            {
+                char* arg1Fixed = &(arg1[1]);
+                str = calloc(strlen(opcode) + strlen(arg1Fixed) + strlen(arg2) + 1, sizeof(char));
+                sprintf(str, "%s %s%s", opcode, arg1Fixed, arg2);
+            }
             break;
 
         case ASM_INS_MOV:
@@ -51,12 +61,37 @@ char* asm_instruction_string(asm_instruction_t *ins)
         case ASM_INS_SUB:
         case ASM_INS_CMP:
         case ASM_INS_AND:
-            str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + 1, sizeof(char));
-            sprintf(str, "%s %s, %s", opcode, arg1, arg2);
+            if (arg3 == NULL)
+            {
+                str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + 1, sizeof(char));
+                sprintf(str, "%s %s, %s", opcode, arg1, arg2);
+            }
+            else if (arg4 == NULL)
+            {
+                if (ins->arg1.type == ASM_ARG_TYPE_IMM && ins->arg2.isReference)
+                {
+                    char* arg1Fixed = &(arg1[1]);
+                    str = calloc(strlen(opcode) + strlen(arg1Fixed) + strlen(arg2) + strlen(arg3) + 1, sizeof(char));
+                    sprintf(str, "%s %s%s, %s", opcode, arg1Fixed, arg2, arg3);
+                }
+                else if (ins->arg2.type == ASM_ARG_TYPE_IMM && ins->arg3.isReference)
+                {
+                    char* arg2Fixed = &(arg2[1]);
+                    str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2Fixed) + strlen(arg3) + 1, sizeof(char));
+                    sprintf(str, "%s %s, %s%s", opcode, arg1, arg2Fixed, arg3);
+                }
+            }
+            else if (ins->arg1.type == ASM_ARG_TYPE_IMM && ins->arg2.isReference && ins->arg3.type == ASM_ARG_TYPE_IMM && ins->arg4.isReference)
+            {
+                char* arg1Fixed = &(arg1[1]);
+                char* arg3Fixed = &(arg3[1]);
+                str = calloc(strlen(opcode) + strlen(arg1Fixed) + strlen(arg2) + strlen(arg3Fixed) + strlen(arg4) + 1, sizeof(char));
+                sprintf(str, "%s %s%s, %s%s", opcode, arg1Fixed, arg2, arg3Fixed, arg4);
+            }
             break;
         
         case ASM_LABEL:
-            str = calloc(count_digits(ins->number) + 4, sizeof(char));
+            str = calloc(asm_count_digits(ins->number) + 4, sizeof(char));
             sprintf(str, "L%d: ", ins->number);
             break;
         
@@ -75,12 +110,12 @@ const char* asm_prefix_for_argument_type(asm_arg_type_t type)
     switch (type)
     {
         case ASM_ARG_TYPE_REGISTER:
-            return "r";
+            return "\%R";
             break;
         case ASM_ARG_TYPE_LABEL:
             return "L";
             break;
-        case ASM_ARG_TYPE_NUMBER:
+        case ASM_ARG_TYPE_IMM:
             return "$";
             break;
         // anything else returns an empty prefix
@@ -135,8 +170,11 @@ char* asm_arg_string(asm_argument_t arg)
 
     switch (arg.type)
     {
-    case ASM_ARG_TYPE_EBP:
-        string = arg.isReference ? strdup("(ebp)") : strdup("ebp");        
+    case ASM_ARG_TYPE_RBP:
+        string = arg.isReference ? strdup("(rbp)") : strdup("rbp");        
+        break;
+    case ASM_ARG_TYPE_RSP:
+        string = arg.isReference ? strdup("(rsp)") : strdup("rsp");        
         break;
     case ASM_ARG_TYPE_EAX:
         string = arg.isReference ? strdup("(eax)") : strdup("eax");
@@ -150,10 +188,22 @@ char* asm_arg_string(asm_argument_t arg)
     case ASM_ARG_TYPE_NONE:
         string = NULL;
         break;
+    case ASM_ARG_TYPE_REGISTER:
+        if (arg.isReference)
+        {
+            string = calloc(strlen(asm_prefix_for_argument_type(arg.type)) + asm_count_digits(arg.number) + 5, sizeof(char));
+            sprintf(string, "(%%%s%dd)", asm_prefix_for_argument_type(arg.type), arg.number);
+        }
+        else
+        {
+            string = calloc(strlen(asm_prefix_for_argument_type(arg.type)) + asm_count_digits(arg.number) + 3, sizeof(char));
+            sprintf(string, "%%%s%dd", asm_prefix_for_argument_type(arg.type), arg.number);
+        }
+        break;
     
     default:
         
-        string = calloc(strlen(asm_prefix_for_argument_type(arg.type)) + count_digits(arg.number) + 1, sizeof(char));
+        string = calloc(strlen(asm_prefix_for_argument_type(arg.type)) + asm_count_digits(arg.number) + 1, sizeof(char));
         sprintf(string, "%s%d", asm_prefix_for_argument_type(arg.type), arg.number);
         break;
     }
@@ -170,10 +220,10 @@ asm_instruction_t* asm_create(asm_opcode_t opcode, asm_argument_t arg1, asm_argu
     ins->arg3 = arg3;
     ins->previous = NULL;
 
-    if (q_alloc_instructions == NULL)
-        q_alloc_instructions = queue_create();
+    if (q_alloc_ins_asm == NULL)
+        q_alloc_ins_asm = queue_create();
 
-    queue_push(q_alloc_instructions, ins);
+    queue_push(q_alloc_ins_asm, ins);
 
     return ins;
 }
@@ -210,13 +260,13 @@ void asm_recursive_print(asm_instruction_t* ins)
 
 void asm_clean()
 {
-    if (q_alloc_instructions != NULL)
+    if (q_alloc_ins_asm != NULL)
     {
-        while (!queue_empty(q_alloc_instructions))
+        while (!queue_empty(q_alloc_ins_asm))
         {
-            free(queue_pop(q_alloc_instructions));
+            free(queue_pop(q_alloc_ins_asm));
         }
-        queue_destroy(q_alloc_instructions);
+        queue_destroy(q_alloc_ins_asm);
     }
 }
 

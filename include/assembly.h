@@ -1,3 +1,8 @@
+/*
+Grupo D
+  Henry Bernardo Kochenborger de Avila
+  Marcos Samuel Winkel Landi
+*/
 #ifndef ASSEMBLY_H
 #define ASSEMBLY_H
 
@@ -28,11 +33,13 @@ typedef enum _asm_arg_type_t
 {
     ASM_ARG_TYPE_REGISTER,
     ASM_ARG_TYPE_LABEL,
-    ASM_ARG_TYPE_NUMBER,
+    ASM_ARG_TYPE_IMM,
     ASM_ARG_TYPE_AH,
     ASM_ARG_TYPE_EAX,
     ASM_ARG_TYPE_EBX,
-    ASM_ARG_TYPE_EBP,
+    ASM_ARG_TYPE_RBP,
+    ASM_ARG_TYPE_RSP,
+    ASM_ARG_TYPE_RIP,
     ASM_ARG_TYPE_IPC,
     ASM_ARG_TYPE_NONE
 } asm_arg_type_t;
@@ -50,6 +57,7 @@ typedef struct _asm_instruction_t
     asm_argument_t arg1;
     asm_argument_t arg2;
     asm_argument_t arg3;
+    asm_argument_t arg4;
     int number;
     struct _asm_instruction_t* previous;
 } asm_instruction_t;
