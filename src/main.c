@@ -8,6 +8,7 @@ Grupo D
 
 #include "node.h"
 #include "iloc_instruction.h"
+#include "asm_converter.h"
 
 extern int yyparse(void);
 extern int yylex_destroy(void);
@@ -20,7 +21,9 @@ int main (int argc, char **argv)
 {
   int ret = yyparse(); // A geração de código intermediário foi realizada na mesma passagem em que feita a análise sintática/semântica
   
-  iloc_recursive_print(((node_t*)arvore)->code);
+  // iloc_recursive_print(((node_t*)arvore)->code);
+
+  asm_recursive_print(iloc_to_asm(((node_t*)arvore)->code));
 
   libera(arvore);
   arvore = NULL;

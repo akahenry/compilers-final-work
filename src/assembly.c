@@ -34,6 +34,7 @@ char* asm_instruction_string(asm_instruction_t *ins)
         case ASM_INS_NOP:
         case ASM_INS_LAHF:
         case ASM_INS_CLTD:
+        case ASM_INS_RET:
             str = calloc(strlen(opcode) + 1, sizeof(char));
             sprintf(str, "%s", opcode);
             break;
@@ -57,6 +58,7 @@ char* asm_instruction_string(asm_instruction_t *ins)
             break;
 
         case ASM_INS_MOV:
+        case ASM_INS_MOVL:
         case ASM_INS_ADD:
         case ASM_INS_SUB:
         case ASM_INS_CMP:
@@ -80,6 +82,16 @@ char* asm_instruction_string(asm_instruction_t *ins)
                     str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2Fixed) + strlen(arg3) + 1, sizeof(char));
                     sprintf(str, "%s %s, %s%s", opcode, arg1, arg2Fixed, arg3);
                 }
+                else if(ins->arg1.type == ASM_ARG_TYPE_REGISTER && ins->arg2.isReference)
+                {
+                    str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + strlen(arg3) + 1, sizeof(char));
+                    sprintf(str, "%s %s%s, %s", opcode, arg1, arg2, arg3);
+                }
+                else if(ins->arg2.type == ASM_ARG_TYPE_REGISTER && ins->arg3.isReference)
+                {
+                    str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + strlen(arg3) + 1, sizeof(char));
+                    sprintf(str, "%s %s, %s%s", opcode, arg1, arg2, arg3);
+                }
             }
             else if (ins->arg1.type == ASM_ARG_TYPE_IMM && ins->arg2.isReference && ins->arg3.type == ASM_ARG_TYPE_IMM && ins->arg4.isReference)
             {
@@ -88,6 +100,7 @@ char* asm_instruction_string(asm_instruction_t *ins)
                 str = calloc(strlen(opcode) + strlen(arg1Fixed) + strlen(arg2) + strlen(arg3Fixed) + strlen(arg4) + 1, sizeof(char));
                 sprintf(str, "%s %s%s, %s%s", opcode, arg1Fixed, arg2, arg3Fixed, arg4);
             }
+            
             break;
         
         case ASM_LABEL:
@@ -110,7 +123,7 @@ const char* asm_prefix_for_argument_type(asm_arg_type_t type)
     switch (type)
     {
         case ASM_ARG_TYPE_REGISTER:
-            return "\%R";
+            return "r";
             break;
         case ASM_ARG_TYPE_LABEL:
             return "L";
@@ -132,9 +145,11 @@ const char* asm_opcode_string(asm_instruction_t *ins)
         case ASM_INS_NOP:
             return "nop";
         case ASM_INS_HALT:
-            return "halt";
+            return "hlt";
         case ASM_INS_MOV:
             return "mov";
+        case ASM_INS_MOVL:
+            return "movl";
         case ASM_INS_ADD:
             return "add";
         case ASM_INS_SUB:
@@ -157,6 +172,8 @@ const char* asm_opcode_string(asm_instruction_t *ins)
             return "lahf";
         case ASM_INS_AND:
             return "and";
+        case ASM_INS_RET:
+            return "ret";
         default:
             break;
     }
@@ -171,19 +188,22 @@ char* asm_arg_string(asm_argument_t arg)
     switch (arg.type)
     {
     case ASM_ARG_TYPE_RBP:
-        string = arg.isReference ? strdup("(rbp)") : strdup("rbp");        
+        string = arg.isReference ? strdup("(\%rbp)") : strdup("\%rbp");        
         break;
     case ASM_ARG_TYPE_RSP:
-        string = arg.isReference ? strdup("(rsp)") : strdup("rsp");        
+        string = arg.isReference ? strdup("(\%rsp)") : strdup("\%rsp");        
+        break;
+    case ASM_ARG_TYPE_RIP:
+        string = arg.isReference ? strdup("(\%rip)") : strdup("\%rip");        
         break;
     case ASM_ARG_TYPE_EAX:
-        string = arg.isReference ? strdup("(eax)") : strdup("eax");
+        string = arg.isReference ? strdup("(\%eax)") : strdup("\%eax");
         break;
     case ASM_ARG_TYPE_EBX:
-        string = arg.isReference ? strdup("(ebx)") : strdup("ebx");
+        string = arg.isReference ? strdup("(\%ebx)") : strdup("\%ebx");
         break;
     case ASM_ARG_TYPE_IPC:
-        string = arg.isReference ? strdup("(ipc)") : strdup("ipc");
+        string = arg.isReference ? strdup("(\%ipc)") : strdup("\%ipc");
         break;
     case ASM_ARG_TYPE_NONE:
         string = NULL;
@@ -191,13 +211,13 @@ char* asm_arg_string(asm_argument_t arg)
     case ASM_ARG_TYPE_REGISTER:
         if (arg.isReference)
         {
-            string = calloc(strlen(asm_prefix_for_argument_type(arg.type)) + asm_count_digits(arg.number) + 5, sizeof(char));
-            sprintf(string, "(%%%s%dd)", asm_prefix_for_argument_type(arg.type), arg.number);
+            string = calloc(strlen(asm_prefix_for_argument_type(arg.type)) + asm_count_digits(arg.number) + 3, sizeof(char));
+            sprintf(string, "(%s%d)", asm_prefix_for_argument_type(arg.type), arg.number);
         }
         else
         {
-            string = calloc(strlen(asm_prefix_for_argument_type(arg.type)) + asm_count_digits(arg.number) + 3, sizeof(char));
-            sprintf(string, "%%%s%dd", asm_prefix_for_argument_type(arg.type), arg.number);
+            string = calloc(strlen(asm_prefix_for_argument_type(arg.type)) + asm_count_digits(arg.number) + 1, sizeof(char));
+            sprintf(string, "%s%d", asm_prefix_for_argument_type(arg.type), arg.number);
         }
         break;
     
@@ -211,13 +231,14 @@ char* asm_arg_string(asm_argument_t arg)
     return string;
 }
 
-asm_instruction_t* asm_create(asm_opcode_t opcode, asm_argument_t arg1, asm_argument_t arg2, asm_argument_t arg3)
+asm_instruction_t* asm_create(asm_opcode_t opcode, asm_argument_t arg1, asm_argument_t arg2, asm_argument_t arg3, asm_argument_t arg4)
 {
     asm_instruction_t* ins = calloc(1, sizeof(asm_instruction_t));
     ins->opcode = opcode;
     ins->arg1 = arg1;
     ins->arg2 = arg2;
     ins->arg3 = arg3;
+    ins->arg4 = arg4;
     ins->previous = NULL;
 
     if (q_alloc_ins_asm == NULL)
@@ -254,8 +275,15 @@ void asm_recursive_print(asm_instruction_t* ins)
     asm_recursive_print(ins->previous);
     char* str = asm_instruction_string(ins);
 
-    printf("%s\n", str);
-    free(str);
+    if (str != NULL)
+    {
+        printf("%s\n", str);
+        free(str);
+    }
+    else
+    {
+        printf("\n");
+    }
 }
 
 void asm_clean()

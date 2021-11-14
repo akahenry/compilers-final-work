@@ -15,6 +15,7 @@ typedef enum _asm_opcode_t
     ASM_INS_NOP,
     ASM_INS_HALT,
     ASM_INS_MOV,
+    ASM_INS_MOVL,
     ASM_INS_ADD,
     ASM_INS_SUB,
     ASM_INS_IMUL,
@@ -26,6 +27,8 @@ typedef enum _asm_opcode_t
     ASM_INS_JNE,
     ASM_INS_LAHF,
     ASM_INS_AND,
+    ASM_INS_RET,
+    ASM_INS_CALL,
     ASM_LABEL
 } asm_opcode_t;
 
@@ -62,7 +65,7 @@ typedef struct _asm_instruction_t
     struct _asm_instruction_t* previous;
 } asm_instruction_t;
 
-asm_instruction_t* asm_create(asm_opcode_t opcode, asm_argument_t arg1, asm_argument_t arg2, asm_argument_t arg3);
+asm_instruction_t* asm_create(asm_opcode_t opcode, asm_argument_t arg1, asm_argument_t arg2, asm_argument_t arg3, asm_argument_t arg4);
 asm_instruction_t* asm_create_label(int number);
 asm_instruction_t* asm_join(asm_instruction_t* ins1, asm_instruction_t* ins2);
 char* asm_instruction_string(asm_instruction_t *ins);
