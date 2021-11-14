@@ -61,6 +61,11 @@ char* asm_instruction_string(asm_instruction_t *ins)
                 str = calloc(strlen(opcode) + strlen(arg1Fixed) + strlen(arg2) + 1, sizeof(char));
                 sprintf(str, "%s %s%s", opcode, arg1Fixed, arg2);
             }
+            else if (ins->arg1.type == ASM_ARG_TYPE_REGISTER && ins->arg2.isReference)
+            {
+                str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + 1, sizeof(char));
+                sprintf(str, "%s %s%s", opcode, arg1, arg2);
+            }
             break;
 
         case ASM_INS_MOV:

@@ -107,15 +107,50 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
             break;
 
         case ILOC_INS_ADD:
+        case ILOC_INS_SUB:
+        case ILOC_INS_MULT:
+        case ILOC_INS_DIV:
             if (arg1.type == ASM_ARG_TYPE_REGISTER)
                 ret = asm_create(ASM_INS_MOV, arg1, RIP, EAX, NONE);
             else
                 ret = asm_create(ASM_INS_MOV, arg1, EAX, NONE, NONE);
             
             if (arg2.type == ASM_ARG_TYPE_REGISTER)
-                ret = asm_join(ret, asm_create(ASM_INS_ADD, arg2, RIP, EAX, NONE));
+            {
+                if (ref->opcode == ILOC_INS_ADD)
+                    ret = asm_join(ret, asm_create(ASM_INS_ADD, arg2, RIP, EAX, NONE));
+                else if (ref->opcode == ILOC_INS_SUB)
+                    ret = asm_join(ret, asm_create(ASM_INS_SUB, arg2, RIP, EAX, NONE));
+                else if (ref->opcode == ILOC_INS_MULT)
+                    ret = asm_join(ret, asm_create(ASM_INS_IMUL, arg2, RIP, NONE, NONE));
+                else if (ref->opcode == ILOC_INS_DIV)
+                    ret = asm_join(ret, asm_join(asm_create(ASM_INS_CLTD, NONE, NONE, NONE, NONE), asm_create(ASM_INS_IDIV, arg2, RIP, NONE, NONE)));
+            }
             else
-                ret = asm_join(ret, asm_create(ASM_INS_ADD, arg2, EAX, NONE, NONE));
+            {
+                if (ref->opcode == ILOC_INS_ADD)
+                    ret = asm_join(ret, asm_create(ASM_INS_ADD, arg2, EAX, NONE, NONE));
+                else if (ref->opcode == ILOC_INS_SUB)
+                    ret = asm_join(ret, asm_create(ASM_INS_SUB, arg2, EAX, NONE, NONE));
+                else if (ref->opcode == ILOC_INS_MULT)
+                    ret = asm_join(ret, asm_create(ASM_INS_IMUL, arg2, NONE, NONE, NONE));
+                else if (ref->opcode == ILOC_INS_DIV)
+                    ret = asm_join(ret, asm_join(asm_create(ASM_INS_CLTD, NONE, NONE, NONE, NONE), asm_create(ASM_INS_IDIV, arg2, NONE, NONE, NONE)));
+            }
+            
+            if (arg3.type == ASM_ARG_TYPE_REGISTER)
+                ret = asm_join(ret, asm_create(ASM_INS_MOV, EAX, arg3, RIP, NONE));
+            else
+                ret = asm_join(ret, asm_create(ASM_INS_MOV, EAX, arg3, NONE, NONE));
+            break;
+        
+        case ILOC_INS_RSUBI:
+            ret = asm_create(ASM_INS_MOV, arg2, EAX, NONE, NONE);
+
+            if (arg1.type == ASM_ARG_TYPE_REGISTER)
+                ret = asm_join(ret, asm_create(ASM_INS_ADD, arg1, RIP, EAX, NONE));
+            else
+                ret = asm_join(ret, asm_create(ASM_INS_ADD, arg1, EAX, NONE, NONE));
             
             if (arg3.type == ASM_ARG_TYPE_REGISTER)
                 ret = asm_join(ret, asm_create(ASM_INS_MOV, EAX, arg3, RIP, NONE));
