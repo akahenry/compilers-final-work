@@ -119,7 +119,7 @@ ILOC_INS_CMP_EQ // Z = 1
     `jmp LABELEND`
     `LABELFALSE:`
     `mov $0, r3`
-    `END:`
+    `LABELEND:`
 
     alternativa carregando as flags no AH, fazendo mask na AH e guardando AH em r3:
     `cmp r1, r2`
@@ -135,7 +135,7 @@ ILOC_INS_CMP_NE // Z = 0
     `jmp LABELEND`
     `LABELFALSE:`
     `mov $0, r3`
-    `END:`
+    `LABELEND:`
 
     alternativa com sub:
     `mov r1, %EAX`
@@ -150,7 +150,7 @@ ILOC_INS_CMP_GE // SF = OF
     `jmp LABELEND`
     `LABELFALSE:`
     `mov $0, r3`
-    `END:`
+    `LABELEND:`
 
 ILOC_INS_CMP_LE // ZF = 1 or SF != OF
     cmp_LE r1, r2 -> r3
@@ -160,7 +160,7 @@ ILOC_INS_CMP_LE // ZF = 1 or SF != OF
     `jmp LABELEND`
     `LABELFALSE:`
     `mov $0, r3`
-    `END:`
+    `LABELEND:`
 
 ILOC_INS_CMP_GT // SF = OF and ZF = 0
     cmp_GT r1, r2 -> r3
@@ -170,7 +170,7 @@ ILOC_INS_CMP_GT // SF = OF and ZF = 0
     `jmp LABELEND`
     `LABELFALSE:`
     `mov $0, r3`
-    `END:`
+    `LABELEND:`
 
 ILOC_INS_CMP_LT // SF != OF
     cmp_LT r1, r2 -> r3
@@ -180,7 +180,7 @@ ILOC_INS_CMP_LT // SF != OF
     `jmp LABELEND`
     `LABELFALSE:`
     `mov $0, r3`
-    `END:`
+    `LABELEND:`
 
 
 ### Sem parametros

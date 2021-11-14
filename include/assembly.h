@@ -30,7 +30,12 @@ typedef enum _asm_opcode_t
     ASM_INS_RET,
     ASM_INS_CALL,
     ASM_INS_XOR,
-    ASM_LABEL
+    ASM_INS_JL,
+    ASM_INS_JG,
+    ASM_INS_JLE,
+    ASM_INS_JGE,
+    ASM_LABEL,
+    ASM_LABEL_CMP,
 } asm_opcode_t;
 
 typedef enum _asm_arg_type_t
@@ -45,7 +50,8 @@ typedef enum _asm_arg_type_t
     ASM_ARG_TYPE_RSP,
     ASM_ARG_TYPE_RIP,
     ASM_ARG_TYPE_IPC,
-    ASM_ARG_TYPE_NONE
+    ASM_ARG_TYPE_NONE,
+    ASM_ARG_TYPE_CMP_LABEL
 } asm_arg_type_t;
 
 typedef struct _asm_argument_t
@@ -68,8 +74,10 @@ typedef struct _asm_instruction_t
 
 asm_instruction_t* asm_create(asm_opcode_t opcode, asm_argument_t arg1, asm_argument_t arg2, asm_argument_t arg3, asm_argument_t arg4);
 asm_instruction_t* asm_create_label(int number);
+asm_instruction_t* asm_create_cmp_label();
+asm_argument_t asm_create_label_arg_from_label_ins(asm_instruction_t* ins);
 asm_instruction_t* asm_join(asm_instruction_t* ins1, asm_instruction_t* ins2);
-char* asm_instruction_string(asm_instruction_t *ins);
+char* asm_instruction_string(asm_instruction_t* ins);
 const char* asm_opcode_string(asm_instruction_t* ins);
 const char* asm_prefix_for_argument_type(asm_arg_type_t type);
 char* asm_arg_string(asm_argument_t arg);

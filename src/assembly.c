@@ -8,6 +8,8 @@ Grupo D
 
 queue_t* q_alloc_ins_asm = NULL;
 
+int cmp_label_count = 0;
+
 int asm_count_digits(int number)
 {
     int count = 0;
@@ -42,6 +44,10 @@ char* asm_instruction_string(asm_instruction_t *ins)
         case ASM_INS_JMP:
         case ASM_INS_JE:
         case ASM_INS_JNE:
+        case ASM_INS_JL:
+        case ASM_INS_JG:
+        case ASM_INS_JLE:
+        case ASM_INS_JGE:
         case ASM_INS_IMUL:
         case ASM_INS_IDIV:
             if (arg2 == NULL)
@@ -109,6 +115,11 @@ char* asm_instruction_string(asm_instruction_t *ins)
             sprintf(str, "L%d: ", ins->number);
             break;
         
+        case ASM_LABEL_CMP:
+            str = calloc(asm_count_digits(ins->number) + 7, sizeof(char));
+            sprintf(str, "LCMP%d: ", ins->number);
+            break;
+        
         default:
             break;
     }
@@ -128,6 +139,9 @@ const char* asm_prefix_for_argument_type(asm_arg_type_t type)
             break;
         case ASM_ARG_TYPE_LABEL:
             return "L";
+            break;
+        case ASM_ARG_TYPE_CMP_LABEL:
+            return "LCMP";
             break;
         case ASM_ARG_TYPE_IMM:
             return "$";
@@ -169,6 +183,14 @@ const char* asm_opcode_string(asm_instruction_t *ins)
             return "je";
         case ASM_INS_JNE:
             return "jne";
+        case ASM_INS_JL:
+            return "jl";
+        case ASM_INS_JG:
+            return "jg";
+        case ASM_INS_JLE:
+            return "jle";
+        case ASM_INS_JGE:
+            return "jge";
         case ASM_INS_LAHF:
             return "lahf";
         case ASM_INS_AND:
@@ -308,4 +330,24 @@ asm_instruction_t* asm_create_label(int number)
     result->number = number;
 
     return result;
+}
+
+asm_instruction_t* asm_create_cmp_label()
+{
+    cmp_label_count += 1;
+    asm_instruction_t* result = calloc(1, sizeof(asm_instruction_t));
+    result->opcode = ASM_LABEL_CMP;
+    result->number = cmp_label_count;
+
+    return result;
+}
+
+asm_argument_t asm_create_label_arg_from_label_ins(asm_instruction_t* ins)
+{
+    asm_argument_t ret;
+    ret.number = ins->number;
+    ret.isReference = 0;
+    ret.type = ASM_ARG_TYPE_CMP_LABEL;
+
+    return ret;
 }
