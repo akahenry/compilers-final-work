@@ -130,8 +130,11 @@ char* iloc_instruction_string(iloc_instruction_t *ins)
             sprintf(str, "L%d: ", ins->number);
             break;
 
-        case ILOC_NO_CODE_RET_VALUE:
         case ILOC_NO_CODE_RET:
+        case ILOC_NO_CODE_RET_MAIN:
+        case ILOC_NO_CODE_RET_VALUE:
+        case ILOC_NO_CODE_POP_RCX:
+        case ILOC_NO_CODE_RET_ADDRESS:
             str = strdup("");
             break;
         
