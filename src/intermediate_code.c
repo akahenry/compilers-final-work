@@ -22,6 +22,11 @@ iloc_argument_t make_label()
     return arg;
 }
 
+int get_temp_count()
+{
+    return temp_count;
+}
+
 iloc_instruction_t* generate_attribution(iloc_argument_t reference_address_register, iloc_argument_t address, iloc_argument_t expression)
 {
     iloc_argument_t temp = make_temp();

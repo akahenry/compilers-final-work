@@ -7,6 +7,7 @@ Grupo D
 #include "queue.h"
 
 queue_t* q_alloc_ins_asm = NULL;
+asm_argument_t main_label;
 
 int cmp_label_count = 0;
 
@@ -19,6 +20,12 @@ int asm_count_digits(int number)
     } while (number != 0);
 
     return count;
+}
+
+void set_main_label(int number)
+{
+    asm_argument_t arg = {ASM_ARG_TYPE_IDENTIFIER, 0, number, "main"};
+    main_label = arg;
 }
 
 char* asm_instruction_string(asm_instruction_t *ins)
@@ -37,6 +44,8 @@ char* asm_instruction_string(asm_instruction_t *ins)
         case ASM_INS_LAHF:
         case ASM_INS_CLTD:
         case ASM_INS_RET:
+        case ASM_DATA_SECTION:
+        case ASM_TEXT_SECTION:
             str = calloc(strlen(opcode) + 1, sizeof(char));
             sprintf(str, "%s", opcode);
             break;
@@ -116,15 +125,38 @@ char* asm_instruction_string(asm_instruction_t *ins)
             break;
         
         case ASM_LABEL:
-            str = calloc(asm_count_digits(ins->number) + 4, sizeof(char));
-            sprintf(str, "L%d: ", ins->number);
+            if (ins->number == main_label.number)
+            {
+                str = strdup("main:");
+            }
+            else
+            {
+                str = calloc(asm_count_digits(ins->number) + 4, sizeof(char));
+                sprintf(str, "L%d: ", ins->number);
+            }
             break;
         
         case ASM_LABEL_CMP:
             str = calloc(asm_count_digits(ins->number) + 7, sizeof(char));
             sprintf(str, "LCMP%d: ", ins->number);
             break;
-        
+
+        case ASM_GLOBL:
+        case ASM_LONG:;
+            char* arg1Fixed = ins->arg1.type == ASM_ARG_TYPE_IMM ? &(arg1[1]) : arg1;
+            str = calloc(strlen(opcode) + strlen(arg1Fixed) + 2, sizeof(char));
+            sprintf(str, "%s %s", opcode, arg1Fixed);
+            break;
+        case ASM_SIZE:
+        case ASM_TYPE:;
+            char* arg2Fixed = ins->arg2.type == ASM_ARG_TYPE_IMM ? &(arg2[1]) : arg2;
+            str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2Fixed) + 4, sizeof(char));
+            sprintf(str, "%s %s, %s", opcode, arg1, arg2Fixed);
+            break;
+        case ASM_IDENTIFIER_LABEL:
+            str = calloc(strlen(arg1) + 2, sizeof(char));
+            sprintf(str, "%s:", arg1);
+            break;
         default:
             break;
     }
@@ -142,6 +174,7 @@ const char* asm_prefix_for_argument_type(asm_arg_type_t type)
         case ASM_ARG_TYPE_REGISTER:
             return "r";
             break;
+        case ASM_ARG_TYPE_IDENTIFIER_FUNCTION:
         case ASM_ARG_TYPE_LABEL:
             return "L";
             break;
@@ -150,6 +183,9 @@ const char* asm_prefix_for_argument_type(asm_arg_type_t type)
             break;
         case ASM_ARG_TYPE_IMM:
             return "$";
+            break;
+        case ASM_ARG_TYPE_POINTER_EAX:
+            return "*";
             break;
         // anything else returns an empty prefix
         default:
@@ -204,6 +240,18 @@ const char* asm_opcode_string(asm_instruction_t *ins)
             return "ret";
         case ASM_INS_XOR:
             return "xor";
+        case ASM_GLOBL:
+            return ".globl";
+        case ASM_TYPE:
+            return ".type";
+        case ASM_SIZE:
+            return ".size";
+        case ASM_LONG:
+            return ".long";
+        case ASM_DATA_SECTION:
+            return ".data";
+        case ASM_TEXT_SECTION:
+            return ".text";
         default:
             break;
     }
@@ -226,6 +274,7 @@ char* asm_arg_string(asm_argument_t arg)
     case ASM_ARG_TYPE_RIP:
         string = arg.isReference ? strdup("(\%rip)") : strdup("\%rip");        
         break;
+    case ASM_ARG_TYPE_POINTER_EAX:
     case ASM_ARG_TYPE_EAX:
         string = arg.isReference ? strdup("(\%eax)") : strdup("\%eax");
         break;
@@ -243,6 +292,26 @@ char* asm_arg_string(asm_argument_t arg)
         {
             string = calloc(strlen(asm_prefix_for_argument_type(arg.type)) + asm_count_digits(arg.number) + 3, sizeof(char));
             sprintf(string, "(%s%d)", asm_prefix_for_argument_type(arg.type), arg.number);
+        }
+        else
+        {
+            string = calloc(strlen(asm_prefix_for_argument_type(arg.type)) + asm_count_digits(arg.number) + 1, sizeof(char));
+            sprintf(string, "%s%d", asm_prefix_for_argument_type(arg.type), arg.number);
+        }
+        break;
+    case ASM_ARG_TYPE_OBJECT:
+        string = strdup("@object");
+        break;
+    case ASM_ARG_TYPE_FUNCTION:
+        string = strdup("@function");
+        break;
+    case ASM_ARG_TYPE_IDENTIFIER:
+        string = strdup(arg.identifier);
+        break;
+    case ASM_ARG_TYPE_LABEL:
+        if (arg.number == main_label.number)
+        {
+            string = strdup("main");
         }
         else
         {

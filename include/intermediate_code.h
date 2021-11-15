@@ -12,6 +12,7 @@ Grupo D
 
 iloc_argument_t make_temp();
 iloc_argument_t make_label();
+int get_temp_count();
 
 iloc_instruction_t* generate_attribution(iloc_argument_t reference_address_register, iloc_argument_t address, iloc_argument_t expression);
 iloc_instruction_t* generate_attribution_vector(iloc_argument_t reference_address_register, iloc_argument_t address, iloc_argument_t offset, iloc_argument_t expression);

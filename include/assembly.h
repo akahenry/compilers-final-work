@@ -36,6 +36,13 @@ typedef enum _asm_opcode_t
     ASM_INS_JGE,
     ASM_LABEL,
     ASM_LABEL_CMP,
+    ASM_DATA_SECTION,
+    ASM_TEXT_SECTION,
+    ASM_GLOBL,
+    ASM_TYPE,
+    ASM_SIZE,
+    ASM_LONG,
+    ASM_IDENTIFIER_LABEL
 } asm_opcode_t;
 
 typedef enum _asm_arg_type_t
@@ -51,7 +58,12 @@ typedef enum _asm_arg_type_t
     ASM_ARG_TYPE_RIP,
     ASM_ARG_TYPE_IPC,
     ASM_ARG_TYPE_NONE,
-    ASM_ARG_TYPE_CMP_LABEL
+    ASM_ARG_TYPE_CMP_LABEL,
+    ASM_ARG_TYPE_OBJECT,
+    ASM_ARG_TYPE_FUNCTION,
+    ASM_ARG_TYPE_POINTER_EAX,
+    ASM_ARG_TYPE_IDENTIFIER,
+    ASM_ARG_TYPE_IDENTIFIER_FUNCTION
 } asm_arg_type_t;
 
 typedef struct _asm_argument_t
@@ -59,6 +71,7 @@ typedef struct _asm_argument_t
     asm_arg_type_t type;
     int isReference;
     int number;
+    char* identifier;
 } asm_argument_t;
 
 typedef struct _asm_instruction_t
@@ -83,5 +96,6 @@ const char* asm_prefix_for_argument_type(asm_arg_type_t type);
 char* asm_arg_string(asm_argument_t arg);
 void asm_recursive_print(asm_instruction_t* ins);
 void asm_clean();
+void set_main_label(int number);
 
 #endif

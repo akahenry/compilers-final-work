@@ -32,6 +32,7 @@ symbol_error_t symbol_table_add_symbol(symbol_table_t* table, char* key, int lin
             item->params_queue = params_queue;
             item->address = address;
             item->is_global = table->size == 1;
+            item->label.type = ILOC_ARG_TYPE_NONE;
             
             if (hash_add(scope, key, (void*)item) == HASH_ERROR_KEY_ALREADY_EXISTS)
             {

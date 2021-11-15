@@ -32,6 +32,7 @@ symbol_item_t* get_symbol_lit_string(char* key);
 const char* datatype_string(symbol_datatype_t datatype);
 void add_disp_symbol_table(int disp);
 int get_disp_symbol_table();
+symbol_table_t* get_table();
 
 void exporta (void *arvore);
 void libera (void *arvore);

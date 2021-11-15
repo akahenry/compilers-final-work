@@ -5,13 +5,16 @@ Grupo D
 */
 #include "asm_converter.h"
 
-const asm_argument_t RIP = {ASM_ARG_TYPE_RIP, 1, 0};
-const asm_argument_t EAX = {ASM_ARG_TYPE_EAX, 0, 0};
-const asm_argument_t EBX = {ASM_ARG_TYPE_EBX, 0, 0};
-const asm_argument_t EBX_REF = {ASM_ARG_TYPE_EBX, 1, 0};
-const asm_argument_t NONE = {ASM_ARG_TYPE_NONE, 0, 0};
-const asm_argument_t zero = {ASM_ARG_TYPE_IMM, 0, 0};
-const asm_argument_t one = {ASM_ARG_TYPE_IMM, 0, 1};
+const asm_argument_t RIP = {ASM_ARG_TYPE_RIP, 1, 0, NULL};
+const asm_argument_t EAX = {ASM_ARG_TYPE_EAX, 0, 0, NULL};
+const asm_argument_t POINTER_EAX = {ASM_ARG_TYPE_POINTER_EAX, 0, 0, NULL};
+const asm_argument_t EBX = {ASM_ARG_TYPE_EBX, 0, 0, NULL};
+const asm_argument_t EBX_REF = {ASM_ARG_TYPE_EBX, 1, 0, NULL};
+const asm_argument_t NONE = {ASM_ARG_TYPE_NONE, 0, 0, NULL};
+const asm_argument_t ZERO = {ASM_ARG_TYPE_IMM, 0, 0, NULL};
+const asm_argument_t ONE = {ASM_ARG_TYPE_IMM, 0, 1, NULL};
+const asm_argument_t OBJECT = {ASM_ARG_TYPE_OBJECT, 0, 0, NULL};
+const asm_argument_t FUNCTION = {ASM_ARG_TYPE_FUNCTION, 0, 0, NULL};
 
 asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
 {
@@ -105,6 +108,18 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
                 ret = asm_create(ASM_INS_MOV, arg1, arg2, NONE, NONE);
             }
             break;
+        
+        case ILOC_INS_LOAD:
+            ret = asm_create(ASM_INS_MOV, arg1, RIP, EBX, NONE);
+            ret = asm_join(ret, asm_create(ASM_INS_MOV, EBX_REF, EAX, NONE, NONE));
+            ret = asm_join(ret, asm_create(ASM_INS_MOV, EAX, arg2, RIP, NONE));
+            break;
+
+        case ILOC_INS_LOADAI:
+            ret = asm_create(ASM_INS_MOV, arg1, RIP, EBX, NONE);
+            ret = asm_join(ret, asm_create(ASM_INS_MOV, arg2, EBX_REF, EAX, NONE));
+            ret = asm_join(ret, asm_create(ASM_INS_MOV, EAX, arg3, RIP, NONE));
+            break;
 
         case ILOC_INS_ADD:
         case ILOC_INS_SUB:
@@ -162,11 +177,16 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
             ret = asm_create(ASM_INS_JMP, arg1, NONE, NONE, NONE);
             break;
         
+        case ILOC_INS_JUMP:
+            ret = asm_create(ASM_INS_MOV, arg1, RIP, EAX, NONE);
+            ret = asm_join(ret, asm_create(ASM_INS_JMP, POINTER_EAX, NONE, NONE, NONE));
+            break;
+        
         case ILOC_INS_CBR:
             if (arg1.type == ASM_ARG_TYPE_REGISTER)
-                ret = asm_create(ASM_INS_CMP, zero, arg1, RIP, NONE);
+                ret = asm_create(ASM_INS_CMP, ZERO, arg1, RIP, NONE);
             else
-                ret = asm_create(ASM_INS_CMP, zero, arg1, NONE, NONE);
+                ret = asm_create(ASM_INS_CMP, ZERO, arg1, NONE, NONE);
 
             ret = asm_join(ret, asm_create(ASM_INS_JE, arg3, NONE, NONE, NONE));
             ret = asm_join(ret, asm_create(ASM_INS_JNE, arg2, NONE, NONE, NONE));
@@ -247,9 +267,9 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
 
             // mov $1, r3
             if (arg3.type == ASM_ARG_TYPE_REGISTER)
-                ret = asm_join(ret, asm_create(ASM_INS_MOV, one, arg3, RIP, NONE));
+                ret = asm_join(ret, asm_create(ASM_INS_MOV, ONE, arg3, RIP, NONE));
             else
-                ret = asm_join(ret, asm_create(ASM_INS_MOV, one, arg3, NONE, NONE));
+                ret = asm_join(ret, asm_create(ASM_INS_MOV, ONE, arg3, NONE, NONE));
             
             // jmp <LABELEND>
             ret = asm_join(ret, asm_create(ASM_INS_JMP, arg_label_end, NONE, NONE, NONE));
@@ -257,11 +277,11 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
             // <LABELFALSE>:
             ret = asm_join(ret, label_false);
 
-            // mov $1, r3
+            // mov $0, r3
             if (arg3.type == ASM_ARG_TYPE_REGISTER)
-                ret = asm_join(ret, asm_create(ASM_INS_MOV, zero, arg3, RIP, NONE));
+                ret = asm_join(ret, asm_create(ASM_INS_MOV, ZERO, arg3, RIP, NONE));
             else
-                ret = asm_join(ret, asm_create(ASM_INS_MOV, zero, arg3, NONE, NONE));
+                ret = asm_join(ret, asm_create(ASM_INS_MOV, ZERO, arg3, NONE, NONE));
 
             // <LABELEND>:
             ret = asm_join(ret, label_end);
@@ -276,11 +296,65 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
     return ret;
 }
 
+asm_instruction_t* asm_header()
+{
+    symbol_table_t* table = get_table();
+    asm_instruction_t* data = asm_create(ASM_DATA_SECTION, NONE, NONE, NONE, NONE);
+    asm_instruction_t* text = asm_create(ASM_TEXT_SECTION, NONE, NONE, NONE, NONE);
+    int maxTemp = get_temp_count();
+
+    hash_table_t* global_scope = (hash_table_t*)stack_at(table->scopes, 0);
+    for (size_t i = 0; i < global_scope->size; i++)
+    {
+        if (global_scope->items[i] != NULL)
+        {
+            symbol_item_t* item = (symbol_item_t*)global_scope->items[i];
+            if (item->type == SYMBOL_TYPE_IDENTIFIER_VARIABLE)
+            {
+                asm_argument_t arg = {ASM_ARG_TYPE_IDENTIFIER, 0, 0, item->token->text};
+                asm_argument_t size = {ASM_ARG_TYPE_IMM, item->size, 0, NULL};
+                data = asm_join(data, asm_create(ASM_GLOBL, arg, NONE, NONE, NONE));
+                data = asm_join(data, asm_create(ASM_TYPE, arg, OBJECT, NONE, NONE));
+                data = asm_join(data, asm_create(ASM_SIZE, arg, size, NONE, NONE));
+                data = asm_join(data, asm_create(ASM_IDENTIFIER_LABEL, arg, NONE, NONE, NONE));
+                data = asm_join(data, asm_create(ASM_LONG, ZERO, NONE, NONE, NONE));
+            }
+            else if (item->type == SYMBOL_TYPE_IDENTIFIER_FUNCTION)
+            {
+                asm_argument_t arg = {ASM_ARG_TYPE_IDENTIFIER_FUNCTION, 0, item->label.number, NULL};
+                if (strcmp("main", item->token->text) == 0)
+                {
+                    arg.type = ASM_ARG_TYPE_IDENTIFIER;
+                    arg.identifier = item->token->text;
+                    set_main_label(item->label.number);
+                }
+                text = asm_join(text, asm_create(ASM_GLOBL, arg, NONE, NONE, NONE));
+                text = asm_join(text, asm_create(ASM_TYPE, arg, FUNCTION, NONE, NONE));
+            }
+        }
+    }
+
+    for (size_t i = 0; i < maxTemp; i++)
+    {
+        asm_argument_t arg = {ASM_ARG_TYPE_REGISTER, 0, i, NULL};
+        asm_argument_t size = {ASM_ARG_TYPE_IMM, 0, 4, NULL};
+        data = asm_join(data, asm_create(ASM_GLOBL, arg, NONE, NONE, NONE));
+        data = asm_join(data, asm_create(ASM_TYPE, arg, OBJECT, NONE, NONE));
+        data = asm_join(data, asm_create(ASM_SIZE, arg, size, NONE, NONE));
+        data = asm_join(data, asm_create(ASM_IDENTIFIER_LABEL, arg, NONE, NONE, NONE));
+        data = asm_join(data, asm_create(ASM_LONG, ZERO, NONE, NONE, NONE));
+    }
+    
+    return asm_join(data, text);
+}
+
 asm_instruction_t* iloc_to_asm(iloc_instruction_t* ref)
 {
     asm_instruction_t* ret = NULL;
 
-    ret = iloc_to_asm_recursive(ref);
+    ret = asm_header();
+
+    ret = asm_join(ret, iloc_to_asm_recursive(ref));
 
     return ret;
 }

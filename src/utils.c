@@ -317,3 +317,8 @@ int get_disp_symbol_table()
 
     return response;
 }
+
+symbol_table_t* get_table()
+{
+    return symbol_table;
+}
