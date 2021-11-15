@@ -58,6 +58,7 @@ char* asm_instruction_string(asm_instruction_t *ins)
         case ASM_INS_JLE:
         case ASM_INS_JGE:
         case ASM_INS_IMUL:
+        case ASM_INS_IMULL:
         case ASM_INS_POP:
         case ASM_INS_PUSH:
         case ASM_INS_CALL:
@@ -85,6 +86,7 @@ char* asm_instruction_string(asm_instruction_t *ins)
         case ASM_INS_ADD:
         case ASM_INS_SUB:
         case ASM_INS_CMP:
+        case ASM_INS_CMPL:
         case ASM_INS_AND:
         case ASM_INS_XOR:
             if (arg3 == NULL)
@@ -225,6 +227,8 @@ const char* asm_opcode_string(asm_instruction_t *ins)
             return "sub";
         case ASM_INS_IMUL:
             return "imul";
+        case ASM_INS_IMULL:
+            return "imull";
         case ASM_INS_CLTD:
             return "cltd";
         case ASM_INS_IDIV:
@@ -233,6 +237,8 @@ const char* asm_opcode_string(asm_instruction_t *ins)
             return "jmp";
         case ASM_INS_CMP:
             return "cmp";
+        case ASM_INS_CMPL:
+            return "cmpl";
         case ASM_INS_JE:
             return "je";
         case ASM_INS_JNE:

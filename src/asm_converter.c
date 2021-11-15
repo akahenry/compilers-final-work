@@ -214,7 +214,7 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
                 else if (ref->opcode == ILOC_INS_SUB)
                     ret = asm_join(ret, asm_create(ASM_INS_SUB, arg2, RIP, EAX, NONE));
                 else if (ref->opcode == ILOC_INS_MULT)
-                    ret = asm_join(ret, asm_create(ASM_INS_IMUL, arg2, RIP, NONE, NONE));
+                    ret = asm_join(ret, asm_create(ASM_INS_IMULL, arg2, RIP, NONE, NONE));
                 else if (ref->opcode == ILOC_INS_DIV)
                     ret = asm_join(ret, asm_join(asm_create(ASM_INS_CLTD, NONE, NONE, NONE, NONE), asm_create(ASM_INS_IDIV, arg2, RIP, NONE, NONE)));
             }
@@ -264,7 +264,7 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
         
         case ILOC_INS_CBR:
             if (arg1.type == ASM_ARG_TYPE_REGISTER)
-                ret = asm_create(ASM_INS_CMP, ZERO, arg1, RIP, NONE);
+                ret = asm_create(ASM_INS_CMPL, ZERO, arg1, RIP, NONE);
             else
                 ret = asm_create(ASM_INS_CMP, ZERO, arg1, NONE, NONE);
 
