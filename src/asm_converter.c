@@ -6,10 +6,15 @@ Grupo D
 #include "asm_converter.h"
 
 const asm_argument_t RIP = {ASM_ARG_TYPE_RIP, 1, 0, NULL};
+const asm_argument_t RBP = {ASM_ARG_TYPE_RBP, 0, 0, NULL};
+const asm_argument_t RSP = {ASM_ARG_TYPE_RSP, 0, 0, NULL};
+const asm_argument_t RSP_REF = {ASM_ARG_TYPE_RSP, 1, 0, NULL};
 const asm_argument_t EAX = {ASM_ARG_TYPE_EAX, 0, 0, NULL};
-const asm_argument_t POINTER_EAX = {ASM_ARG_TYPE_POINTER_EAX, 0, 0, NULL};
+const asm_argument_t POINTER_RAX = {ASM_ARG_TYPE_POINTER_RAX, 0, 0, NULL};
 const asm_argument_t EBX = {ASM_ARG_TYPE_EBX, 0, 0, NULL};
 const asm_argument_t EBX_REF = {ASM_ARG_TYPE_EBX, 1, 0, NULL};
+const asm_argument_t RBX = {ASM_ARG_TYPE_RBX, 0, 0, NULL};
+const asm_argument_t RBX_REF = {ASM_ARG_TYPE_RBX, 1, 0, NULL};
 const asm_argument_t NONE = {ASM_ARG_TYPE_NONE, 0, 0, NULL};
 const asm_argument_t ZERO = {ASM_ARG_TYPE_IMM, 0, 0, NULL};
 const asm_argument_t ONE = {ASM_ARG_TYPE_IMM, 0, 1, NULL};
@@ -26,7 +31,6 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
 
     if(ref != NULL)
     {
-        ret = calloc(1, sizeof(asm_instruction_t));
         arg1 = iloc_arg_to_asm_arg(ref->arg1);
         arg2 = iloc_arg_to_asm_arg(ref->arg2);
         arg3 = iloc_arg_to_asm_arg(ref->arg3);
@@ -109,16 +113,56 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
             }
             break;
         
-        case ILOC_INS_LOAD:
-            ret = asm_create(ASM_INS_MOV, arg1, RIP, EBX, NONE);
-            ret = asm_join(ret, asm_create(ASM_INS_MOV, EBX_REF, EAX, NONE, NONE));
+        case ILOC_INS_LOAD: 
+            if (arg1.type == ASM_ARG_TYPE_REGISTER)
+            {
+                ret = asm_create(ASM_INS_MOV, arg1, RIP, RBX, NONE);
+            }
+            else
+            {
+                ret = asm_create(ASM_INS_MOV, arg1, RBX, NONE, NONE);
+            }
+            ret = asm_join(ret, asm_create(ASM_INS_MOV, RBX_REF, EAX, NONE, NONE));
             ret = asm_join(ret, asm_create(ASM_INS_MOV, EAX, arg2, RIP, NONE));
             break;
 
         case ILOC_INS_LOADAI:
-            ret = asm_create(ASM_INS_MOV, arg1, RIP, EBX, NONE);
-            ret = asm_join(ret, asm_create(ASM_INS_MOV, arg2, EBX_REF, EAX, NONE));
-            ret = asm_join(ret, asm_create(ASM_INS_MOV, EAX, arg3, RIP, NONE));
+            if (arg3.type == ASM_ARG_TYPE_REGISTER)
+            {
+                if (arg1.type == ASM_ARG_TYPE_RIP || arg1.type == ASM_ARG_TYPE_RBP)
+                {
+                    arg1.isReference = 1;
+                    arg2.number = arg1.type == ASM_ARG_TYPE_RBP ? arg2.number * -4 : arg2.number;
+                    ret = asm_join(ret, asm_create(ASM_INS_MOV, arg2, arg1, EAX, NONE));
+                    ret = asm_join(ret, asm_create(ASM_INS_MOV, EAX, arg3, RIP, NONE));
+                }
+                else
+                {
+                    if (arg1.type == ASM_ARG_TYPE_REGISTER)
+                    {
+                        ret = asm_create(ASM_INS_MOV, arg1, RIP, RBX, NONE);
+                    }
+                    else
+                    {
+                        ret = asm_create(ASM_INS_MOV, arg1, RBX, NONE, NONE);
+                    }
+                    ret = asm_join(ret, asm_create(ASM_INS_MOV, arg2, RBX_REF, EAX, NONE));
+                    ret = asm_join(ret, asm_create(ASM_INS_MOV, EAX, arg3, RIP, NONE));
+                }
+            }
+            else
+            {
+                if (arg1.type == ASM_ARG_TYPE_REGISTER)
+                {
+                    ret = asm_create(ASM_INS_MOV, arg1, RIP, RBX, NONE);
+                    ret = asm_join(ret, asm_create(ASM_INS_MOV, arg2, RBX_REF, arg3, NONE));
+                }
+                else
+                {
+                    arg1.isReference = 1;
+                    ret = asm_join(ret, asm_create(ASM_INS_MOV, arg2, arg1, arg3, NONE));
+                }
+            }
             break;
 
         case ILOC_INS_ADD:
@@ -179,7 +223,7 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
         
         case ILOC_INS_JUMP:
             ret = asm_create(ASM_INS_MOV, arg1, RIP, EAX, NONE);
-            ret = asm_join(ret, asm_create(ASM_INS_JMP, POINTER_EAX, NONE, NONE, NONE));
+            ret = asm_join(ret, asm_create(ASM_INS_JMP, POINTER_RAX, NONE, NONE, NONE));
             break;
         
         case ILOC_INS_CBR:
@@ -196,8 +240,9 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
             ret = asm_create_label(ref->number);
             break;
 
-        case ILOC_INS_HALT:
-            ret = asm_join(asm_create(ASM_INS_RET, NONE, NONE, NONE, NONE), asm_create(ASM_INS_HALT, NONE, NONE, NONE, NONE));
+        case ILOC_INS_HALT:;
+            asm_argument_t sixteen = {ASM_ARG_TYPE_IMM, 0, 16, NULL};
+            ret = asm_join(asm_join(asm_join(asm_create(ASM_INS_MOV, sixteen, RSP_REF, EAX, NONE), asm_create(ASM_INS_MOV, RBP, RSP, NONE, NONE)), asm_create(ASM_INS_RET, NONE, NONE, NONE, NONE)), asm_create(ASM_INS_HALT, NONE, NONE, NONE, NONE));
             break;
 
         case ILOC_INS_XORI:
@@ -267,9 +312,9 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
 
             // mov $1, r3
             if (arg3.type == ASM_ARG_TYPE_REGISTER)
-                ret = asm_join(ret, asm_create(ASM_INS_MOV, ONE, arg3, RIP, NONE));
+                ret = asm_join(ret, asm_create(ASM_INS_MOVL, ONE, arg3, RIP, NONE));
             else
-                ret = asm_join(ret, asm_create(ASM_INS_MOV, ONE, arg3, NONE, NONE));
+                ret = asm_join(ret, asm_create(ASM_INS_MOVL, ONE, arg3, NONE, NONE));
             
             // jmp <LABELEND>
             ret = asm_join(ret, asm_create(ASM_INS_JMP, arg_label_end, NONE, NONE, NONE));
@@ -279,15 +324,16 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
 
             // mov $0, r3
             if (arg3.type == ASM_ARG_TYPE_REGISTER)
-                ret = asm_join(ret, asm_create(ASM_INS_MOV, ZERO, arg3, RIP, NONE));
+                ret = asm_join(ret, asm_create(ASM_INS_MOVL, ZERO, arg3, RIP, NONE));
             else
-                ret = asm_join(ret, asm_create(ASM_INS_MOV, ZERO, arg3, NONE, NONE));
+                ret = asm_join(ret, asm_create(ASM_INS_MOVL, ZERO, arg3, NONE, NONE));
 
             // <LABELEND>:
             ret = asm_join(ret, label_end);
             break;
         
         default:
+            ret = asm_create(ASM_INS_NOP, NONE, NONE, NONE, NONE);
             break;
         }
         ret->previous = asm_join(iloc_to_asm_recursive(ref->previous), ret->previous);
@@ -312,7 +358,7 @@ asm_instruction_t* asm_header()
             if (item->type == SYMBOL_TYPE_IDENTIFIER_VARIABLE)
             {
                 asm_argument_t arg = {ASM_ARG_TYPE_IDENTIFIER, 0, 0, item->token->text};
-                asm_argument_t size = {ASM_ARG_TYPE_IMM, item->size, 0, NULL};
+                asm_argument_t size = {ASM_ARG_TYPE_IMM, 0, item->size, NULL};
                 data = asm_join(data, asm_create(ASM_GLOBL, arg, NONE, NONE, NONE));
                 data = asm_join(data, asm_create(ASM_TYPE, arg, OBJECT, NONE, NONE));
                 data = asm_join(data, asm_create(ASM_SIZE, arg, size, NONE, NONE));

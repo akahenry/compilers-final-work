@@ -184,7 +184,7 @@ const char* asm_prefix_for_argument_type(asm_arg_type_t type)
         case ASM_ARG_TYPE_IMM:
             return "$";
             break;
-        case ASM_ARG_TYPE_POINTER_EAX:
+        case ASM_ARG_TYPE_POINTER_RAX:
             return "*";
             break;
         // anything else returns an empty prefix
@@ -274,7 +274,15 @@ char* asm_arg_string(asm_argument_t arg)
     case ASM_ARG_TYPE_RIP:
         string = arg.isReference ? strdup("(\%rip)") : strdup("\%rip");        
         break;
-    case ASM_ARG_TYPE_POINTER_EAX:
+    case ASM_ARG_TYPE_POINTER_RAX:
+        string = strdup("*\%rax");
+        break;
+    case ASM_ARG_TYPE_RAX:
+        string = arg.isReference ? strdup("(\%rax)") : strdup("\%rax");
+        break;
+    case ASM_ARG_TYPE_RBX:
+        string = arg.isReference ? strdup("(\%rbx)") : strdup("\%rbx");
+        break;
     case ASM_ARG_TYPE_EAX:
         string = arg.isReference ? strdup("(\%eax)") : strdup("\%eax");
         break;

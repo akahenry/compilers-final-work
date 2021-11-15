@@ -859,9 +859,8 @@ return: TK_PR_RETURN expression
             $$->temp = $2->temp;
             if (is_main_function)
             {
-                iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
-                iloc_argument_t l0 = {ILOC_ARG_TYPE_LABEL, 0};
-                $$->code = iloc_join($2->code, iloc_create(ILOC_INS_JUMPI, l0, none, none));
+                iloc_argument_t declared_variables_count = {ILOC_ARG_TYPE_NUMBER, declared_variables};
+                $$->code = iloc_join($2->code, generate_return_main($2->temp, declared_variables_count));
             }
             else
             {
