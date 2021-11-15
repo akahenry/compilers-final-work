@@ -58,12 +58,12 @@ char* asm_instruction_string(asm_instruction_t *ins)
         case ASM_INS_JLE:
         case ASM_INS_JGE:
         case ASM_INS_IMUL:
-        case ASM_INS_IMULL:
+        case ASM_INS_IMULQ:
         case ASM_INS_POP:
         case ASM_INS_PUSH:
         case ASM_INS_CALL:
         case ASM_INS_IDIV:
-        case ASM_INS_IDIVL:
+        case ASM_INS_IDIVQ:
             if (arg2 == NULL)
             {
                 str = calloc(strlen(opcode) + strlen(arg1) + 1, sizeof(char));
@@ -83,11 +83,12 @@ char* asm_instruction_string(asm_instruction_t *ins)
             break;
 
         case ASM_INS_MOV:
-        case ASM_INS_MOVL:
+        case ASM_INS_MOVQ:
         case ASM_INS_ADD:
         case ASM_INS_SUB:
         case ASM_INS_CMP:
         case ASM_INS_CMPL:
+        case ASM_INS_CMPQ:
         case ASM_INS_AND:
         case ASM_INS_XOR:
             if (arg3 == NULL)
@@ -220,28 +221,30 @@ const char* asm_opcode_string(asm_instruction_t *ins)
             return "hlt";
         case ASM_INS_MOV:
             return "mov";
-        case ASM_INS_MOVL:
-            return "movl";
+        case ASM_INS_MOVQ:
+            return "movq";
         case ASM_INS_ADD:
             return "add";
         case ASM_INS_SUB:
             return "sub";
         case ASM_INS_IMUL:
             return "imul";
-        case ASM_INS_IMULL:
-            return "imull";
+        case ASM_INS_IMULQ:
+            return "imulq";
         case ASM_INS_CLTD:
             return "cltd";
         case ASM_INS_IDIV:
             return "idiv";
-        case ASM_INS_IDIVL:
-            return "idivl";
+        case ASM_INS_IDIVQ:
+            return "idivq";
         case ASM_INS_JMP:
             return "jmp";
         case ASM_INS_CMP:
             return "cmp";
         case ASM_INS_CMPL:
             return "cmpl";
+        case ASM_INS_CMPQ:
+            return "cmpq";
         case ASM_INS_JE:
             return "je";
         case ASM_INS_JNE:
