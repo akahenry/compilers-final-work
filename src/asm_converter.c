@@ -333,31 +333,31 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
             }
             ret = asm_join(ret, asm_create(ASM_INS_CMPL, EBX, EAX, NONE, NONE));
                         
-            asm_instruction_t* label_false = asm_create_cmp_label();
+            asm_instruction_t* label_true = asm_create_cmp_label();
             asm_instruction_t* label_end = asm_create_cmp_label();
-            asm_argument_t arg_label_false = asm_create_label_arg_from_label_ins(label_false);
+            asm_argument_t arg_label_true = asm_create_label_arg_from_label_ins(label_true);
             asm_argument_t arg_label_end = asm_create_label_arg_from_label_ins(label_end);
 
-            // <jmp com teste negado> <LABELFALSE>
+            // <jmp com teste negado> <LABELTRUE>
             switch (ref->opcode)
             {
             case ILOC_INS_CMP_EQ:
-                ret = asm_join(ret, asm_create(ASM_INS_JNE, arg_label_false, NONE, NONE, NONE));
+                ret = asm_join(ret, asm_create(ASM_INS_JE, arg_label_true, NONE, NONE, NONE));
                 break;
             case ILOC_INS_CMP_NE:
-                ret = asm_join(ret, asm_create(ASM_INS_JE, arg_label_false, NONE, NONE, NONE));
+                ret = asm_join(ret, asm_create(ASM_INS_JNE, arg_label_true, NONE, NONE, NONE));
                 break;
             case ILOC_INS_CMP_GE:
-                ret = asm_join(ret, asm_create(ASM_INS_JGE, arg_label_false, NONE, NONE, NONE));
+                ret = asm_join(ret, asm_create(ASM_INS_JLE, arg_label_true, NONE, NONE, NONE));
                 break;
             case ILOC_INS_CMP_LE:
-                ret = asm_join(ret, asm_create(ASM_INS_JLE, arg_label_false, NONE, NONE, NONE));
+                ret = asm_join(ret, asm_create(ASM_INS_JGE, arg_label_true, NONE, NONE, NONE));
                 break;
             case ILOC_INS_CMP_GT:
-                ret = asm_join(ret, asm_create(ASM_INS_JG, arg_label_false, NONE, NONE, NONE));
+                ret = asm_join(ret, asm_create(ASM_INS_JL, arg_label_true, NONE, NONE, NONE));
                 break;
             case ILOC_INS_CMP_LT:
-                ret = asm_join(ret, asm_create(ASM_INS_JL, arg_label_false, NONE, NONE, NONE));
+                ret = asm_join(ret, asm_create(ASM_INS_JG, arg_label_true, NONE, NONE, NONE));
                 break;
             default:
                 break;
@@ -365,21 +365,21 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
 
             // mov $1, r3
             if (arg3.type == ASM_ARG_TYPE_REGISTER)
-                ret = asm_join(ret, asm_create(ASM_INS_MOVQ, ONE, arg3, RIP, NONE));
+                ret = asm_join(ret, asm_create(ASM_INS_MOVQ, ZERO, arg3, RIP, NONE));
             else
-                ret = asm_join(ret, asm_create(ASM_INS_MOVQ, ONE, arg3, NONE, NONE));
+                ret = asm_join(ret, asm_create(ASM_INS_MOVQ, ZERO, arg3, NONE, NONE));
             
             // jmp <LABELEND>
             ret = asm_join(ret, asm_create(ASM_INS_JMP, arg_label_end, NONE, NONE, NONE));
 
-            // <LABELFALSE>:
-            ret = asm_join(ret, label_false);
+            // <LABELTRUE>:
+            ret = asm_join(ret, label_true);
 
             // mov $0, r3
             if (arg3.type == ASM_ARG_TYPE_REGISTER)
-                ret = asm_join(ret, asm_create(ASM_INS_MOVQ, ZERO, arg3, RIP, NONE));
+                ret = asm_join(ret, asm_create(ASM_INS_MOVQ, ONE, arg3, RIP, NONE));
             else
-                ret = asm_join(ret, asm_create(ASM_INS_MOVQ, ZERO, arg3, NONE, NONE));
+                ret = asm_join(ret, asm_create(ASM_INS_MOVQ, ONE, arg3, NONE, NONE));
 
             // <LABELEND>:
             ret = asm_join(ret, label_end);

@@ -589,7 +589,7 @@ varassignment: varname '=' expression
         }
 
         // Only implementing non-vector variable attribution for testing purposes
-        $$->temp = $1->temp;
+        $$->temp = $3->temp;
         iloc_argument_t reference_register = {first->is_global ? ILOC_ARG_TYPE_RBSS : ILOC_ARG_TYPE_RFP, 0};
         iloc_argument_t address = {ILOC_ARG_TYPE_NUMBER, first->address};
         $$->code = iloc_join($1->code, iloc_join($3->code, generate_attribution(reference_register, address, $3->temp)));
@@ -886,7 +886,7 @@ return: TK_PR_RETURN expression
     ;
 
 controlflowcommand: if { $$ = $1; }
-    | TK_PR_FOR '(' varassignment ':' expression ':' varassignment ')' commandblock { $$ = node_create("for", $3, $5, $7, $9, NULL); $$->code = generate_for($3->temp, $5->temp, $5->code, $7->temp, $7->code, $9->code); $$->temp = make_temp(); }
+    | TK_PR_FOR '(' varassignment ':' expression ':' varassignment ')' commandblock { $$ = node_create("for", $3, $5, $7, $9, NULL); $$->code = iloc_join($3->code, generate_for($3->temp, $5->temp, $5->code, $7->temp, $7->code, $9->code)); $$->temp = make_temp(); }
     | TK_PR_WHILE '(' expression ')' TK_PR_DO commandblock { $$ = node_create("while", $3, $6, NULL, NULL, NULL); $$->code = generate_while($3->temp, $3->code, $6->code); $$->temp = make_temp(); }
     ;
 
