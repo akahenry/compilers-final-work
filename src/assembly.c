@@ -58,6 +58,9 @@ char* asm_instruction_string(asm_instruction_t *ins)
         case ASM_INS_JLE:
         case ASM_INS_JGE:
         case ASM_INS_IMUL:
+        case ASM_INS_POP:
+        case ASM_INS_PUSH:
+        case ASM_INS_CALL:
         case ASM_INS_IDIV:
             if (arg2 == NULL)
             {
@@ -112,6 +115,16 @@ char* asm_instruction_string(asm_instruction_t *ins)
                 {
                     str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + strlen(arg3) + 1, sizeof(char));
                     sprintf(str, "%s %s, %s%s", opcode, arg1, arg2, arg3);
+                }
+                else if (ins->arg2.type == ASM_ARG_TYPE_IDENTIFIER && ins->arg3.isReference)
+                {
+                    str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + strlen(arg3) + 1, sizeof(char));
+                    sprintf(str, "%s %s, %s%s", opcode, arg1, arg2, arg3);
+                }
+                else if (ins->arg1.type == ASM_ARG_TYPE_IDENTIFIER && ins->arg2.isReference)
+                {
+                    str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + strlen(arg3) + 1, sizeof(char));
+                    sprintf(str, "%s %s%s, %s", opcode, arg1, arg2, arg3);
                 }
             }
             else if (ins->arg1.type == ASM_ARG_TYPE_IMM && ins->arg2.isReference && ins->arg3.type == ASM_ARG_TYPE_IMM && ins->arg4.isReference)
@@ -236,10 +249,16 @@ const char* asm_opcode_string(asm_instruction_t *ins)
             return "lahf";
         case ASM_INS_AND:
             return "and";
+        case ASM_INS_CALL:
+            return "call";
         case ASM_INS_RET:
             return "ret";
         case ASM_INS_XOR:
             return "xor";
+        case ASM_INS_POP:
+            return "pop";
+        case ASM_INS_PUSH:
+            return "push";
         case ASM_GLOBL:
             return ".globl";
         case ASM_TYPE:
@@ -282,6 +301,9 @@ char* asm_arg_string(asm_argument_t arg)
         break;
     case ASM_ARG_TYPE_RBX:
         string = arg.isReference ? strdup("(\%rbx)") : strdup("\%rbx");
+        break;
+    case ASM_ARG_TYPE_RCX:
+        string = arg.isReference ? strdup("(\%rcx)") : strdup("\%rcx");
         break;
     case ASM_ARG_TYPE_EAX:
         string = arg.isReference ? strdup("(\%eax)") : strdup("\%eax");

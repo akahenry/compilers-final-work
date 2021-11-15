@@ -60,7 +60,12 @@ typedef enum _iloc_opcode_t
     ILOC_INS_CMP_GT,
     ILOC_INS_CMP_NE,
     ILOC_INS_HALT,
-    ILOC_LABEL
+    ILOC_LABEL,
+    ILOC_NO_CODE_RET,
+    ILOC_NO_CODE_RET_MAIN,
+    ILOC_NO_CODE_RET_VALUE,
+    ILOC_NO_CODE_POP_RCX,
+    ILOC_NO_CODE_RET_ADDRESS
 } iloc_opcode_t;
 
 typedef enum _iloc_arg_type_t

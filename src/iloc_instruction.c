@@ -129,6 +129,11 @@ char* iloc_instruction_string(iloc_instruction_t *ins)
             str = calloc(count_digits(ins->number) + 4, sizeof(char));
             sprintf(str, "L%d: ", ins->number);
             break;
+
+        case ILOC_NO_CODE_RET_VALUE:
+        case ILOC_NO_CODE_RET:
+            str = strdup("");
+            break;
         
         default:
             break;

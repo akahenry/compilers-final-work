@@ -88,7 +88,7 @@ iloc_instruction_t* generate_load_vector(iloc_argument_t reference_address_regis
     return iloc_join(address_instruction, instruction);
 }
 
-iloc_instruction_t* generate_funcdec(iloc_argument_t label, iloc_argument_t disp)
+iloc_instruction_t* generate_funcdec(iloc_argument_t label, iloc_argument_t disp, int isMain)
 {
     iloc_argument_t rfp = {ILOC_ARG_TYPE_RFP, 0};
     iloc_argument_t rsp = {ILOC_ARG_TYPE_RSP, 0};
@@ -104,7 +104,14 @@ iloc_instruction_t* generate_funcdec(iloc_argument_t label, iloc_argument_t disp
         register_backup_instruction = iloc_join(iloc_create(ILOC_INS_STOREAI, reg, rfp, address), register_backup_instruction);
     }
 
-    return iloc_join(iloc_join(iloc_join(iloc_create_label(label.number), iloc_create(ILOC_INS_I2I, rsp, rfp, none)), iloc_create(ILOC_INS_ADDI, rsp, newDisp, rsp)), register_backup_instruction);
+    if (!isMain)
+    {
+        return iloc_join(iloc_join(iloc_join(iloc_join(iloc_create_label(label.number), iloc_create(ILOC_NO_CODE_POP_RCX, none, none, none)), iloc_create(ILOC_INS_I2I, rsp, rfp, none)), iloc_create(ILOC_INS_ADDI, rsp, newDisp, rsp)), register_backup_instruction);
+    }
+    else
+    {
+        return iloc_join(iloc_join(iloc_join(iloc_create_label(label.number), iloc_create(ILOC_INS_I2I, rsp, rfp, none)), iloc_create(ILOC_INS_ADDI, rsp, newDisp, rsp)), register_backup_instruction);
+    }
 }
 
 iloc_instruction_t* generate_attribution_from_address(iloc_argument_t reference_address_register1, iloc_argument_t address1, iloc_argument_t reference_address_register2, iloc_argument_t address2)
@@ -137,7 +144,7 @@ iloc_instruction_t* generate_return(iloc_argument_t expression, iloc_argument_t 
         register_backup_instruction = iloc_join(iloc_create(ILOC_INS_LOADAI, rfp, address, reg), register_backup_instruction);
     }
 
-    return iloc_join(iloc_join(iloc_join(iloc_create(ILOC_INS_STOREAI, expression, rsp, address_response), iloc_create(ILOC_INS_LOADAI, rfp, zero, address_return)), register_backup_instruction), iloc_create(ILOC_INS_JUMP, address_return, none, none));
+    return iloc_join(iloc_join(iloc_join(iloc_join(iloc_create(ILOC_INS_STOREAI, expression, rsp, address_response), iloc_create(ILOC_INS_LOADAI, rfp, zero, address_return)), register_backup_instruction), iloc_create(ILOC_INS_JUMP, address_return, none, none)), iloc_create(ILOC_NO_CODE_RET, none, none, none));
 }
 
 iloc_instruction_t* generate_return_main(iloc_argument_t expression, iloc_argument_t declared_variables_count)
@@ -157,7 +164,7 @@ iloc_instruction_t* generate_return_main(iloc_argument_t expression, iloc_argume
         register_backup_instruction = iloc_join(iloc_create(ILOC_INS_LOADAI, rfp, address, reg), register_backup_instruction);
     }
 
-    return iloc_join(iloc_join(iloc_create(ILOC_INS_STOREAI, expression, rsp, address_response), register_backup_instruction), iloc_create(ILOC_INS_JUMPI, l0, none, none));
+    return iloc_join(iloc_join(iloc_join(iloc_create(ILOC_INS_STOREAI, expression, rsp, address_response), register_backup_instruction), iloc_create(ILOC_INS_JUMPI, l0, none, none)), iloc_create(ILOC_NO_CODE_RET_MAIN, none, none, none));
 }
 
 iloc_instruction_t* generate_jump_halt()
@@ -189,6 +196,7 @@ iloc_instruction_t* generate_funccall(token_t* funcname_token, node_t* arguments
     iloc_argument_t return_address = make_temp();
     code = iloc_join(code, iloc_create(ILOC_INS_ADDI, rpc, return_address_arg, return_address));
     code = iloc_join(code, iloc_create(ILOC_INS_STOREAI, return_address, rsp, zero));
+    code = iloc_join(code, iloc_create(ILOC_NO_CODE_RET_ADDRESS, none, none, none)); // indica que não precisa fazer as duas instruções acima no asm
 
     // salva rsp e rfp
     iloc_argument_t four = {ILOC_ARG_TYPE_NUMBER, 4};
@@ -212,14 +220,17 @@ iloc_instruction_t* generate_funccall(token_t* funcname_token, node_t* arguments
     iloc_argument_t func_label = symbol->label;
     code = iloc_join(code, iloc_create(ILOC_INS_JUMPI, func_label, none, none));
 
+    // Obtém rfp (RFP) salvo
+    code = iloc_join(code, iloc_create(ILOC_INS_LOADAI, rfp, eight, rfp));
+
     // carrega retorno
     iloc_argument_t minus_four = {ILOC_ARG_TYPE_NUMBER, -4};
     code = iloc_join(code, iloc_create(ILOC_INS_LOADAI, rsp, minus_four, reg));
 
     // Obtém rsp (SP) salvo
     code = iloc_join(code, iloc_create(ILOC_INS_LOADAI, rfp, four, rsp));
-    // Obtém rfp (RFP) salvo
-    code = iloc_join(code, iloc_create(ILOC_INS_LOADAI, rfp, eight, rfp));
+
+    code = iloc_join(code, iloc_create(ILOC_NO_CODE_RET_VALUE, reg, none, none)); // indica pro asm que é pra colocar o EAX em reg e não realizar a conversão da proxima instrução
 
     return code;
 }

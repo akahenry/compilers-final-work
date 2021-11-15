@@ -34,6 +34,7 @@ void add_disp_symbol_table(int disp);
 int get_disp_symbol_table();
 symbol_table_t* get_table();
 symbol_item_t* find_global_by_address(int address);
+int iloc_label_is_func(iloc_argument_t label);
 
 void exporta (void *arvore);
 void libera (void *arvore);

@@ -213,7 +213,16 @@ funcdec: funcheader commandblock
 
         $$->temp = get_symbol($1->text)->label;
         iloc_argument_t arg_disp = {ILOC_ARG_TYPE_NUMBER, disp};
-        $$->code = iloc_join(generate_funcdec($$->temp, arg_disp), $2->code);
+        iloc_argument_t none = {ILOC_ARG_TYPE_NONE, 0};
+
+        if (strcmp($1->text, "main") != 0)
+        {
+            $$->code = iloc_join(generate_funcdec($$->temp, arg_disp, 0), $2->code);
+        }
+        else
+        {
+            $$->code = iloc_join(generate_funcdec($$->temp, arg_disp, 1), $2->code);
+        }
     }
     ;
 

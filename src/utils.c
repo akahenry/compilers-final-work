@@ -340,3 +340,21 @@ symbol_item_t* find_global_by_address(int address)
 
     return NULL;
 }
+
+int iloc_label_is_func(iloc_argument_t label)
+{
+    hash_table_t* global_scope = (hash_table_t*)stack_at(symbol_table->scopes, symbol_table->size - 1);
+    for (size_t i = 0; i < global_scope->size; i++)
+    {
+        if (global_scope->items[i] != NULL)
+        {
+            symbol_item_t* item = (symbol_item_t*)global_scope->items[i];
+            if (item->label.number == label.number)
+            {
+                return item->type == SYMBOL_TYPE_IDENTIFIER_FUNCTION;
+            }
+        }
+    }
+
+    return 0;
+}
