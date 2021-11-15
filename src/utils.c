@@ -322,3 +322,21 @@ symbol_table_t* get_table()
 {
     return symbol_table;
 }
+
+symbol_item_t* find_global_by_address(int address)
+{
+    hash_table_t* global_scope = (hash_table_t*)stack_at(symbol_table->scopes, symbol_table->size - 1);
+    for (size_t i = 0; i < global_scope->size; i++)
+    {
+        if (global_scope->items[i] != NULL)
+        {
+            symbol_item_t* item = (symbol_item_t*)global_scope->items[i];
+            if (item->address == address)
+            {
+                return item;
+            }
+        }
+    }
+
+    return NULL;
+}
