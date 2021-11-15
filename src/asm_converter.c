@@ -217,7 +217,7 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
                 else if (ref->opcode == ILOC_INS_MULT)
                     ret = asm_join(ret, asm_create(ASM_INS_IMULL, arg2, RIP, NONE, NONE));
                 else if (ref->opcode == ILOC_INS_DIV)
-                    ret = asm_join(ret, asm_join(asm_create(ASM_INS_CLTD, NONE, NONE, NONE, NONE), asm_create(ASM_INS_IDIV, arg2, RIP, NONE, NONE)));
+                    ret = asm_join(ret, asm_join(asm_create(ASM_INS_CLTD, NONE, NONE, NONE, NONE), asm_create(ASM_INS_IDIVL, arg2, RIP, NONE, NONE)));
             }
             else
             {

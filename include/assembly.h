@@ -22,6 +22,7 @@ typedef enum _asm_opcode_t
     ASM_INS_IMULL,
     ASM_INS_CLTD,
     ASM_INS_IDIV,
+    ASM_INS_IDIVL,
     ASM_INS_JMP,
     ASM_INS_CMP,
     ASM_INS_CMPL,

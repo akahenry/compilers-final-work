@@ -63,6 +63,7 @@ char* asm_instruction_string(asm_instruction_t *ins)
         case ASM_INS_PUSH:
         case ASM_INS_CALL:
         case ASM_INS_IDIV:
+        case ASM_INS_IDIVL:
             if (arg2 == NULL)
             {
                 str = calloc(strlen(opcode) + strlen(arg1) + 1, sizeof(char));
@@ -233,6 +234,8 @@ const char* asm_opcode_string(asm_instruction_t *ins)
             return "cltd";
         case ASM_INS_IDIV:
             return "idiv";
+        case ASM_INS_IDIVL:
+            return "idivl";
         case ASM_INS_JMP:
             return "jmp";
         case ASM_INS_CMP:
