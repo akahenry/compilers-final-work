@@ -53,6 +53,7 @@ typedef enum _asm_arg_type_t
     ASM_ARG_TYPE_AH,
     ASM_ARG_TYPE_EAX,
     ASM_ARG_TYPE_EBX,
+    ASM_ARG_TYPE_ECX,
     ASM_ARG_TYPE_RBP,
     ASM_ARG_TYPE_RSP,
     ASM_ARG_TYPE_RIP,

@@ -89,8 +89,8 @@ char* asm_instruction_string(asm_instruction_t *ins)
                 str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + 1, sizeof(char));
                 sprintf(str, "%s %s, %s", opcode, arg1, arg2);
             }
-            else if (arg4 == NULL)
-            {
+            else
+            {                
                 if (ins->arg1.type == ASM_ARG_TYPE_IMM && ins->arg2.isReference)
                 {
                     char* arg1Fixed = &(arg1[1]);
@@ -103,23 +103,16 @@ char* asm_instruction_string(asm_instruction_t *ins)
                     str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2Fixed) + strlen(arg3) + 1, sizeof(char));
                     sprintf(str, "%s %s, %s%s", opcode, arg1, arg2Fixed, arg3);
                 }
-                else if(ins->arg1.type == ASM_ARG_TYPE_REGISTER && ins->arg2.isReference)
+                else if(ins->arg2.isReference)
                 {
                     str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + strlen(arg3) + 1, sizeof(char));
                     sprintf(str, "%s %s%s, %s", opcode, arg1, arg2, arg3);
                 }
-                else if(ins->arg2.type == ASM_ARG_TYPE_REGISTER && ins->arg3.isReference)
+                else if(ins->arg3.isReference)
                 {
                     str = calloc(strlen(opcode) + strlen(arg1) + strlen(arg2) + strlen(arg3) + 1, sizeof(char));
                     sprintf(str, "%s %s, %s%s", opcode, arg1, arg2, arg3);
                 }
-            }
-            else if (ins->arg1.type == ASM_ARG_TYPE_IMM && ins->arg2.isReference && ins->arg3.type == ASM_ARG_TYPE_IMM && ins->arg4.isReference)
-            {
-                char* arg1Fixed = &(arg1[1]);
-                char* arg3Fixed = &(arg3[1]);
-                str = calloc(strlen(opcode) + strlen(arg1Fixed) + strlen(arg2) + strlen(arg3Fixed) + strlen(arg4) + 1, sizeof(char));
-                sprintf(str, "%s %s%s, %s%s", opcode, arg1Fixed, arg2, arg3Fixed, arg4);
             }
             
             break;

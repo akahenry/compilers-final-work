@@ -6,6 +6,7 @@ Grupo D
 #include "asm_converter.h"
 
 const asm_argument_t RIP = {ASM_ARG_TYPE_RIP, 1, 0, NULL};
+const asm_argument_t RIP_NO_REF = {ASM_ARG_TYPE_RIP, 0, 0, NULL};
 const asm_argument_t RBP = {ASM_ARG_TYPE_RBP, 0, 0, NULL};
 const asm_argument_t RSP = {ASM_ARG_TYPE_RSP, 0, 0, NULL};
 const asm_argument_t RSP_REF = {ASM_ARG_TYPE_RSP, 1, 0, NULL};
@@ -13,6 +14,7 @@ const asm_argument_t EAX = {ASM_ARG_TYPE_EAX, 0, 0, NULL};
 const asm_argument_t POINTER_RAX = {ASM_ARG_TYPE_POINTER_RAX, 0, 0, NULL};
 const asm_argument_t EBX = {ASM_ARG_TYPE_EBX, 0, 0, NULL};
 const asm_argument_t EBX_REF = {ASM_ARG_TYPE_EBX, 1, 0, NULL};
+const asm_argument_t ECX = {ASM_ARG_TYPE_ECX, 0, 0, NULL};
 const asm_argument_t RBX = {ASM_ARG_TYPE_RBX, 0, 0, NULL};
 const asm_argument_t RBX_REF = {ASM_ARG_TYPE_RBX, 1, 0, NULL};
 const asm_argument_t NONE = {ASM_ARG_TYPE_NONE, 0, 0, NULL};
@@ -20,6 +22,123 @@ const asm_argument_t ZERO = {ASM_ARG_TYPE_IMM, 0, 0, NULL};
 const asm_argument_t ONE = {ASM_ARG_TYPE_IMM, 0, 1, NULL};
 const asm_argument_t OBJECT = {ASM_ARG_TYPE_OBJECT, 0, 0, NULL};
 const asm_argument_t FUNCTION = {ASM_ARG_TYPE_FUNCTION, 0, 0, NULL};
+
+// A => B, C -> A(RIP) => EAX; EAX => C(B)
+/*
+    - STOREAI
+*/
+asm_instruction_t* args_storeai(asm_argument_t* argPtr1, asm_argument_t* argPtr2, asm_argument_t* argPtr3)
+{
+    asm_instruction_t* ret = NULL;
+    asm_argument_t a = *argPtr1;
+    asm_argument_t b = *argPtr2;
+    asm_argument_t c = *argPtr3;
+
+    ret = asm_join(ret, asm_create(ASM_INS_MOV, a, RIP, EAX, NONE));
+    *argPtr1 = EAX;
+
+    *argPtr2 = c;
+
+    *argPtr3 = b;
+    argPtr3->isReference = 1;
+    switch (b.type)
+    {
+        case ASM_ARG_TYPE_REGISTER:
+            *argPtr3 = RBX;
+            ret = asm_join(ret, asm_create(ASM_INS_MOV, b, RIP, RBX, NONE));
+            break;
+        case ASM_ARG_TYPE_RBP:
+        case ASM_ARG_TYPE_RSP:
+            argPtr2->number *= -4;
+            break;
+        case ASM_ARG_TYPE_RIP:
+            argPtr2->type = ASM_ARG_TYPE_IDENTIFIER;
+            argPtr2->identifier = find_global_by_address(c.number)->token->text;
+            break;
+        default:
+            break;
+    }
+
+    return ret;
+}
+
+// A, B => C -> MOV B C; OP A C;
+/*
+    - ADD
+    - SUB
+    - MULT
+    - DIV
+    - ADDI
+    - RSUBI
+    - XORI
+*/
+asm_instruction_t* args_ops(asm_argument_t* argPtr1, asm_argument_t* argPtr2, asm_argument_t* argPtr3)
+{
+    asm_instruction_t* ret = NULL;
+    asm_argument_t arg1 = *argPtr1;
+    asm_argument_t arg2 = *argPtr2;
+    asm_argument_t arg3 = *argPtr3;
+
+    if (arg1.type == ASM_ARG_TYPE_REGISTER)
+    {
+        *argPtr1 = EAX;
+        ret = asm_join(ret, asm_create(ASM_INS_MOVL, arg1, RIP, EAX, NONE));
+    }
+
+    if (arg2.type == ASM_ARG_TYPE_REGISTER)
+    {
+        *argPtr2 = EBX;
+        ret = asm_join(ret, asm_create(ASM_INS_MOVL, arg2, RIP, EBX, NONE));
+    }
+
+    if (arg3.type == ASM_ARG_TYPE_REGISTER)
+    {
+        *argPtr3 = ECX;
+        ret = asm_join(ret, asm_create(ASM_INS_MOVL, arg3, RIP, ECX, NONE));
+    }
+
+    return ret;
+}
+
+// A, B => C -> B(A) => EAX; EAX => A(RIP)
+/*
+    - LOADAI
+*/
+asm_instruction_t* args_loadai(asm_argument_t* argPtr1, asm_argument_t* argPtr2, asm_argument_t* argPtr3)
+{
+    asm_instruction_t* ret = NULL;
+    asm_argument_t arg1 = *argPtr1;
+    asm_argument_t arg2 = *argPtr2;
+    asm_argument_t arg3 = *argPtr3;
+
+    switch (arg1.type)
+    {
+        case ASM_ARG_TYPE_REGISTER:
+            *argPtr1 = EBX;
+            ret = asm_join(ret, asm_create(ASM_INS_MOVL, arg1, RIP, EBX, NONE));
+            break;
+        case ASM_ARG_TYPE_RBP:
+            *argPtr1 = RBP;
+            if (arg2.type == ASM_ARG_TYPE_IMM)
+            {
+                argPtr2->number *= -4;
+            }
+            ret = asm_join(ret, asm_create(ASM_INS_MOV, arg1, RIP, RBP, NONE));
+            break;
+        default:
+            break;
+    }
+    argPtr1->isReference = 1;
+
+    if (arg3.type == ASM_ARG_TYPE_REGISTER)
+    {
+        *argPtr3 = ECX;
+        argPtr3->isReference = 1;
+        ret = asm_join(ret, asm_create(ASM_INS_ADD, RIP_NO_REF, ECX, NONE, NONE));
+    }
+
+    return ret;
+}
 
 asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
 {
@@ -77,29 +196,31 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
             break;
 
         case ILOC_INS_STOREAI:
-            if (arg2.type != ASM_ARG_TYPE_RIP)
-            {
-                arg3.number *= -4;
-            }
+            // if (arg2.type != ASM_ARG_TYPE_RIP)
+            // {
+            //     arg3.number *= -4;
+            // }
                 
-            if (arg1.type == ASM_ARG_TYPE_REGISTER && arg2.type == ASM_ARG_TYPE_REGISTER)
-            {
-                ret = asm_join(asm_create(ASM_INS_MOV, arg1, RIP, EAX, NONE), asm_create(ASM_INS_MOV, arg2, RIP, EBX, NONE)), asm_create(ASM_INS_MOV, EAX, arg3, EBX_REF, NONE);
-            }
-            else if (arg1.type == ASM_ARG_TYPE_REGISTER)
-            {
-                arg2.isReference = 1;
-                ret = asm_join(asm_create(ASM_INS_MOV, arg1, RIP, EAX, NONE), asm_create(ASM_INS_MOV, EAX, arg3, arg2, NONE));
-            }
-            else if (arg2.type == ASM_ARG_TYPE_REGISTER)
-            {
-                ret = asm_join(asm_create(ASM_INS_MOV, arg2, RIP, EBX, NONE), asm_create(ASM_INS_MOV, arg1, arg3, EBX_REF, NONE));
-            }
-            else
-            {
-                arg2.isReference = 1;
-                ret = asm_create(ASM_INS_MOV, arg1, arg3, arg2, NONE);
-            }
+            // if (arg1.type == ASM_ARG_TYPE_REGISTER && arg2.type == ASM_ARG_TYPE_REGISTER)
+            // {
+            //     ret = asm_join(asm_create(ASM_INS_MOV, arg1, RIP, EAX, NONE), asm_create(ASM_INS_MOV, arg2, RIP, EBX, NONE)), asm_create(ASM_INS_MOV, EAX, arg3, EBX_REF, NONE);
+            // }
+            // else if (arg1.type == ASM_ARG_TYPE_REGISTER)
+            // {
+            //     arg2.isReference = 1;
+            //     ret = asm_join(asm_create(ASM_INS_MOV, arg1, RIP, EAX, NONE), asm_create(ASM_INS_MOV, EAX, arg3, arg2, NONE));
+            // }
+            // else if (arg2.type == ASM_ARG_TYPE_REGISTER)
+            // {
+            //     ret = asm_join(asm_create(ASM_INS_MOV, arg2, RIP, EBX, NONE), asm_create(ASM_INS_MOV, arg1, arg3, EBX_REF, NONE));
+            // }
+            // else
+            // {
+            //     arg2.isReference = 1;
+            //     ret = asm_create(ASM_INS_MOV, arg1, arg3, arg2, NONE);
+            // }
+            ret = asm_join(ret, args_storeai(&arg1, &arg2, &arg3));
+            ret = asm_join(ret, asm_create(ASM_INS_MOV, arg1, arg2, arg3, NONE));
             break;
 
         case ILOC_INS_LOADI:
@@ -349,7 +470,7 @@ asm_instruction_t* asm_header()
     asm_instruction_t* text = asm_create(ASM_TEXT_SECTION, NONE, NONE, NONE, NONE);
     int maxTemp = get_temp_count();
 
-    hash_table_t* global_scope = (hash_table_t*)stack_at(table->scopes, 0);
+    hash_table_t* global_scope = (hash_table_t*)stack_at(table->scopes, table->size - 1);
     for (size_t i = 0; i < global_scope->size; i++)
     {
         if (global_scope->items[i] != NULL)
