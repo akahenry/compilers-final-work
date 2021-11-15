@@ -38,6 +38,7 @@ clean:
 	-rm -r $(TEMP)
 	-rm $(SRC)/$(BISON_FILE) $(SRC)/$(BISON_OUTPUT) $(SRC)/$(LEX_FILE)
 	-rm $(INCLUDE)/$(BISON_HEADER)
+	-rm $(PWD)/etapa$(STEP_NUMBER).tgz
 
 $(SRC)/$(BISON_FILE): $(SRC)/$(PARSER)
 	bison -d $(SRC)/$(PARSER) -o $(SRC)/$(BISON_FILE)
