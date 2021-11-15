@@ -7,6 +7,7 @@ Grupo D
 
 const asm_argument_t RIP = {ASM_ARG_TYPE_RIP, 1, 0, NULL};
 const asm_argument_t RBP = {ASM_ARG_TYPE_RBP, 0, 0, NULL};
+const asm_argument_t RBP_REF = {ASM_ARG_TYPE_RBP, 1, 0, NULL};
 const asm_argument_t RSP = {ASM_ARG_TYPE_RSP, 0, 0, NULL};
 const asm_argument_t RSP_REF = {ASM_ARG_TYPE_RSP, 1, 0, NULL};
 const asm_argument_t EAX = {ASM_ARG_TYPE_EAX, 0, 0, NULL};
@@ -368,7 +369,7 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
             break;
         
         case ILOC_NO_CODE_RET: // Esse opcode indica o return da função
-            ret = asm_join(asm_join(ret, asm_join(asm_join(asm_create(ASM_INS_MOV, SIXTEEN, RSP_REF, EAX, NONE), asm_create(ASM_INS_MOV, RBP, RSP, NONE, NONE)), asm_create(ASM_INS_PUSH, RCX, NONE, NONE, NONE))), asm_create(ASM_INS_RET, NONE, NONE, NONE, NONE));
+            ret = asm_join(asm_join(ret, asm_join(asm_join(asm_create(ASM_INS_MOV, SIXTEEN, RSP_REF, EAX, NONE), asm_create(ASM_INS_MOV, RBP, RSP, NONE, NONE)), asm_create(ASM_INS_PUSH, ZERO, RBP_REF, NONE, NONE))), asm_create(ASM_INS_RET, NONE, NONE, NONE, NONE));
             break;
 
         case ILOC_NO_CODE_RET_MAIN: // Esse opcode indica o return da função main
@@ -382,7 +383,7 @@ asm_instruction_t* iloc_to_asm_recursive(iloc_instruction_t* ref)
             }
             break;
         case ILOC_NO_CODE_POP_RCX:
-            ret = asm_join(ret, asm_create(ASM_INS_POP, RCX, NONE, NONE, NONE));
+            ret = asm_join(ret, asm_create(ASM_INS_POP, ZERO, RSP_REF, NONE, NONE));
             break;
         case ILOC_NO_CODE_RET_ADDRESS:
             ret = NULL;
