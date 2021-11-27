@@ -538,3 +538,15 @@ asm_argument_t iloc_arg_to_asm_arg(iloc_argument_t ref)
 
     return ret;
 }
+
+asm_instruction_t* optimize_asm_code(asm_instruction_t* asm_code)
+{
+    asm_instruction_t* ret = asm_code;
+
+    // TODO: loop through code and optimize
+    // asm_argument_t arg1 = {ASM_ARG_TYPE_REGISTER, 0, 0, NULL};
+    // asm_argument_t arg2 = {ASM_ARG_TYPE_REGISTER, 0, 0, NULL};
+    // ret = asm_join(asm_code, asm_create(ASM_INS_ADD, arg1, arg2, NONE, NONE));
+
+    return ret;
+}
