@@ -40,16 +40,16 @@ int main (int argc, char **argv)
 
   int ret = yyparse(); // A geração de código intermediário foi realizada na mesma passagem em que feita a análise sintática/semântica
   
-  // iloc_recursive_print(((node_t*)arvore)->code);
-
-  asm_instruction_t* asm_code = iloc_to_asm(((node_t*)arvore)->code);
+  iloc_instruction_t* iloc_code = ((node_t*)arvore)->code;
 
   if (is_optimized)
   {
-    asm_code = optimize_asm_code(asm_code);
+    iloc_code = optimize_iloc_code(iloc_code);
   }
 
-  asm_recursive_print(asm_code);
+  iloc_recursive_print(iloc_code);
+
+  // asm_recursive_print(iloc_to_asm(((node_t*)arvore)->code));
 
   libera(arvore);
   arvore = NULL;

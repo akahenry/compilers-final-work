@@ -36,4 +36,6 @@ iloc_instruction_t* generate_not_operator(iloc_argument_t reg);
 iloc_instruction_t* generate_logic_and_expression(iloc_argument_t register1, iloc_instruction_t* code1, iloc_argument_t register2, iloc_instruction_t* code2, iloc_argument_t result);
 iloc_instruction_t* generate_logic_or_expression(iloc_argument_t register1, iloc_instruction_t* code1, iloc_argument_t register2, iloc_instruction_t* code2, iloc_argument_t result);
 
+iloc_instruction_t* optimize_iloc_code(iloc_instruction_t* iloc_code);
+
 #endif

@@ -294,3 +294,10 @@ iloc_instruction_t* generate_logic_or_expression(iloc_argument_t register1, iloc
     
     return iloc_join(code1, generate_if(register1, iloc_create(ILOC_INS_LOADI, true_constant, result, none), iloc_join(code2, iloc_create(ILOC_INS_I2I, register2, result, none))));
 }
+
+iloc_instruction_t* optimize_iloc_code(iloc_instruction_t* iloc_code)
+{
+    iloc_instruction_t* ret = iloc_code;
+
+    return ret;
+}
