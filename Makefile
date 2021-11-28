@@ -7,13 +7,15 @@ INCLUDE := include
 
 TEMP := temp
 UTILS := utils
+UTILS_README := README.txt
 UTILS_MAKEFILE := Makefile
+EXAMPLES := examples
 
 LIBRARIES   := -lfl
 EXECUTABLE  := main
 EXECUTABLE_DEBUG  := debug
 
-STEP_NUMBER := 6
+STEP_NUMBER := 7
 
 SCANNER := scanner.l
 PARSER := parser.y
@@ -54,10 +56,12 @@ compress:
 	mkdir $(TEMP)
 	cp -a $(INCLUDE)/. $(TEMP)/
 	cp -a $(SRC)/. $(TEMP)/
+	cp -a $(EXAMPLES)/. $(TEMP)/
+	cp $(UTILS)/$(UTILS_README) $(TEMP)/
 	-rm $(TEMP)/$(LEX_FILE) $(TEMP)/$(BISON_FILE) $(TEMP)/$(BISON_HEADER) $(TEMP)/.gitkeep
 	sed 's/{STEP_NUMBER}/'"$(STEP_NUMBER)/g" $(UTILS)/$(UTILS_MAKEFILE) > $(TEMP)/$(UTILS_MAKEFILE)
 	cd $(TEMP) && tar cvzf $(PWD)/etapa$(STEP_NUMBER).tgz * && cd -
-	-rm -r $(TEMP)
+	# -rm -r $(TEMP)
 
 exec: all
 	$(BIN)/$(EXECUTABLE)

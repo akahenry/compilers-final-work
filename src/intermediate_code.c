@@ -295,9 +295,42 @@ iloc_instruction_t* generate_logic_or_expression(iloc_argument_t register1, iloc
     return iloc_join(code1, generate_if(register1, iloc_create(ILOC_INS_LOADI, true_constant, result, none), iloc_join(code2, iloc_create(ILOC_INS_I2I, register2, result, none))));
 }
 
+int iloc_arg_is_equal(iloc_argument_t arg1, iloc_argument_t arg2)
+{
+    return arg1.type == arg2.type && arg1.number == arg2.number;
+}
+
+iloc_instruction_t* optimize_iloc_code_store_load_store(iloc_instruction_t* ins1, iloc_instruction_t* ins2, iloc_instruction_t* ins3)
+{
+    iloc_instruction_t* ret = NULL;
+    
+    if (ins1->opcode == ILOC_INS_STOREAI && ins2->opcode == ILOC_INS_LOADAI && ins3->opcode == ILOC_INS_STOREAI)
+    {
+        if (iloc_arg_is_equal(ins1->arg2, ins2->arg1) && iloc_arg_is_equal(ins1->arg3, ins2->arg2))
+        {
+            if (iloc_arg_is_equal(ins2->arg3, ins3->arg1))
+            {
+                ret = iloc_join(ins1, iloc_create(ILOC_INS_STOREAI, ins1->arg1, ins3->arg2, ins3->arg3));
+            }
+        }
+    }
+
+    return ret;
+}
+
 iloc_instruction_t* optimize_iloc_code(iloc_instruction_t* iloc_code)
 {
     iloc_instruction_t* ret = iloc_code;
+
+    if (ret != NULL && ret->previous != NULL && ret->previous->previous != NULL)
+    {
+        iloc_instruction_t* optimization = optimize_iloc_code_store_load_store(ret->previous->previous, ret->previous, ret);
+        if (optimization != NULL)
+        {
+            ret = optimization;
+        } 
+        ret->previous = optimize_iloc_code(ret->previous);
+    }
 
     return ret;
 }

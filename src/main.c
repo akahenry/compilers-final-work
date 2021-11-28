@@ -47,9 +47,9 @@ int main (int argc, char **argv)
     iloc_code = optimize_iloc_code(iloc_code);
   }
 
-  iloc_recursive_print(iloc_code);
+  // iloc_recursive_print(iloc_code);
 
-  // asm_recursive_print(iloc_to_asm(((node_t*)arvore)->code));
+  asm_recursive_print(iloc_to_asm(((node_t*)arvore)->code));
 
   libera(arvore);
   arvore = NULL;

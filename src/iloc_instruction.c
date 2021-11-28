@@ -350,7 +350,7 @@ void iloc_recursive_print(iloc_instruction_t* ins)
     iloc_recursive_print(ins->previous);
     char* str = iloc_instruction_string(ins);
 
-    printf("%s\n", str);
+    if (strlen(str) > 0) printf("%s\n", str);
     free(str);
 }
 
